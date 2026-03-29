@@ -78,6 +78,16 @@ def run_cold_outreach():
     except Exception as e:
         log.error(f"Cold outreach error: {e}")
 
+def run_health_monitor():
+    log.info("=== SCHEDULED: Health monitor ===")
+    try:
+        from analytics.monitor import run_full_monitor
+        report = run_full_monitor()
+        status = "✅ OK" if report["overall_ok"] else "❌ ISSUES"
+        log.info(f"Health check: {status}")
+    except Exception as e:
+        log.error(f"Health monitor error: {e}")
+
 def setup_schedule():
     # Content generation — 7 AM daily
     schedule.every().day.at("07:00").do(run_content_job)
@@ -96,6 +106,9 @@ def setup_schedule():
 
     # Cold outreach sequences — daily 10 AM
     schedule.every().day.at("10:00").do(run_cold_outreach)
+
+    # Health monitoring — every hour
+    schedule.every().hour.do(run_health_monitor)
 
     log.info("Scheduler configured:")
     for job in schedule.jobs:

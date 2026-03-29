@@ -1,0 +1,72 @@
+{
+  "timestamp": "2026-03-29T13:51:58.818695",
+  "all_ok": true,
+  "passed": 8,
+  "failed": 0,
+  "checks": [
+    {
+      "url": "http://localhost:8000/",
+      "status": 200,
+      "ok": true,
+      "size": 34077,
+      "error": null,
+      "name": "Homepage"
+    },
+    {
+      "url": "http://localhost:8000/tools",
+      "status": 200,
+      "ok": true,
+      "size": 27434,
+      "error": null,
+      "name": "Tools page"
+    },
+    {
+      "url": "http://localhost:8000/articles",
+      "status": 200,
+      "ok": true,
+      "size": 32815,
+      "error": null,
+      "name": "Articles"
+    },
+    {
+      "url": "http://localhost:8000/services",
+      "status": 200,
+      "ok": true,
+      "size": 26621,
+      "error": null,
+      "name": "Services"
+    },
+    {
+      "url": "http://localhost:8000/rss.xml",
+      "status": 200,
+      "ok": true,
+      "size": 10974,
+      "error": null,
+      "name": "RSS Feed"
+    },
+    {
+      "url": "http://localhost:8000/sitemap.xml",
+      "status": 200,
+      "ok": true,
+      "size": 3172,
+      "error": null,
+      "name": "Sitemap"
+    },
+    {
+      "url": "http://localhost:8000/robots.txt",
+      "status": 200,
+      "ok": true,
+      "size": 101,
+      "error": null,
+      "name": "Robots.txt"
+    },
+    {
+      "url": "http://localhost:8000/nonexistent",
+      "status": 404,
+      "ok": true,
+      "size": 0,
+      "error": null,
+      "name": "404 handler"
+    }
+  ]
+}

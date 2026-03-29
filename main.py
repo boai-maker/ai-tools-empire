@@ -519,6 +519,32 @@ async def sitemap():
     return Response(content=xml, media_type="application/xml")
 
 
+@app.get("/health")
+async def health_check():
+    """Used by Railway/Render for uptime monitoring."""
+    try:
+        stats = get_analytics_summary()
+        return JSONResponse({
+            "status": "ok",
+            "articles": stats.get("total_articles", 0),
+            "subscribers": stats.get("total_subscribers", 0),
+            "uptime": "operational",
+        })
+    except Exception as e:
+        return JSONResponse({"status": "degraded", "error": str(e)}, status_code=200)
+
+
+@app.get("/robots.txt")
+async def robots_txt():
+    content = """User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /track/
+
+Sitemap: {site_url}/sitemap.xml""".format(site_url=config.SITE_URL)
+    return Response(content=content, media_type="text/plain")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
