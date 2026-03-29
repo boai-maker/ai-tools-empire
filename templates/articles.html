@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}AI Tool Reviews & Comparisons 2026 | {{ site_name }}{% endblock %}
+{% block meta_description %}In-depth AI tool reviews, comparisons, and buying guides. We test every tool so you don't have to.{% endblock %}
+
+{% block extra_head %}
+<style>
+  .articles-header {
+    background: linear-gradient(135deg, #0f172a, #1e1b4b);
+    padding: 60px 20px;
+    text-align: center;
+  }
+  .articles-header h1 { font-size: 40px; font-weight: 800; color: white; margin: 0 0 12px; }
+  .articles-header p { color: #94a3b8; font-size: 17px; }
+
+  .articles-page { padding: 48px 0; }
+  .articles-layout { display: grid; grid-template-columns: 1fr 300px; gap: 32px; max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+  .articles-list { display: flex; flex-direction: column; gap: 20px; }
+  .article-item {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    gap: 20px;
+    transition: all 0.2s;
+  }
+  .article-item:hover { box-shadow: var(--shadow-lg); border-color: var(--primary); }
+  .article-item-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .article-item-body { flex: 1; }
+  .article-item-cat { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--primary); margin-bottom: 6px; }
+  .article-item-body h3 { margin: 0 0 8px; font-size: 18px; font-weight: 700; line-height: 1.35; }
+  .article-item-body h3 a { color: var(--text); text-decoration: none; }
+  .article-item-body h3 a:hover { color: var(--primary); }
+  .article-item-body p { color: var(--text-muted); font-size: 14px; margin: 0 0 12px; line-height: 1.6; }
+  .article-item-meta { display: flex; gap: 14px; font-size: 12px; color: #94a3b8; }
+
+  .cat-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+  .cat-tab { padding: 8px 18px; border-radius: 100px; font-size: 13px; font-weight: 600; border: 2px solid var(--border); background: white; color: var(--text-muted); text-decoration: none; transition: all 0.2s; }
+  .cat-tab.active, .cat-tab:hover { background: var(--primary); border-color: var(--primary); color: white; text-decoration: none; }
+
+  .sidebar-sticky { position: sticky; top: 80px; }
+  .sidebar-widget { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .sidebar-widget h3 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 14px; border-bottom: 2px solid var(--primary); padding-bottom: 8px; }
+
+  @media (max-width: 768px) {
+    .articles-layout { grid-template-columns: 1fr; }
+    .sidebar-sticky { position: static; }
+    .article-item { flex-direction: column; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="articles-header">
+  <h1>📖 AI Tool Reviews</h1>
+  <p>{{ total_articles }} in-depth reviews. Updated weekly with fresh data.</p>
+</div>
+
+<div class="articles-page">
+  <div class="articles-layout">
+    <!-- Main -->
+    <div>
+      <div class="cat-tabs">
+        <a href="/articles" class="cat-tab {% if not active_category %}active{% endif %}">All</a>
+        {% for key, cat in categories.items() %}
+        <a href="/articles?category={{ key }}" class="cat-tab {% if active_category == key %}active{% endif %}">{{ cat.icon }} {{ cat.label }}</a>
+        {% endfor %}
+      </div>
+
+      <div class="articles-list">
+        {% for article in articles %}
+        <div class="article-item">
+          <div class="article-item-icon">
+            {% if article.category == 'writing' %}✍️
+            {% elif article.category == 'seo' %}🔍
+            {% elif article.category == 'video' %}🎬
+            {% elif article.category == 'audio' %}🎙️
+            {% else %}⚡{% endif %}
+          </div>
+          <div class="article-item-body">
+            <div class="article-item-cat">{{ article.category|upper }}</div>
+            <h3><a href="/articles/{{ article.slug }}">{{ article.title }}</a></h3>
+            <p>{{ article.meta_description }}</p>
+            <div class="article-item-meta">
+              <span>📅 {{ article.created_at[:10] }}</span>
+              <span>👁 {{ article.views }} views</span>
+              {% if article.affiliate_clicks %}<span>🔗 {{ article.affiliate_clicks }} clicks</span>{% endif %}
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+          <div style="font-size:48px;margin-bottom:16px;">🤖</div>
+          <h3>Content generating...</h3>
+          <p>Our AI is writing reviews right now. Check back in a few minutes!</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar-sticky">
+      <div class="sidebar-widget">
+        <h3>🏆 Top Tools</h3>
+        {% for key, tool in top_tools.items() %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--text);">{{ tool.name }}</div>
+            <div style="font-size:12px;color:var(--success);font-weight:600;">{{ tool.commission }}</div>
+          </div>
+          <a href="{{ tool.signup_url }}" class="btn btn-success btn-sm affiliate-link" data-tool="{{ key }}" target="_blank" rel="noopener">Try →</a>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="sidebar-widget" style="background:linear-gradient(135deg,#312e81,#4f46e5);border:none;">
+        <h3 style="color:white;border-color:#6366f1;">📬 Free Newsletter</h3>
+        <p style="color:#a5b4fc;font-size:14px;margin:0 0 14px;">Weekly AI tool deals, direct to your inbox.</p>
+        <form onsubmit="handleSub(event)">
+          <input type="email" id="art-email" placeholder="your@email.com" required style="width:100%;padding:10px 14px;border-radius:8px;border:none;font-size:14px;margin-bottom:10px;box-sizing:border-box;">
+          <button type="submit" class="btn btn-primary" style="width:100%;">Subscribe Free</button>
+        </form>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function handleSub(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button');
+  btn.textContent='...'; btn.disabled=true;
+  const r = await fetch('/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('art-email').value})});
+  const d = await r.json();
+  btn.textContent = d.success ? '✓ Subscribed!' : 'Try again';
+  if(d.success) showToast('🎉 Subscribed!');
+  else btn.disabled=false;
+}
+</script>
+{% endblock %}

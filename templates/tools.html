@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Best AI Tools in 2026 — Ranked & Reviewed | {{ site_name }}{% endblock %}
+{% block meta_description %}Compare the best AI tools of 2026. Honest reviews, pricing breakdowns, and head-to-head comparisons for writing, SEO, video, voice, and productivity AI tools.{% endblock %}
+
+{% block extra_head %}
+<style>
+  .tools-header {
+    background: linear-gradient(135deg, #0f172a, #1e1b4b);
+    padding: 60px 20px;
+    text-align: center;
+  }
+  .tools-header h1 { font-size: 42px; font-weight: 800; color: white; margin: 0 0 12px; }
+  .tools-header p { color: #94a3b8; font-size: 18px; max-width: 560px; margin: 0 auto; }
+
+  .filters-bar {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+    position: sticky;
+    top: 64px;
+    z-index: 90;
+  }
+  .filters-inner {
+    display: flex;
+    gap: 10px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-label { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-right: 4px; }
+  .filter-btn {
+    padding: 7px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 2px solid var(--border);
+    background: white;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .filter-btn.active, .filter-btn:hover { background: var(--primary); border-color: var(--primary); color: white; text-decoration: none; }
+
+  .tools-page { padding: 40px 0; }
+
+  .tool-row {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    gap: 20px;
+    align-items: center;
+    transition: all 0.2s;
+  }
+  .tool-row:hover { box-shadow: var(--shadow-lg); border-color: var(--primary); transform: translateX(4px); }
+  .tool-rank {
+    font-size: 28px;
+    font-weight: 900;
+    color: #e2e8f0;
+    text-align: center;
+  }
+  .tool-rank.top3 { color: var(--primary); }
+  .tool-info h3 { font-size: 20px; font-weight: 700; margin: 0 0 6px; }
+  .tool-info p { color: var(--text-muted); margin: 0 0 10px; font-size: 14px; line-height: 1.6; }
+  .tool-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tool-tag { background: #f1f5f9; color: #475569; font-size: 12px; padding: 3px 10px; border-radius: 100px; font-weight: 500; }
+  .tool-tag.green { background: #f0fdf4; color: #166534; }
+  .tool-actions { display: flex; flex-direction: column; gap: 10px; min-width: 160px; align-items: flex-end; }
+  .tool-commission-badge {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #86efac;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .rating-display { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+  .rating-stars { color: #f59e0b; }
+
+  @media (max-width: 640px) {
+    .tool-row { grid-template-columns: 1fr; }
+    .tool-rank { display: none; }
+    .tool-actions { align-items: flex-start; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="tools-header">
+  <h1>🏆 Best AI Tools in 2026</h1>
+  <p>{{ total_tools }} tools ranked by performance, value, and real user reviews. Updated weekly.</p>
+</div>
+
+<!-- Filters -->
+<div class="filters-bar">
+  <div class="filters-inner">
+    <span class="filter-label">Filter:</span>
+    <a href="/tools" class="filter-btn {% if not active_category %}active{% endif %}">All Tools</a>
+    {% for key, cat in categories.items() %}
+    <a href="/tools?category={{ key }}" class="filter-btn {% if active_category == key %}active{% endif %}">{{ cat.icon }} {{ cat.label }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="tools-page">
+  <div class="container">
+    {% for key, tool in tools.items() %}
+    <div class="tool-row">
+      <div class="tool-rank {% if loop.index <= 3 %}top3{% endif %}">#{{ loop.index }}</div>
+      <div class="tool-info">
+        <h3>
+          {{ tool.name }}
+          {% if loop.index == 1 %}<span style="background:#fef9c3;color:#713f12;font-size:12px;padding:3px 8px;border-radius:100px;margin-left:8px;font-weight:700;">Editor's Choice</span>{% endif %}
+        </h3>
+        <p>{{ tool.description }}</p>
+        <div class="tool-tags">
+          <span class="tool-tag">{{ tool.category|title }}</span>
+          <span class="tool-tag green">{{ tool.commission }}</span>
+          <span class="tool-tag">{{ tool.cookie_days }}-day cookie</span>
+          <span class="tool-tag">{{ tool.reviews|int // 1000 }}k+ reviews</span>
+        </div>
+      </div>
+      <div class="tool-actions">
+        <div class="rating-display">
+          <span class="rating-stars">{% for i in range(tool.rating|int) %}★{% endfor %}</span>
+          <strong>{{ tool.rating }}</strong>
+        </div>
+        <div class="tool-commission-badge">💰 {{ tool.commission }}</div>
+        <a href="{{ tool.signup_url }}" class="btn btn-success btn-sm affiliate-link" data-tool="{{ key }}" target="_blank" rel="noopener">Try Free →</a>
+        <a href="/articles?q={{ tool.name|urlencode }}" class="btn btn-outline btn-sm">Full Review</a>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- CTA Banner -->
+    <div style="background:linear-gradient(135deg,#312e81,#4f46e5);border-radius:16px;padding:40px;text-align:center;margin-top:40px;">
+      <h3 style="color:white;font-size:26px;margin:0 0 10px;">📬 Never Miss a Deal</h3>
+      <p style="color:#a5b4fc;margin:0 0 24px;">Get weekly AI tool reviews and exclusive discounts in your inbox.</p>
+      <form style="display:flex;gap:12px;max-width:420px;margin:0 auto;" onsubmit="handleSubscribeTools(event)">
+        <input type="email" id="tools-email" placeholder="your@email.com" required style="flex:1;padding:13px 18px;border-radius:10px;border:none;font-size:15px;">
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function handleSubscribeTools(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button');
+  btn.textContent = '...'; btn.disabled = true;
+  const res = await fetch('/subscribe', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({email: document.getElementById('tools-email').value})
+  });
+  const data = await res.json();
+  btn.textContent = data.success ? '✓ Done!' : 'Try again';
+  if (data.success) showToast('🎉 Subscribed!');
+  else btn.disabled = false;
+}
+</script>
+{% endblock %}

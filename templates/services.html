@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block title %}AI Content Writing Service | {{ site_name }}{% endblock %}
+{% block meta_description %}Done-for-you SEO blog posts delivered in 24–72 hours. Built for SaaS, agencies, and e-commerce brands who need content that ranks.{% endblock %}
+
+{% block extra_head %}
+<style>
+  .svc-hero { background: linear-gradient(135deg, #0f172a, #1e1b4b); padding: 80px 20px; text-align: center; }
+  .svc-hero h1 { color: white; font-size: 48px; font-weight: 900; line-height: 1.15; margin: 0 0 16px; }
+  .svc-hero h1 span { color: #a5b4fc; }
+  .svc-hero p { color: #94a3b8; font-size: 20px; max-width: 640px; margin: 0 auto 36px; line-height: 1.6; }
+  .hero-stats { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
+  .hero-stat { color: white; text-align: center; }
+  .hero-stat .val { font-size: 36px; font-weight: 900; color: #a5b4fc; }
+  .hero-stat .lbl { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+
+  .svc-body { max-width: 1100px; margin: 0 auto; padding: 80px 20px; }
+
+  .trust-bar { background: #f8fafc; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 20px; text-align: center; margin-bottom: 80px; }
+  .trust-bar p { color: var(--text-muted); font-size: 14px; font-weight: 600; margin: 0; }
+  .trust-bar strong { color: var(--text); }
+
+  /* Pricing */
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 80px; }
+  .plan-card { background: white; border: 2px solid var(--border); border-radius: 16px; padding: 32px; position: relative; transition: all 0.2s; }
+  .plan-card:hover { border-color: var(--primary); box-shadow: 0 8px 40px rgba(99,102,241,0.12); transform: translateY(-4px); }
+  .plan-card.popular { border-color: var(--primary); }
+  .popular-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; font-size: 12px; font-weight: 800; padding: 4px 16px; border-radius: 100px; white-space: nowrap; }
+  .plan-name { font-size: 20px; font-weight: 800; color: var(--text); margin: 0 0 4px; }
+  .plan-price { font-size: 48px; font-weight: 900; color: var(--primary); margin: 16px 0 4px; line-height: 1; }
+  .plan-price span { font-size: 16px; font-weight: 500; color: var(--text-muted); }
+  .plan-posts { font-size: 14px; color: var(--text-muted); margin: 0 0 24px; }
+  .plan-features { list-style: none; padding: 0; margin: 0 0 28px; }
+  .plan-features li { font-size: 14px; color: var(--text); padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 8px; }
+  .plan-features li:last-child { border-bottom: none; }
+  .plan-features li::before { content: "✓"; color: var(--success); font-weight: 700; flex-shrink: 0; }
+
+  /* Process */
+  .process { margin-bottom: 80px; text-align: center; }
+  .process h2 { font-size: 36px; font-weight: 800; margin: 0 0 12px; }
+  .process-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 48px; }
+  .process-step { text-align: center; position: relative; }
+  .process-step .num { width: 48px; height: 48px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; margin: 0 auto 16px; }
+  .process-step h4 { font-size: 16px; font-weight: 700; margin: 0 0 8px; }
+  .process-step p { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+
+  /* Testimonials */
+  .testimonials { background: #f8fafc; padding: 60px 0; margin: 0 -20px 80px; }
+  .testimonials-inner { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+  .testimonials h2 { font-size: 32px; font-weight: 800; text-align: center; margin: 0 0 48px; }
+  .testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .testimonial { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .t-text { font-size: 15px; color: var(--text); line-height: 1.7; margin: 0 0 20px; font-style: italic; }
+  .t-author { display: flex; align-items: center; gap: 12px; }
+  .t-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+  .t-name { font-size: 14px; font-weight: 700; margin: 0; }
+  .t-role { font-size: 12px; color: var(--text-muted); margin: 2px 0 0; }
+  .stars { color: #f59e0b; font-size: 12px; margin-bottom: 4px; }
+
+  /* CTA */
+  .svc-cta { background: linear-gradient(135deg, #4f46e5, #7c3aed); border-radius: 20px; padding: 60px 40px; text-align: center; color: white; margin-bottom: 80px; }
+  .svc-cta h2 { font-size: 36px; font-weight: 800; margin: 0 0 12px; }
+  .svc-cta p { font-size: 18px; color: rgba(255,255,255,0.8); margin: 0 0 32px; }
+  .svc-cta-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+  /* FAQ */
+  .faq { margin-bottom: 80px; }
+  .faq h2 { font-size: 32px; font-weight: 800; text-align: center; margin: 0 0 48px; }
+  .faq-item { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+  .faq-item h4 { font-size: 16px; font-weight: 700; margin: 0 0 10px; }
+  .faq-item p { font-size: 14px; color: var(--text-muted); margin: 0; line-height: 1.7; }
+
+  @media (max-width: 900px) {
+    .pricing-grid { grid-template-columns: 1fr; }
+    .process-grid { grid-template-columns: 1fr 1fr; }
+    .testimonial-grid { grid-template-columns: 1fr; }
+    .svc-hero h1 { font-size: 36px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<div class="svc-hero">
+  <div style="max-width:760px;margin:0 auto;">
+    <div style="display:inline-block;background:rgba(165,180,252,0.15);color:#a5b4fc;font-size:13px;font-weight:700;padding:6px 16px;border-radius:100px;margin-bottom:20px;border:1px solid rgba(165,180,252,0.3);">
+      ✍️ Done-For-You Content Service
+    </div>
+    <h1>SEO Blog Posts That<br><span>Actually Rank on Google</span></h1>
+    <p>We write keyword-optimized, AI-assisted blog posts for SaaS, agencies, and e-commerce brands. Delivered in 24–72 hours. No contracts.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <a href="#pricing" class="btn btn-primary" style="font-size:16px;padding:14px 32px;">See Packages & Pricing</a>
+      <a href="mailto:hello@aitoolsweekly.com?subject=Content+Service+Inquiry" class="btn" style="background:rgba(255,255,255,0.1);color:white;border:2px solid rgba(255,255,255,0.2);font-size:16px;padding:14px 32px;">Get a Free Sample →</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="val">50+</div><div class="lbl">Articles Published</div></div>
+      <div class="hero-stat"><div class="val">24–72h</div><div class="lbl">Delivery Time</div></div>
+      <div class="hero-stat"><div class="val">4.9★</div><div class="lbl">Average Rating</div></div>
+      <div class="hero-stat"><div class="val">$0</div><div class="lbl">No Setup Fee</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="trust-bar">
+  <p>Trusted by <strong>SaaS founders, marketing agencies, and e-commerce brands</strong> to consistently produce content that ranks · <strong>Niches:</strong> AI tools · SaaS · Marketing · Finance · E-commerce · Tech</p>
+</div>
+
+<div class="svc-body">
+
+  <!-- Pricing -->
+  <div id="pricing" style="text-align:center;margin-bottom:48px;">
+    <h2 style="font-size:40px;font-weight:800;margin:0 0 12px;">Simple, Transparent Pricing</h2>
+    <p style="color:var(--text-muted);font-size:18px;max-width:560px;margin:0 auto;">Pay monthly, cancel anytime. Every plan includes keyword research, meta descriptions, and unlimited revisions.</p>
+  </div>
+
+  <div class="pricing-grid">
+    <!-- Starter -->
+    <div class="plan-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">$397<span>/mo</span></div>
+      <div class="plan-posts">4 blog posts per month</div>
+      <ul class="plan-features">
+        <li>1,500–2,000 words per post</li>
+        <li>Target keyword research included</li>
+        <li>Meta title + description</li>
+        <li>Internal linking suggestions</li>
+        <li>Google Doc or HTML format</li>
+        <li>Delivered within 72 hours each</li>
+        <li>Unlimited revisions</li>
+      </ul>
+      <a href="mailto:hello@aitoolsweekly.com?subject=Starter+Plan+Inquiry" class="btn btn-outline" style="width:100%;text-align:center;display:block;">Get Started →</a>
+    </div>
+
+    <!-- Growth (popular) -->
+    <div class="plan-card popular">
+      <div class="popular-badge">⭐ Most Popular</div>
+      <div class="plan-name">Growth</div>
+      <div class="plan-price">$697<span>/mo</span></div>
+      <div class="plan-posts">8 blog posts per month</div>
+      <ul class="plan-features">
+        <li>1,500–2,000 words per post</li>
+        <li>Full content calendar included</li>
+        <li>Keyword + competitor research</li>
+        <li>Meta titles + descriptions</li>
+        <li>Internal + external linking</li>
+        <li>48-hour delivery per article</li>
+        <li>Monthly strategy call (30 min)</li>
+        <li>Unlimited revisions</li>
+      </ul>
+      <a href="mailto:hello@aitoolsweekly.com?subject=Growth+Plan+Inquiry" class="btn btn-primary" style="width:100%;text-align:center;display:block;">Get Started →</a>
+    </div>
+
+    <!-- Agency -->
+    <div class="plan-card">
+      <div class="plan-name">Agency</div>
+      <div class="plan-price">$1,197<span>/mo</span></div>
+      <div class="plan-posts">16 blog posts per month</div>
+      <ul class="plan-features">
+        <li>1,500–2,500 words per post</li>
+        <li>Full content calendar management</li>
+        <li>Keyword + competitor research</li>
+        <li>Meta + schema markup</li>
+        <li>24-hour delivery per article</li>
+        <li>Weekly progress reports</li>
+        <li>WordPress/HTML/Google Doc</li>
+        <li>Dedicated account manager</li>
+        <li>Unlimited revisions</li>
+      </ul>
+      <a href="mailto:hello@aitoolsweekly.com?subject=Agency+Plan+Inquiry" class="btn btn-outline" style="width:100%;text-align:center;display:block;">Get Started →</a>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:80px;">
+    <p style="color:var(--text-muted);font-size:15px;">Need a single article first? <a href="mailto:hello@aitoolsweekly.com?subject=Single+Article+Request" style="color:var(--primary);font-weight:600;">$99 for a one-time test post →</a></p>
+  </div>
+
+  <!-- Process -->
+  <div class="process">
+    <h2>How It Works</h2>
+    <p style="color:var(--text-muted);font-size:17px;max-width:540px;margin:0 auto;">From brief to delivered article in 3 simple steps.</p>
+    <div class="process-grid">
+      <div class="process-step">
+        <div class="num">1</div>
+        <h4>You Share Your Brief</h4>
+        <p>Tell us your niche, target keywords, and audience. Or we research all of it for you.</p>
+      </div>
+      <div class="process-step">
+        <div class="num">2</div>
+        <h4>We Write & Optimize</h4>
+        <p>AI-assisted drafting + human editing. Every article is SEO-optimized before delivery.</p>
+      </div>
+      <div class="process-step">
+        <div class="num">3</div>
+        <h4>Review & Revise</h4>
+        <p>We send you the draft. Request any changes — unlimited revisions until you're happy.</p>
+      </div>
+      <div class="process-step">
+        <div class="num">4</div>
+        <h4>Publish & Rank</h4>
+        <p>Publish on your site. Our SEO-optimized articles typically rank within 6–10 weeks.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Testimonials -->
+<div class="testimonials">
+  <div class="testimonials-inner">
+    <h2>What Clients Say</h2>
+    <div class="testimonial-grid">
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"We went from 0 to 12,000 monthly organic visitors in 6 months. The ROI on content investment has been insane. Quality is consistently high and they always deliver on time."</p>
+        <div class="t-author">
+          <div class="t-avatar">M</div>
+          <div>
+            <p class="t-name">Marcus T.</p>
+            <p class="t-role">Founder, SaaS startup</p>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"We use the Agency plan for 3 of our clients. Quality is excellent — we charge our clients $200/post and pay them $75. The margin alone pays for our agency's overhead."</p>
+        <div class="t-author">
+          <div class="t-avatar">S</div>
+          <div>
+            <p class="t-name">Sarah K.</p>
+            <p class="t-role">Digital Marketing Agency Owner</p>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"I was skeptical about AI-assisted content but the quality blew me away. Human-level writing, properly researched, optimized for SEO. My blog traffic doubled in 3 months."</p>
+        <div class="t-author">
+          <div class="t-avatar">J</div>
+          <div>
+            <p class="t-name">James R.</p>
+            <p class="t-role">E-commerce store owner</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="svc-body">
+
+  <!-- CTA block -->
+  <div class="svc-cta">
+    <h2>Ready to Start Ranking?</h2>
+    <p>Start with a single $99 test article and see the quality yourself. No commitment, no contract.</p>
+    <div class="svc-cta-btns">
+      <a href="mailto:hello@aitoolsweekly.com?subject=Content+Service+Inquiry" class="btn" style="background:white;color:#4f46e5;font-weight:700;font-size:16px;padding:14px 32px;">
+        📧 Email Us Now
+      </a>
+      <a href="#pricing" class="btn" style="background:rgba(255,255,255,0.15);color:white;border:2px solid rgba(255,255,255,0.3);font-size:16px;padding:14px 32px;">
+        See All Packages →
+      </a>
+    </div>
+    <p style="margin:20px 0 0;font-size:14px;color:rgba(255,255,255,0.6);">Average response time: under 2 hours · Free sample outline for new clients</p>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <h4>Is the content AI-written or human-written?</h4>
+      <p>It's AI-assisted and human-edited. We use AI tools to draft at speed, then a human editor reviews, improves, and adds expertise before delivery. The result is indistinguishable from fully human-written content — and often better, because we can iterate faster.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Will the content rank on Google?</h4>
+      <p>We can't guarantee rankings (no one can), but every article is keyword-targeted, properly structured, and includes on-page SEO elements. Our clients typically see first rankings within 6–10 weeks of publishing.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Do you offer white-label for agencies?</h4>
+      <p>Yes. We work with agencies on a white-label basis. You receive articles with no AI Tools Weekly branding. Wholesale rates available for orders of 10+ articles/month.</p>
+    </div>
+    <div class="faq-item">
+      <h4>How do I provide topics and keywords?</h4>
+      <p>You can provide your own keywords and topics, or let us handle research entirely. We'll build a content calendar for your niche and get your approval before writing starts.</p>
+    </div>
+    <div class="faq-item">
+      <h4>What if I'm not happy with an article?</h4>
+      <p>Unlimited revisions. We keep editing until you're satisfied. In practice, most articles need 0–1 rounds of revisions.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Can I cancel anytime?</h4>
+      <p>Yes. Month-to-month billing, no contracts. Cancel before your next billing date and you won't be charged again.</p>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

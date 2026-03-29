@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+.Python
+venv/
+env/
+.env
+*.env
+
+# Database (don't commit — Railway uses persistent storage)
+data.db
+data/clients.json
+data/youtube_scripts/
+data/client_*/
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Claude
+.claude/
+
+# Old nested directory
+ai-tools-empire/

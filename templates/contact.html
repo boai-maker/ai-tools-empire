@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Contact Us | {{ site_name }}{% endblock %}
+{% block meta_description %}Get in touch with the AI Tools Weekly team. Advertising inquiries, corrections, tool submissions, and general questions.{% endblock %}
+
+{% block extra_head %}
+<style>
+  .contact-header { background:linear-gradient(135deg,#0f172a,#1e1b4b); padding:60px 20px; text-align:center; }
+  .contact-header h1 { color:white; font-size:40px; font-weight:800; margin:0 0 12px; }
+  .contact-header p { color:#94a3b8; font-size:17px; }
+  .contact-body { max-width:760px; margin:60px auto; padding:0 20px; }
+  .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:32px; margin-bottom:48px; }
+  .contact-card { background:white; border:1px solid var(--border); border-radius:12px; padding:24px; text-align:center; }
+  .contact-card .icon { font-size:36px; margin-bottom:12px; }
+  .contact-card h3 { font-size:16px; font-weight:700; margin:0 0 8px; }
+  .contact-card p { color:var(--text-muted); font-size:14px; margin:0 0 14px; line-height:1.6; }
+  .contact-form { background:white; border:1px solid var(--border); border-radius:14px; padding:32px; }
+  .contact-form h2 { font-size:24px; font-weight:800; margin:0 0 24px; }
+  .form-group { margin-bottom:20px; }
+  .form-group label { display:block; font-size:14px; font-weight:600; color:var(--text); margin-bottom:6px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width:100%; padding:12px 16px; border:2px solid var(--border); border-radius:10px;
+    font-size:15px; font-family:inherit; outline:none; box-sizing:border-box;
+    transition:border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--primary); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:640px) { .contact-grid{grid-template-columns:1fr} .form-row{grid-template-columns:1fr} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contact-header">
+  <h1>📬 Contact Us</h1>
+  <p>We read every message. Usually reply within 24 hours.</p>
+</div>
+
+<div class="contact-body">
+  <div class="contact-grid">
+    <div class="contact-card">
+      <div class="icon">📣</div>
+      <h3>Advertising & Sponsorships</h3>
+      <p>Reach 12,000+ AI-focused readers. Newsletter spots and site placements available.</p>
+      <a href="mailto:ads@aitoolsweekly.com" class="btn btn-primary btn-sm">Get Media Kit</a>
+    </div>
+    <div class="contact-card">
+      <div class="icon">🔧</div>
+      <h3>Submit Your Tool</h3>
+      <p>Want your AI tool reviewed? We accept submissions and review everything fairly.</p>
+      <a href="mailto:tools@aitoolsweekly.com" class="btn btn-outline btn-sm">Submit Tool</a>
+    </div>
+    <div class="contact-card">
+      <div class="icon">✏️</div>
+      <h3>Corrections</h3>
+      <p>Spotted outdated info or a factual error? We update articles within 24 hours.</p>
+      <a href="mailto:corrections@aitoolsweekly.com" class="btn btn-outline btn-sm">Report Error</a>
+    </div>
+    <div class="contact-card">
+      <div class="icon">💬</div>
+      <h3>General Questions</h3>
+      <p>Anything else — partnerships, guest posts, press inquiries.</p>
+      <a href="mailto:hello@aitoolsweekly.com" class="btn btn-outline btn-sm">Say Hello</a>
+    </div>
+  </div>
+
+  <div class="contact-form">
+    <h2>Send Us a Message</h2>
+    <form onsubmit="handleContact(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" id="c-name" placeholder="Jane Smith" required>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="c-email" placeholder="jane@company.com" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Subject</label>
+        <select id="c-subject">
+          <option value="general">General Question</option>
+          <option value="advertising">Advertising / Sponsorship</option>
+          <option value="tool-submission">Submit a Tool for Review</option>
+          <option value="correction">Report a Correction</option>
+          <option value="partnership">Partnership / Collaboration</option>
+          <option value="press">Press Inquiry</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea id="c-message" rows="5" placeholder="Tell us what's on your mind..." required style="resize:vertical;"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;font-size:16px;" id="c-btn">
+        Send Message →
+      </button>
+      <div id="c-result" style="margin-top:14px;font-size:14px;font-weight:600;text-align:center;"></div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function handleContact(e) {
+  e.preventDefault();
+  const btn = document.getElementById('c-btn');
+  const result = document.getElementById('c-result');
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  // Simulate send (wire to a real email API like Resend in production)
+  await new Promise(r => setTimeout(r, 800));
+  btn.textContent = '✓ Message Sent!';
+  btn.style.background = 'var(--success)';
+  result.style.color = 'var(--success)';
+  result.textContent = "Thanks! We'll get back to you within 24 hours.";
+  document.getElementById('c-message').value = '';
+}
+</script>
+{% endblock %}

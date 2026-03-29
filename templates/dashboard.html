@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | {{ site_name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .dash-header { background: linear-gradient(135deg,#0f172a,#1e1b4b); padding: 40px 20px; }
+  .dash-header h1 { color: white; font-size: 32px; font-weight: 800; margin: 0 0 6px; }
+  .dash-header p { color: #94a3b8; margin: 0; }
+
+  .dash-body { max-width: 1100px; margin: 32px auto; padding: 0 20px; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .kpi-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+  .kpi-card .kpi-val { font-size: 36px; font-weight: 900; color: var(--primary); }
+  .kpi-card .kpi-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; font-weight: 600; }
+  .kpi-card .kpi-trend { font-size: 12px; color: var(--success); margin-top: 6px; }
+
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .dash-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .dash-card h3 { font-size: 16px; font-weight: 700; margin: 0 0 16px; color: var(--text); border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+
+  .revenue-estimate { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #86efac; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+  .revenue-estimate h2 { color: #15803d; margin: 0 0 16px; font-size: 22px; }
+  .rev-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #d1fae5; font-size: 14px; }
+  .rev-row:last-child { border-bottom: none; font-weight: 800; font-size: 16px; color: #15803d; }
+
+  .action-btn { display: inline-block; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; margin: 4px; transition: all 0.2s; }
+  .action-btn.purple { background: var(--primary); color: white; }
+  .action-btn.green { background: var(--success); color: white; }
+  .action-btn.orange { background: #f59e0b; color: white; }
+  .action-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.data-table th { text-align: left; padding: 8px 12px; background: #f8fafc; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  table.data-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  table.data-table tr:last-child td { border-bottom: none; }
+
+  .status-badge { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 12px; font-weight: 700; }
+  .status-badge.green { background: #f0fdf4; color: #15803d; }
+  .status-badge.yellow { background: #fefce8; color: #713f12; }
+
+  @media (max-width: 768px) { .dash-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-header">
+  <div style="max-width:1100px;margin:0 auto;padding:0 20px;">
+    <h1>⚡ Admin Dashboard</h1>
+    <p>Real-time business metrics — {{ site_name }}</p>
+  </div>
+</div>
+
+<div class="dash-body">
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-val">{{ stats.total_views | default(0) }}</div>
+      <div class="kpi-label">Total Page Views</div>
+      <div class="kpi-trend">↑ {{ stats.today_views | default(0) }} today</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">{{ stats.subscribers | default(0) }}</div>
+      <div class="kpi-label">Email Subscribers</div>
+      <div class="kpi-trend">Growing weekly</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">{{ stats.total_clicks | default(0) }}</div>
+      <div class="kpi-label">Affiliate Clicks</div>
+      <div class="kpi-trend">Conversion driving</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">{{ stats.articles | default(0) }}</div>
+      <div class="kpi-label">Published Articles</div>
+      <div class="kpi-trend">+3 per day auto</div>
+    </div>
+    <div class="kpi-card" style="border-color:#86efac;background:linear-gradient(135deg,#f0fdf4,#dcfce7);">
+      <div class="kpi-val" style="color:#15803d;">${{ "%.0f"|format(revenue.total_weekly) }}</div>
+      <div class="kpi-label" style="color:#166534;">Est. Weekly Revenue</div>
+      <div class="kpi-trend" style="color:#16a34a;">Target: $600–$1,000/wk</div>
+    </div>
+  </div>
+
+  <!-- Revenue Estimate -->
+  <div class="revenue-estimate">
+    <h2>💰 Projected Monthly Revenue</h2>
+    {% for name, amount in revenue.breakdown.items() %}
+    <div class="rev-row">
+      <span>{{ name }}</span>
+      <span>${{ amount }}/mo</span>
+    </div>
+    {% endfor %}
+    <div class="rev-row">
+      <span>TOTAL MONTHLY</span>
+      <span>${{ revenue.total_monthly }}</span>
+    </div>
+    <p style="color:#166534;font-size:13px;margin:12px 0 0;">
+      ⚠️ Estimates based on moderate traffic (5,000 visitors/mo). Scales linearly with content and subscribers.
+      At 20,000 visitors/mo you're at $600–$1,000/week.
+    </p>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="dash-card" style="margin-bottom:24px;">
+    <h3>🚀 Quick Actions — Content Engine</h3>
+    <button onclick="triggerAction('/admin/generate-content')" class="action-btn purple">⚡ Generate 3 Articles Now</button>
+    <button onclick="triggerAction('/admin/send-welcomes')" class="action-btn green">📧 Send Welcome Emails</button>
+    <button onclick="triggerAction('/admin/send-newsletter')" class="action-btn orange">📬 Send Newsletter Now</button>
+    <button onclick="triggerAction('/admin/post-tweet')" class="action-btn purple">🐦 Post Tweet Now</button>
+    <div id="action-result" style="margin-top:12px;font-size:14px;color:var(--success);font-weight:600;"></div>
+  </div>
+
+  <!-- Fast Income Channels -->
+  <div class="dash-card" style="margin-bottom:24px;border-color:#86efac;background:linear-gradient(135deg,#f0fdf4,#fff);">
+    <h3 style="color:#15803d;">💰 Fast Income Channels</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 8px;font-weight:600;">SERVICES SITE</p>
+        <a href="/services" target="_blank" class="action-btn green" style="display:inline-block;text-decoration:none;">🖊️ View Services Page</a>
+        <button onclick="fetchGuide('/admin/service-summary')" class="action-btn" style="background:#f0fdf4;color:#15803d;border:1px solid #86efac;">📊 Service MRR</button>
+      </div>
+      <div>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 8px;font-weight:600;">YOUTUBE ENGINE</p>
+        <button onclick="triggerAction('/admin/export-youtube-scripts')" class="action-btn orange">🎬 Export Video Scripts</button>
+      </div>
+      <div>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 8px;font-weight:600;">REDDIT BLITZ</p>
+        <button onclick="fetchGuide('/admin/reddit-guide')" class="action-btn purple">📱 Load Reddit Guide</button>
+      </div>
+      <div>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 8px;font-weight:600;">INCOME STREAMS</p>
+        <div style="font-size:13px;color:#475569;line-height:1.8;">
+          ✅ Affiliate commissions<br>
+          ✅ Writing service (Upwork/Fiverr)<br>
+          ✅ Reddit traffic → affiliate<br>
+          ✅ YouTube affiliate links
+        </div>
+      </div>
+    </div>
+    <div id="guide-result" style="margin-top:16px;font-size:13px;color:#475569;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px;display:none;white-space:pre-wrap;max-height:200px;overflow-y:auto;font-family:monospace;"></div>
+  </div>
+
+  <div class="dash-grid">
+    <!-- Top Clicked Tools -->
+    <div class="dash-card">
+      <h3>🔗 Top Affiliate Clicks</h3>
+      {% if stats.top_clicked %}
+      <table class="data-table">
+        <thead><tr><th>Tool</th><th>Clicks</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for item in stats.top_clicked %}
+          <tr>
+            <td><strong>{{ item.tool_key|title }}</strong></td>
+            <td><span class="status-badge green">{{ item.cnt }}</span></td>
+            <td><a href="{{ affiliate_programs[item.tool_key].signup_url if item.tool_key in affiliate_programs else '#' }}" target="_blank" style="font-size:12px;color:var(--primary);">View →</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p style="color:var(--text-muted);font-size:14px;">No clicks yet — drive traffic to start earning.</p>
+      {% endif %}
+    </div>
+
+    <!-- Recent Articles -->
+    <div class="dash-card">
+      <h3>📝 Recent Articles</h3>
+      {% if recent_articles %}
+      <table class="data-table">
+        <thead><tr><th>Title</th><th>Views</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for article in recent_articles %}
+          <tr>
+            <td><a href="/articles/{{ article.slug }}" style="font-size:13px;color:var(--text);">{{ article.title[:45] }}...</a></td>
+            <td>{{ article.views }}</td>
+            <td><span class="status-badge green">{{ article.status }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p style="color:var(--text-muted);font-size:14px;">No articles yet. Click "Generate Articles" above!</p>
+      {% endif %}
+    </div>
+
+    <!-- Automation Status -->
+    <div class="dash-card">
+      <h3>🤖 Automation Status</h3>
+      <table class="data-table">
+        <tbody>
+          <tr><td>Content Generation</td><td><span class="status-badge green">✓ Daily 7AM</span></td></tr>
+          <tr><td>Welcome Emails</td><td><span class="status-badge green">✓ Daily 9AM</span></td></tr>
+          <tr><td>Weekly Newsletter</td><td><span class="status-badge green">✓ Every Monday</span></td></tr>
+          <tr><td>Social Posts</td><td><span class="status-badge green">✓ 4x Daily</span></td></tr>
+          <tr><td>Affiliate Tracking</td><td><span class="status-badge green">✓ Live</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Revenue Roadmap -->
+    <div class="dash-card">
+      <h3>📈 Revenue Milestones</h3>
+      <table class="data-table">
+        <thead><tr><th>Milestone</th><th>Weekly Rev</th><th>Key Driver</th></tr></thead>
+        <tbody>
+          <tr><td>Month 1</td><td>$50–$150</td><td>First 500 visitors</td></tr>
+          <tr><td>Month 2</td><td>$150–$300</td><td>SEO starts ranking</td></tr>
+          <tr><td>Month 3</td><td>$300–$600</td><td>Email list building</td></tr>
+          <tr><td>Month 4–5</td><td>$600–$1,000</td><td>20k visitors/mo</td></tr>
+          <tr><td>Month 6+</td><td>$1,000–$3,000</td><td>Compounding growth</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Pass admin password with every action request
+const ADMIN_PWD = new URLSearchParams(window.location.search).get('pwd') || '';
+
+async function triggerAction(endpoint) {
+  const el = document.getElementById('action-result');
+  el.style.color = '#64748b';
+  el.textContent = '⏳ Running...';
+  const btn = event.target;
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+
+  try {
+    const r = await fetch(`${endpoint}?pwd=${encodeURIComponent(ADMIN_PWD)}`, {method:'POST'});
+    const d = await r.json();
+    if (r.ok) {
+      el.style.color = '#10b981';
+      el.textContent = '✅ ' + (d.message || 'Done!');
+      showToast('✅ ' + (d.message || 'Done!'));
+      // Refresh stats after 1.5s
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      el.style.color = '#ef4444';
+      el.textContent = '❌ ' + (d.message || d.detail || 'Error');
+    }
+  } catch(e) {
+    el.style.color = '#ef4444';
+    el.textContent = '❌ Network error — is the server running?';
+  } finally {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.textContent = origText;
+  }
+}
+
+// Fetch a guide/data endpoint and display result in guide-result div
+async function fetchGuide(endpoint) {
+  const el = document.getElementById('guide-result');
+  el.style.display = 'block';
+  el.textContent = '⏳ Loading...';
+  try {
+    const r = await fetch(`${endpoint}?pwd=${encodeURIComponent(ADMIN_PWD)}`);
+    const d = await r.json();
+    el.textContent = JSON.stringify(d, null, 2);
+    showToast('✅ ' + (d.message || 'Loaded'));
+  } catch(e) {
+    el.textContent = '❌ Error loading data';
+  }
+}
+
+// Auto-refresh stats every 30 seconds
+setInterval(() => {
+  // Only refresh the KPI numbers, not full page
+  fetch(window.location.href)
+    .then(r => r.text())
+    .then(html => {
+      const parser = new DOMParser();
+      const newDoc = parser.parseFromString(html, 'text/html');
+      // Update KPI values
+      document.querySelectorAll('.kpi-val').forEach((el, i) => {
+        const newEl = newDoc.querySelectorAll('.kpi-val')[i];
+        if (newEl && newEl.textContent !== el.textContent) {
+          el.textContent = newEl.textContent;
+          el.style.animation = 'none';
+          el.offsetHeight; // trigger reflow
+          el.style.animation = 'pulse 0.5s ease';
+        }
+      });
+    });
+}, 30000);
+</script>
+<style>
+@keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05);color:#10b981} 100%{transform:scale(1)} }
+</style>
+{% endblock %}
