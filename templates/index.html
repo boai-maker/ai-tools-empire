@@ -4,6 +4,20 @@
 {% block meta_description %}Honest reviews of the best AI tools in 2026. Compare Jasper AI, Surfer SEO, ElevenLabs, Copy.ai, and more. Updated weekly.{% endblock %}
 
 {% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "{{ site_name }}",
+  "url": "{{ site_url }}",
+  "description": "{{ site_tagline }}",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "{{ site_url }}/articles?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
 <style>
   /* ─── Hero ─── */
   .hero {
