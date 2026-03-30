@@ -526,8 +526,10 @@ async def health_check():
         stats = get_analytics_summary()
         return JSONResponse({
             "status": "ok",
-            "articles": stats.get("total_articles", 0),
-            "subscribers": stats.get("total_subscribers", 0),
+            "articles": stats.get("articles", 0),
+            "subscribers": stats.get("subscribers", 0),
+            "total_views": stats.get("total_views", 0),
+            "total_clicks": stats.get("total_clicks", 0),
             "uptime": "operational",
         })
     except Exception as e:
