@@ -136,6 +136,7 @@ async def articles_page(request: Request, category: str = None, q: str = None):
     return templates.TemplateResponse("articles.html", ctx)
 
 
+@app.get("/blog/{slug}", response_class=HTMLResponse)
 @app.get("/articles/{slug}", response_class=HTMLResponse)
 async def article_page(request: Request, slug: str):
     article = get_article_by_slug(slug)
