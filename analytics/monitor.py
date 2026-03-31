@@ -138,7 +138,7 @@ def send_alert_email(http_report: dict, db_report: dict):
 <p>Check your server immediately.</p>
 """
         resend.Emails.send({
-            "from": "alerts@aitoolsweekly.com",
+            "from": "alerts@aitoolsempire.co",
             "to": ALERT_EMAIL,
             "subject": f"⚠️ AI Tools Empire — {len(failed)} health check(s) failing",
             "html": body,

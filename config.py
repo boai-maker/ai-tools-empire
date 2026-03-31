@@ -1,14 +1,16 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# Always load .env from the project root, regardless of cwd
+load_dotenv(Path(__file__).parent / ".env", override=True)
 
 class Config:
     # Core
     ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
     RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
-    FROM_EMAIL = os.getenv("FROM_EMAIL", "newsletter@aitoolsweekly.com")
-    FROM_NAME = os.getenv("FROM_NAME", "AI Tools Weekly")
+    FROM_EMAIL = os.getenv("FROM_EMAIL", "newsletter@aitoolsempire.co")
+    FROM_NAME = os.getenv("FROM_NAME", "AI Tools Empire")
 
     # Twitter
     TWITTER_API_KEY = os.getenv("TWITTER_API_KEY", "")
@@ -17,7 +19,7 @@ class Config:
     TWITTER_ACCESS_SECRET = os.getenv("TWITTER_ACCESS_SECRET", "")
 
     # Site
-    SITE_NAME = os.getenv("SITE_NAME", "AI Tools Weekly")
+    SITE_NAME = os.getenv("SITE_NAME", "AI Tools Empire")
     SITE_URL = os.getenv("SITE_URL", "http://localhost:8000")
     SITE_TAGLINE = os.getenv("SITE_TAGLINE", "The #1 Resource for AI Tool Reviews, Comparisons & Deals")
 

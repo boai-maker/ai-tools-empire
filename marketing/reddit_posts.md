@@ -11,13 +11,13 @@ Post these in the subreddits listed. Space them out (1-2 per day max per subredd
 **Body:**
 Hey everyone, wanted to share what I've been building.
 
-I got tired of the endless "top 10 AI tools" listicles that are clearly just padding affiliate links. So I built AI Tools Weekly — honest, tested comparisons of tools that actually matter for running a business.
+I got tired of the endless "top 10 AI tools" listicles that are clearly just padding affiliate links. So I built AI Tools Empire — honest, tested comparisons of tools that actually matter for running a business.
 
 The stack: FastAPI backend, automated content pipeline (3 new articles/week), affiliate revenue from tools I actually use.
 
 What surprised me: comparison articles ("X vs Y") convert way better than generic reviews. People searching "Jasper vs Copy.ai" are already in buying mode.
 
-Site: https://widely-dependent-sales-boards.trycloudflare.com
+Site: https://aitoolsempire.co
 
 ---
 
@@ -36,7 +36,7 @@ Why comparisons dominate: the searcher already knows they want a tool — they j
 
 Content structure that converts: quick verdict → pricing table → feature breakdown → who each is best for → FAQ.
 
-Full site: https://widely-dependent-sales-boards.trycloudflare.com
+Full site: https://aitoolsempire.co
 
 ---
 
@@ -53,7 +53,7 @@ Flopped: generic beginner content (terrible conversion), trying to cover too man
 
 Current: 39 published articles, growing organic traffic, recurring affiliate commissions.
 
-Site: https://widely-dependent-sales-boards.trycloudflare.com
+Site: https://aitoolsempire.co
 
 ---
 
@@ -70,7 +70,7 @@ Gemini: best for research synthesis, Google ecosystem.
 
 For content marketing: Claude for long-form, ChatGPT for ideation, Gemini for research. Using all three in sequence is the power move.
 
-Full breakdown: https://widely-dependent-sales-boards.trycloudflare.com/articles/chatgpt-vs-claude-vs-gemini-which-ai-is-best-for-business-i
+Full breakdown: https://aitoolsempire.co/articles/chatgpt-vs-claude-vs-gemini-which-ai-is-best-for-business-i
 
 ---
 

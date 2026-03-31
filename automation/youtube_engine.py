@@ -204,7 +204,7 @@ def generate_channel_strategy() -> str:
 ╚══════════════════════════════════════════════════════════════╝
 
 CHANNEL SETUP (Day 1, 2 hours):
-  □ Channel name: "AI Tools Weekly" or "{config.SITE_NAME}"
+  □ Channel name: "AI Tools Empire" or "{config.SITE_NAME}"
   □ Banner: Use Canva free template
   □ Profile pic: Simple logo (Canva)
   □ Channel description: paste below

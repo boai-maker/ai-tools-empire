@@ -53,7 +53,7 @@ python3 -m automation.youtube_engine
 # Exports 12 video scripts to data/youtube_scripts/
 ```
 
-1. Create YouTube channel: "AI Tools Weekly" or your site name
+1. Create YouTube channel: "AI Tools Empire" or your site name
 2. Your first video: **"I Tried 10 AI Writing Tools — Honest Ranking"**
    - Record your screen showing each tool for 1–2 minutes
    - No camera needed — screen share + mic

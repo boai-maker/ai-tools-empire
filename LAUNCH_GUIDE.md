@@ -137,7 +137,7 @@ Start command: python3 -m automation.scheduler
 ## Step 5: Connect Your Domain ($12/year)
 
 1. Buy domain at Namecheap or Cloudflare
-   - Recommended names: `aitoolsweekly.com`, `bestaitools.io`, `aireviewer.co`
+   - Recommended names: `aitoolsempire.co`, `bestaitools.io`, `aireviewer.co`
 2. Point DNS to your server
 3. Enable SSL (free via Let's Encrypt)
 4. Update `SITE_URL` in `.env`

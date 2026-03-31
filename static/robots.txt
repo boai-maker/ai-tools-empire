@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /track/
 
-Sitemap: https://aitoolsweekly.com/sitemap.xml
+Sitemap: https://aitoolsempire.co/sitemap.xml

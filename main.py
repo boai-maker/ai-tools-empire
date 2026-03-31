@@ -2,6 +2,7 @@
 AI Tools Empire — Main FastAPI Server
 Serves the website, handles subscriptions, affiliate tracking, and admin actions.
 """
+import os
 import hashlib
 import logging
 from datetime import datetime
@@ -237,7 +238,7 @@ async def privacy_page(request: Request):
       <h2 style="color:#1e293b;font-size:22px;font-weight:700;margin:32px 0 12px;">Cookies</h2>
       <p>We use minimal cookies for site functionality only. No advertising or tracking cookies are set by us directly.</p>
       <h2 style="color:#1e293b;font-size:22px;font-weight:700;margin:32px 0 12px;">Your Rights</h2>
-      <p>You may unsubscribe from our newsletter at any time using the unsubscribe link in any email. To request data deletion, contact us at <a href="mailto:privacy@aitoolsweekly.com" style="color:#6366f1;">privacy@aitoolsweekly.com</a>.</p>
+      <p>You may unsubscribe from our newsletter at any time using the unsubscribe link in any email. To request data deletion, contact us at <a href="mailto:privacy@aitoolsempire.co" style="color:#6366f1;">privacy@aitoolsempire.co</a>.</p>
     </div>
     """
     return templates.TemplateResponse("simple_page.html", ctx)
@@ -258,7 +259,7 @@ async def disclaimer_page(request: Request):
       <div style="background:#fefce8;border:1px solid #fde047;border-radius:10px;padding:20px;margin:32px 0;">
         <p style="color:#713f12;margin:0;font-size:14px;"><strong>💡 Our commitment:</strong> If we recommend a tool, it's because we think it's genuinely good — not because it pays us more. Our highest-earning affiliate program would never get a positive review it doesn't deserve.</p>
       </div>
-      <p>For questions about our affiliate relationships, contact <a href="mailto:hello@aitoolsweekly.com" style="color:#6366f1;">hello@aitoolsweekly.com</a>.</p>
+      <p>For questions about our affiliate relationships, contact <a href="mailto:hello@aitoolsempire.co" style="color:#6366f1;">hello@aitoolsempire.co</a>.</p>
     </div>
     """
     return templates.TemplateResponse("simple_page.html", ctx)
@@ -550,4 +551,5 @@ Sitemap: {site_url}/sitemap.xml""".format(site_url=config.SITE_URL)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)

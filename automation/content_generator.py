@@ -86,36 +86,41 @@ TARGET KEYWORDS: {keywords}
 OTHER TOOLS TO MENTION (include 2-3 naturally):
 {other_tools_str}
 
+CRITICAL LENGTH REQUIREMENT: The article MUST be 2000-2500 words. Google does NOT rank thin content.
+Each H2 section must have 3-5 detailed paragraphs (150-200 words each). Do not summarize or bullet-only.
+Write full, detailed, helpful prose like a professional journalist would. Thin content gets penalized.
+
 REQUIREMENTS:
 1. Write in HTML format (use <h2>, <h3>, <p>, <ul>, <li>, <strong>, <a> tags)
-2. Length: 1500-2500 words
+2. Length: MINIMUM 2000 words — count carefully, each H2 section needs 150-250 words of paragraphs
 3. Structure:
-   - Opening hook (2-3 sentences that grab attention)
-   - Quick answer/TL;DR box (use <div class="tldr-box">)
-   - Main content with H2 sections
-   - Comparison tables where relevant (use <table class="comparison-table">)
-   - Pros/cons lists
-   - Pricing section
-   - Final verdict with clear recommendation
+   - Opening hook (2-3 engaging sentences + context paragraph 100+ words)
+   - Quick TL;DR summary box (use <div class="tldr-box">) with 5-6 bullet points
+   - 6-8 H2 sections, each with 2-4 paragraphs of detailed analysis
+   - Comparison table where relevant (use <table class="comparison-table">)
+   - Dedicated Pricing section with real price data
+   - Pros/cons section for each tool
+   - Who should use it / Use cases section
+   - Final verdict with clear recommendation paragraph (150+ words)
    - CTA button at end (use <a href="URL" class="cta-button">)
 4. SEO optimization:
-   - Include target keywords naturally (2-3% density)
-   - Use semantic keywords throughout
-   - Internal linking placeholder: <a href="/articles/RELATED_SLUG">RELATED TEXT</a>
-5. Tone: Expert, helpful, honest — like a trusted advisor. Not salesy.
-6. Include specific data, statistics, and real examples
-7. IMPORTANT: Make affiliate links feel natural — embedded in context, not pushy
+   - Include target keywords naturally in intro, one H2 heading, and conclusion
+   - Use semantic/LSI keywords throughout
+   - Internal linking: <a href="/articles/RELATED_SLUG">RELATED TEXT</a> (2-3 links)
+5. Tone: Expert, helpful, honest — like a trusted advisor who has used the tool. Not salesy.
+6. Include specific features, use cases, limitations, and real-world examples
+7. Make affiliate links feel natural — embedded in useful context ("you can try it at...")
 
 Return a JSON object with EXACTLY this structure:
 {{
-  "title": "exact article title",
-  "meta_description": "155-char SEO meta description with keyword",
+  "title": "exact article title (50-60 chars, include primary keyword)",
+  "meta_description": "150-160 char SEO meta description with primary keyword in first 60 chars",
   "category": "writing|seo|video|audio|productivity",
   "tags": "comma,separated,tags",
-  "content": "full HTML article content here"
+  "content": "full HTML article content — MUST BE 2000+ WORDS"
 }}
 
-Return ONLY the JSON, no markdown, no explanation."""
+Return ONLY the JSON object. No markdown fences, no explanation, no preamble."""
 
 def generate_article(topic: str, keywords: str, tool_focus: str = None) -> Optional[dict]:
     """Generate a single SEO article using Claude."""
@@ -125,8 +130,8 @@ def generate_article(topic: str, keywords: str, tool_focus: str = None) -> Optio
 
     try:
         message = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=8192,
+            model="claude-sonnet-4-5",
+            max_tokens=16000,
             messages=[{"role": "user", "content": prompt}]
         )
 
