@@ -29,3 +29,4 @@ logs/
 
 # Old nested directory
 ai-tools-empire/
+.env

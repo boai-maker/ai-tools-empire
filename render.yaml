@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: aitoolsempire
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SITE_URL
+        value: https://aitoolsempire.co
+      - key: SITE_NAME
+        value: AI Tools Empire
+      - key: ADMIN_PASSWORD
+        value: empire2024secure
+      - key: ANTHROPIC_API_KEY
+        sync: false
+    plan: free
+    region: oregon
