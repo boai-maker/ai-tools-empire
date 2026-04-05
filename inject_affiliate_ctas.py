@@ -12,12 +12,12 @@ from bs4 import BeautifulSoup
 
 # Category → best affiliate tool mapping
 CATEGORY_TOOL_MAP = {
-    "writing":      ["jasper", "copyai", "writesonic"],
+    "writing":      ["jasper", "copyai", "writesonic", "grammarly", "quillbot"],
     "seo":          ["semrush", "surfer"],
-    "video":        ["pictory", "invideo", "descript"],
+    "video":        ["pictory", "invideo", "synthesia", "runway", "descript"],
     "audio":        ["elevenlabs", "murf", "speechify"],
-    "productivity": ["getresponse", "hubspot", "fireflies"],
-    "image":        ["jasper"],  # fallback
+    "productivity": ["getresponse", "hubspot", "kit", "fireflies", "canva", "webflow"],
+    "image":        ["canva", "jasper"],  # fallback
 }
 
 # Tool display info for CTA boxes
@@ -36,6 +36,13 @@ TOOL_INFO = {
     "getresponse": {"name": "GetResponse",  "badge": "40% Recurring", "desc": "AI email marketing + automation — 40% recurring for 12 months", "btn": "Try GetResponse Free →", "color": "#0ea5e9"},
     "hubspot":     {"name": "HubSpot",      "badge": "Top CRM",       "desc": "AI-powered CRM — 30% recurring for 12 months", "btn": "Try HubSpot Free →", "color": "#ff7a59"},
     "fireflies":   {"name": "Fireflies AI", "badge": "Best Meeting AI","desc": "AI meeting notetaker — 30% recurring commission", "btn": "Try Fireflies Free →", "color": "#14b8a6"},
+    "grammarly":   {"name": "Grammarly",    "badge": "30M+ Users",    "desc": "AI grammar, clarity, and tone checker used by 30M+ writers", "btn": "Try Grammarly Free →", "color": "#15a356"},
+    "canva":       {"name": "Canva",        "badge": "100M+ Users",   "desc": "AI-powered design for everyone — graphics, videos, presentations", "btn": "Try Canva Free →", "color": "#00c4cc"},
+    "synthesia":   {"name": "Synthesia",    "badge": "Best AI Avatar", "desc": "Create AI avatar videos without filming — 20% recurring commission", "btn": "Try Synthesia →", "color": "#6d28d9"},
+    "runway":      {"name": "Runway ML",    "badge": "Best AI Video Gen","desc": "Generate and edit video with AI — text-to-video, inpainting, and more", "btn": "Try Runway Free →", "color": "#1d4ed8"},
+    "quillbot":    {"name": "QuillBot",     "badge": "Best Paraphraser","desc": "AI paraphrasing, grammar, and writing enhancement — 20% recurring", "btn": "Try QuillBot Free →", "color": "#2563eb"},
+    "kit":         {"name": "Kit",          "badge": "50% For 2 Years","desc": "Email marketing for creators — 50% recurring commission for 24 months", "btn": "Try Kit Free →", "color": "#f97316"},
+    "webflow":     {"name": "Webflow",      "badge": "50% Commission", "desc": "No-code website builder with CMS — 50% recurring for 12 months", "btn": "Try Webflow →", "color": "#4353ff"},
 }
 
 # Featured tool overrides for specific article IDs (articles without featured_tool)

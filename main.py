@@ -373,6 +373,10 @@ async def affiliate_redirect(tool_key: str, request: Request):
         "quillbot":    f"https://quillbot.com/?utm_source=affiliate&ref={os.getenv('QUILLBOT_AFFILIATE_ID', '')}",
         "kit":         f"https://kit.com/?ref={os.getenv('KIT_AFFILIATE_ID', '')}",
         "webflow":     f"https://webflow.com/r/{os.getenv('WEBFLOW_AFFILIATE_ID', '')}",
+        "grammarly":   f"https://www.grammarly.com/referrals/{os.getenv('GRAMMARLY_AFFILIATE_ID', '')}",
+        "canva":       f"https://partner.canva.com/{os.getenv('CANVA_AFFILIATE_ID', '')}",
+        "synthesia":   f"https://www.synthesia.io/?via={os.getenv('SYNTHESIA_AFFILIATE_ID', '')}",
+        "runway":      f"https://runwayml.com/?ref={os.getenv('RUNWAY_AFFILIATE_ID', '')}",
     }
     # Fallback: clean product URL without affiliate ID if ID not set
     fallback_map = {
@@ -384,7 +388,9 @@ async def affiliate_redirect(tool_key: str, request: Request):
         "fireflies": "https://fireflies.ai/", "speechify": "https://speechify.com/",
         "getresponse": "https://www.getresponse.com/", "hubspot": "https://www.hubspot.com/",
         "quillbot": "https://quillbot.com/", "kit": "https://kit.com/",
-        "webflow": "https://webflow.com/",
+        "webflow": "https://webflow.com/", "grammarly": "https://www.grammarly.com/",
+        "canva": "https://www.canva.com/", "synthesia": "https://www.synthesia.io/",
+        "runway": "https://runwayml.com/",
     }
     if tool_key not in aff_url_map:
         raise HTTPException(status_code=404, detail=f"Unknown tool: {tool_key}")

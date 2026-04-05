@@ -54,6 +54,10 @@ class Config:
         "quillbot": os.getenv("QUILLBOT_AFFILIATE_ID", ""),
         "kit": os.getenv("KIT_AFFILIATE_ID", ""),
         "webflow": os.getenv("WEBFLOW_AFFILIATE_ID", ""),
+        "grammarly": os.getenv("GRAMMARLY_AFFILIATE_ID", ""),
+        "canva": os.getenv("CANVA_AFFILIATE_ID", ""),
+        "synthesia": os.getenv("SYNTHESIA_AFFILIATE_ID", ""),
+        "runway": os.getenv("RUNWAY_AFFILIATE_ID", ""),
     }
 
 config = Config()
