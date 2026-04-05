@@ -138,9 +138,35 @@ async def articles_page(request: Request, category: str = None, q: str = None):
     return templates.TemplateResponse("articles.html", ctx)
 
 
-@app.get("/blog/{slug}", response_class=HTMLResponse)
+@app.get("/blog/{slug}")
+async def blog_redirect(slug: str):
+    """Redirect /blog/ URLs to canonical /articles/ to prevent duplicate indexing."""
+    return RedirectResponse(url=f"/articles/{slug}", status_code=301)
+
+# ── SEO 301 redirects for duplicate/retired slugs ─────────────────────────────
+SLUG_REDIRECTS = {
+    # Jasper vs Copy.ai duplicates → canonical
+    "jasper-ai-vs-copy-ai-which-is-better-in-2026": "jasper-ai-vs-copyai-2026-comparison",
+    "jasper-ai-vs-copyai-which-is-better-in-2026": "jasper-ai-vs-copyai-2026-comparison",
+    "jasper-ai-vs-copyai-2026-full-comparison": "jasper-ai-vs-copyai-2026-comparison",
+    "copy-ai-vs-jasper-ai-2026-which-ai-writer-should-you-buy": "jasper-ai-vs-copyai-2026-comparison",
+    # ElevenLabs review duplicates → canonical
+    "elevenlabs-review-2026-the-best-ai-voice-cloning-tool": "elevenlabs-review-2026",
+    "elevenlabs-review-2026-best-ai-voice": "elevenlabs-review-2026",
+    # SEO / writing tools duplicates → canonical
+    "best-ai-seo-tools-in-2026-rank-faster-with-less-work": "best-ai-seo-tools-2026-ranked",
+    "surfer-seo-review-2026-worth-the-price": "surfer-seo-review-2026",
+    "writesonic-review-2026-ai-writer": "writesonic-review-2026",
+    "copy-ai-review-2026-honest-verdict": "copyai-review-2026",
+    "best-ai-writing-tools-2026": "best-ai-writing-tools-comparison-2026",
+}
+
 @app.get("/articles/{slug}", response_class=HTMLResponse)
 async def article_page(request: Request, slug: str):
+    # 301 redirect retired duplicate slugs to their canonical
+    if slug in SLUG_REDIRECTS:
+        return RedirectResponse(url=f"/articles/{SLUG_REDIRECTS[slug]}", status_code=301)
+
     article = get_article_by_slug(slug)
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
@@ -460,7 +486,37 @@ def _best_of_page(request: Request, category: str, h1: str, intro: str, meta_des
     <a href="/contact" style="color:#6366f1;font-weight:700;text-decoration:none;">Ask us →</a> &nbsp;·&nbsp;
     <a href="/how-we-test" style="color:#6366f1;font-weight:700;text-decoration:none;">How we test →</a>
   </div>
+
+  <!-- Newsletter CTA -->
+  <div style="margin-top:32px;background:linear-gradient(135deg,#312e81,#1e1b4b);border-radius:14px;padding:36px;text-align:center;">
+    <h3 style="color:white;font-size:22px;font-weight:800;margin:0 0 8px;">Get Weekly AI Tool Updates</h3>
+    <p style="color:#a5b4fc;margin:0 0 20px;font-size:15px;">Tool reviews, pricing changes, and comparisons — every Monday. Free.</p>
+    <form style="display:flex;gap:10px;max-width:400px;margin:0 auto;" onsubmit="handleSubscribeBestOf(event)">
+      <input type="email" id="bestof-email" placeholder="your@email.com" required
+             style="flex:1;padding:12px 16px;border-radius:8px;border:none;font-size:14px;">
+      <button type="submit"
+              style="background:#6366f1;color:white;border:none;padding:12px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;">
+        Subscribe
+      </button>
+    </form>
+    <p style="color:#6366f1;font-size:12px;margin:12px 0 0;">No spam. Unsubscribe anytime.</p>
+  </div>
 </div>
+<script>
+async function handleSubscribeBestOf(e) {{
+  e.preventDefault();
+  const btn = e.target.querySelector('button');
+  btn.textContent = '...'; btn.disabled = true;
+  const res = await fetch('/subscribe', {{
+    method: 'POST', headers: {{'Content-Type': 'application/json'}},
+    body: JSON.stringify({{email: document.getElementById('bestof-email').value}})
+  }});
+  const data = await res.json();
+  btn.textContent = data.success ? '✓ Subscribed!' : 'Try again';
+  btn.style.background = data.success ? '#10b981' : '#ef4444';
+  if (!data.success) btn.disabled = false;
+}}
+</script>
 """
     return templates.TemplateResponse("simple_page.html", ctx)
 
@@ -756,20 +812,36 @@ async def rss_feed():
 # ── Sitemap ───────────────────────────────────────────────────────────────────
 @app.get("/sitemap.xml")
 async def sitemap():
+    from fastapi.responses import Response
+    today = datetime.now().strftime("%Y-%m-%d")
     articles = get_articles(limit=999)
     urls = [
-        f"<url><loc>{config.SITE_URL}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>",
-        f"<url><loc>{config.SITE_URL}/tools</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>",
-        f"<url><loc>{config.SITE_URL}/articles</loc><changefreq>daily</changefreq><priority>0.9</priority></url>",
+        f"<url><loc>{config.SITE_URL}/</loc><lastmod>{today}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>",
+        f"<url><loc>{config.SITE_URL}/tools</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
+        f"<url><loc>{config.SITE_URL}/articles</loc><lastmod>{today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>",
+        # Best-of hub pages
+        f"<url><loc>{config.SITE_URL}/best-ai-writing-tools</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
+        f"<url><loc>{config.SITE_URL}/best-ai-seo-tools</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
+        f"<url><loc>{config.SITE_URL}/best-ai-video-tools</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
+        f"<url><loc>{config.SITE_URL}/best-ai-voice-tools</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
+        f"<url><loc>{config.SITE_URL}/best-ai-productivity-tools</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
+        # Static pages
+        f"<url><loc>{config.SITE_URL}/about</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>",
+        f"<url><loc>{config.SITE_URL}/how-we-test</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>",
+        f"<url><loc>{config.SITE_URL}/services</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>",
+        f"<url><loc>{config.SITE_URL}/contact</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>",
     ]
     for a in articles:
-        urls.append(f"<url><loc>{config.SITE_URL}/articles/{a['slug']}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>")
+        lastmod = (a.get("updated_at") or a.get("created_at") or today)[:10]
+        urls.append(
+            f"<url><loc>{config.SITE_URL}/articles/{a['slug']}</loc>"
+            f"<lastmod>{lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>"
+        )
 
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 {''.join(urls)}
 </urlset>"""
-    from fastapi.responses import Response
     return Response(content=xml, media_type="application/xml")
 
 
