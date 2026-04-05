@@ -20,6 +20,29 @@
   <meta name="twitter:title" content="{% block tw_title %}{{ site_name }}{% endblock %}" />
   <meta name="twitter:description" content="{% block tw_desc %}{{ site_tagline }}{% endblock %}" />
 
+  <!-- Google Search Console verification -->
+  {% if google_verification %}
+  <meta name="google-site-verification" content="{{ google_verification }}" />
+  {% endif %}
+  {% block google_verification %}{% endblock %}
+  <meta name='impact-site-verification' value='927f3964-1095-45ec-8f2f-61480d9fbd31' />
+
+  <!-- Schema.org WebSite structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "{{ site_name }}",
+    "url": "{{ site_url }}",
+    "description": "{{ site_tagline }}",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "{{ site_url }}/articles?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
