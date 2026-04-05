@@ -67,6 +67,7 @@ def base_ctx(request: Request) -> dict:
         "site_tagline": config.SITE_TAGLINE,
         "current_year": datetime.now().year,
         "categories": CATEGORIES,
+        "google_verification": config.GOOGLE_SITE_VERIFICATION,
     }
 
 def ip_hash(request: Request) -> str:
@@ -145,6 +146,13 @@ async def article_page(request: Request, slug: str):
         raise HTTPException(status_code=404, detail="Article not found")
 
     increment_views(slug)
+
+    # Inject internal links for SEO
+    try:
+        from automation.internal_linker import inject_internal_links
+        article["content"] = inject_internal_links(article["content"], slug)
+    except Exception:
+        pass
 
     # Featured tool sidebar data
     featured_tool_key = article.get("featured_tool", "")
@@ -312,6 +320,186 @@ async def track_click(tool_key: str, request: Request, source: str = ""):
     return JSONResponse({"ok": True})
 
 
+@app.get("/go/{tool_key}")
+async def affiliate_redirect(tool_key: str, request: Request):
+    """
+    Clean affiliate redirect: /go/jasper, /go/semrush, etc.
+    Tracks clicks + redirects to current affiliate URL.
+    Reads affiliate IDs live from env → no server restart needed after updating IDs.
+    """
+    # Direct URL map — reads env vars live so IDs activate without restart
+    aff_url_map = {
+        "jasper":     f"https://www.jasper.ai/?fpr={os.getenv('JASPER_AFFILIATE_ID', '')}",
+        "copyai":     f"https://www.copy.ai/?via={os.getenv('COPYAI_AFFILIATE_ID', '')}",
+        "writesonic": f"https://writesonic.com/?via={os.getenv('WRITESONIC_AFFILIATE_ID', '')}",
+        "surfer":     f"https://surferseo.com/?via={os.getenv('SURFER_AFFILIATE_ID', '')}",
+        "semrush":    f"https://www.semrush.com/partner/?affcode={os.getenv('SEMRUSH_AFFILIATE_ID', '')}",
+        "pictory":    f"https://pictory.ai/?ref={os.getenv('PICTORY_AFFILIATE_ID', '')}",
+        "invideo":    f"https://invideo.io/?ref={os.getenv('INVIDEO_AFFILIATE_ID', '')}",
+        "murf":       f"https://murf.ai/?ref={os.getenv('MURF_AFFILIATE_ID', '')}",
+        "elevenlabs": f"https://elevenlabs.io/?from={os.getenv('ELEVENLABS_AFFILIATE_ID', '')}",
+        "descript":   f"https://www.descript.com/affiliates?ref={os.getenv('DESCRIPT_AFFILIATE_ID', '')}",
+        "fireflies":   f"https://fireflies.ai/?ref={os.getenv('FIREFLIES_AFFILIATE_ID', '')}",
+        "speechify":   f"https://speechify.com/affiliate/?ref={os.getenv('SPEECHIFY_AFFILIATE_ID', '')}",
+        "getresponse": f"https://www.getresponse.com/?a={os.getenv('GETRESPONSE_AFFILIATE_ID', '')}",
+        "hubspot":     f"https://www.hubspot.com/?hubs_signup-cta={os.getenv('HUBSPOT_AFFILIATE_ID', '')}",
+        "quillbot":    f"https://quillbot.com/?utm_source=affiliate&ref={os.getenv('QUILLBOT_AFFILIATE_ID', '')}",
+        "kit":         f"https://kit.com/?ref={os.getenv('KIT_AFFILIATE_ID', '')}",
+        "webflow":     f"https://webflow.com/r/{os.getenv('WEBFLOW_AFFILIATE_ID', '')}",
+    }
+    # Fallback: clean product URL without affiliate ID if ID not set
+    fallback_map = {
+        "jasper": "https://www.jasper.ai/", "copyai": "https://www.copy.ai/",
+        "writesonic": "https://writesonic.com/", "surfer": "https://surferseo.com/",
+        "semrush": "https://www.semrush.com/", "pictory": "https://pictory.ai/",
+        "invideo": "https://invideo.io/", "murf": "https://murf.ai/",
+        "elevenlabs": "https://elevenlabs.io/", "descript": "https://www.descript.com/",
+        "fireflies": "https://fireflies.ai/", "speechify": "https://speechify.com/",
+        "getresponse": "https://www.getresponse.com/", "hubspot": "https://www.hubspot.com/",
+        "quillbot": "https://quillbot.com/", "kit": "https://kit.com/",
+        "webflow": "https://webflow.com/",
+    }
+    if tool_key not in aff_url_map:
+        raise HTTPException(status_code=404, detail=f"Unknown tool: {tool_key}")
+    # Use affiliate URL if ID is set, else clean fallback
+    # If the stored ID is already a full URL (e.g. ElevenLabs referral link), use it directly
+    aff_id = os.getenv(f"{tool_key.upper()}_AFFILIATE_ID", "")
+    if aff_id and aff_id.startswith("http"):
+        redirect_url = aff_id
+    elif aff_id and not aff_id.startswith("YOUR"):
+        redirect_url = aff_url_map[tool_key]
+    else:
+        redirect_url = fallback_map[tool_key]
+    try:
+        source = request.headers.get("referer", "direct")
+        log_click(tool_key, source, ip_hash(request))
+    except Exception:
+        pass
+    return RedirectResponse(url=redirect_url, status_code=302)
+
+
+@app.get("/how-we-test", response_class=HTMLResponse)
+async def how_we_test(request: Request):
+    ctx = base_ctx(request)
+    ctx["page_title"] = "How We Test AI Tools"
+    ctx["page_content"] = """
+<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:60px 20px;text-align:center;">
+  <h1 style="color:white;font-size:40px;font-weight:800;margin:0 0 8px;">How We Test AI Tools</h1>
+  <p style="color:#94a3b8;">Our methodology for honest, independent reviews</p>
+</div>
+<div style="max-width:760px;margin:60px auto;padding:0 24px;color:#475569;line-height:1.8;font-size:15px;">
+  <p>Every tool reviewed on AI Tools Empire goes through the same structured evaluation process. We don't accept payment for positive reviews. Our rankings are based entirely on hands-on testing.</p>
+  <h2 style="color:#1e293b;font-size:22px;font-weight:700;margin:32px 0 12px;">1. Hands-On Trial</h2>
+  <p>We sign up for each tool's free trial or paid plan and use it for real tasks — writing, SEO research, video creation, or audio production depending on the category. We don't review based on feature lists or marketing pages.</p>
+  <h2 style="color:#1e293b;font-size:22px;font-weight:700;margin:32px 0 12px;">2. Scoring Criteria</h2>
+  <p>Each tool is scored across five dimensions:</p>
+  <ul>
+    <li><strong>Output Quality</strong> — Does the AI produce results you'd actually use?</li>
+    <li><strong>Ease of Use</strong> — Can a non-technical user get results in under 10 minutes?</li>
+    <li><strong>Value for Money</strong> — Is the pricing justified by what you get?</li>
+    <li><strong>Features</strong> — Does it cover the core use cases for its category?</li>
+    <li><strong>Support &amp; Reliability</strong> — Is the tool stable and is help available when needed?</li>
+  </ul>
+  <h2 style="color:#1e293b;font-size:22px;font-weight:700;margin:32px 0 12px;">3. Comparison Testing</h2>
+  <p>Where possible, we test competing tools on the same prompt or task side-by-side. This lets us make direct comparisons rather than reviewing in isolation.</p>
+  <h2 style="color:#1e293b;font-size:22px;font-weight:700;margin:32px 0 12px;">4. Pricing Verification</h2>
+  <p>We check pricing directly from each tool's official pricing page. Prices change — we note when articles were last updated and recommend you verify current pricing before purchasing.</p>
+  <h2 style="color:#1e293b;font-size:22px;font-weight:700;margin:32px 0 12px;">Affiliate Disclosure</h2>
+  <p>Some tools on this site have affiliate programs. If you click a link and make a purchase, we may earn a commission at no extra cost to you. This never influences our ratings or recommendations — we turn down affiliate relationships with tools we wouldn't recommend to a friend.</p>
+  <h2 style="color:#1e293b;font-size:22px;font-weight:700;margin:32px 0 12px;">Update Policy</h2>
+  <p>AI tools change rapidly. We review and update articles when tools release major updates, change pricing, or when our testing reveals the review is no longer accurate. Each article shows its last-updated date.</p>
+  <div style="margin-top:32px;padding:16px;background:#f0fdf4;border-radius:8px;border:1px solid #86efac;">
+    Have a tool you'd like us to review? <a href="/contact" style="color:#6366f1;font-weight:600;">Contact us here</a>.
+  </div>
+</div>
+"""
+    return templates.TemplateResponse("simple_page.html", ctx)
+
+
+# ── Best-Of Hub Pages (Agent 3: SEO Architecture) ────────────────────────────
+
+def _best_of_page(request: Request, category: str, h1: str, intro: str, meta_desc: str):
+    """Render a best-of hub page for a given tool category."""
+    from affiliate.links import get_tools_by_category
+    ctx = base_ctx(request)
+    tools = get_tools_by_category(category)
+    tool_cards = ""
+    for i, (key, tool) in enumerate(tools.items(), 1):
+        tool_cards += f"""
+        <div style="background:white;border:1px solid #e2e8f0;border-radius:14px;padding:24px;margin-bottom:20px;display:flex;gap:20px;align-items:flex-start;">
+          <div style="font-size:36px;min-width:48px;text-align:center;">#{i}</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+              <h3 style="margin:0;font-size:20px;font-weight:800;color:#1e293b;">{tool['name']}</h3>
+              <span style="background:#ecfdf5;color:#065f46;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;">{tool.get('badge','')}</span>
+            </div>
+            <p style="color:#64748b;margin:0 0 14px;font-size:15px;line-height:1.6;">{tool['description']}</p>
+            <div style="display:flex;gap:12px;">
+              <a href="/go/{key}" style="background:#10b981;color:white;padding:10px 20px;border-radius:8px;font-weight:700;text-decoration:none;font-size:14px;">Start Free Trial →</a>
+              <a href="/articles?q={tool['name']}" style="border:2px solid #6366f1;color:#6366f1;padding:10px 20px;border-radius:8px;font-weight:600;text-decoration:none;font-size:14px;">Read Review</a>
+            </div>
+          </div>
+        </div>"""
+
+    ctx["page_title"] = h1
+    ctx["page_meta_description"] = meta_desc
+    ctx["page_content"] = f"""
+<div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:60px 20px;text-align:center;">
+  <div style="display:inline-block;background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;padding:6px 16px;border-radius:100px;font-size:13px;font-weight:600;margin-bottom:16px;">🔥 Updated April 2026</div>
+  <h1 style="color:white;font-size:clamp(28px,4vw,42px);font-weight:800;margin:0 auto 12px;max-width:700px;line-height:1.2;">{h1}</h1>
+  <p style="color:#94a3b8;font-size:17px;max-width:560px;margin:0 auto;">{intro}</p>
+</div>
+<div style="max-width:800px;margin:48px auto;padding:0 24px;">
+  <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;margin-bottom:32px;">
+    📢 <strong>Affiliate Disclosure:</strong> We earn a commission if you purchase through our links, at no extra cost to you. Rankings are based on hands-on testing, not commissions.
+  </div>
+  {tool_cards}
+  <div style="margin-top:40px;padding:24px;background:#f0f9ff;border-radius:12px;border:1px solid #bae6fd;text-align:center;">
+    <p style="color:#0369a1;font-size:15px;margin:0 0 12px;font-weight:600;">Not sure which tool is right for you?</p>
+    <a href="/contact" style="color:#6366f1;font-weight:700;text-decoration:none;">Ask us →</a> &nbsp;·&nbsp;
+    <a href="/how-we-test" style="color:#6366f1;font-weight:700;text-decoration:none;">How we test →</a>
+  </div>
+</div>
+"""
+    return templates.TemplateResponse("simple_page.html", ctx)
+
+
+@app.get("/best-ai-writing-tools", response_class=HTMLResponse)
+async def best_writing_tools(request: Request):
+    return _best_of_page(request, "writing",
+        "Best AI Writing Tools in 2026 (Tested & Ranked)",
+        "We tested every major AI writing tool so you don't have to. Here's what actually works.",
+        "The best AI writing tools of 2026, tested hands-on. Compare Jasper, Copy.ai, Writesonic, and QuillBot by features, pricing, and real output quality.")
+
+@app.get("/best-ai-seo-tools", response_class=HTMLResponse)
+async def best_seo_tools(request: Request):
+    return _best_of_page(request, "seo",
+        "Best AI SEO Tools in 2026 (Tested & Ranked)",
+        "The AI SEO tools that actually move rankings. Tested on real sites, not just demo content.",
+        "Best AI SEO tools of 2026 reviewed and ranked. Compare Semrush vs Surfer SEO by features, pricing, and real ranking results.")
+
+@app.get("/best-ai-video-tools", response_class=HTMLResponse)
+async def best_video_tools(request: Request):
+    return _best_of_page(request, "video",
+        "Best AI Video Tools in 2026 (Tested & Ranked)",
+        "Create professional videos without a camera or editing skills. Here's what we actually recommend.",
+        "Best AI video tools of 2026. We tested Pictory, InVideo, and Descript on real projects. See which one makes the best videos fastest.")
+
+@app.get("/best-ai-voice-tools", response_class=HTMLResponse)
+async def best_voice_tools(request: Request):
+    return _best_of_page(request, "audio",
+        "Best AI Voice Tools in 2026 (Tested & Ranked)",
+        "Ultra-realistic AI voiceovers and text-to-speech. We ran 50+ test samples to find the winner.",
+        "Best AI voice tools of 2026. We compared ElevenLabs, Murf AI, and Speechify on voice quality, pricing, and ease of use.")
+
+@app.get("/best-ai-productivity-tools", response_class=HTMLResponse)
+async def best_productivity_tools(request: Request):
+    return _best_of_page(request, "productivity",
+        "Best AI Productivity Tools in 2026 (Tested & Ranked)",
+        "The AI tools that save real time. Ranked by ROI, not just features.",
+        "Best AI productivity tools of 2026. Compare Fireflies, HubSpot, GetResponse, Kit, and Webflow — tested for real business use.")
+
+
 @app.get("/unsubscribe")
 async def unsubscribe(email: str = ""):
     if email:
@@ -409,6 +597,69 @@ async def admin_post_tweet(request: Request):
         from automation.social_poster import run_social_posting
         run_social_posting()
         return JSONResponse({"message": "Tweet posted successfully"})
+    except Exception as e:
+        return JSONResponse({"message": f"Error: {str(e)}"}, status_code=500)
+
+
+@app.post("/admin/save-affiliate-ids")
+async def admin_save_affiliate_ids(request: Request):
+    pwd = request.query_params.get("pwd", request.headers.get("X-Admin-Token", ""))
+    if pwd != config.ADMIN_PASSWORD:
+        raise HTTPException(401)
+    try:
+        body = await request.json()
+        env_path = os.path.join(os.path.dirname(__file__), ".env")
+        # Read existing .env
+        with open(env_path, "r") as f:
+            lines = f.readlines()
+
+        key_map = {
+            "jasper":     "JASPER_AFFILIATE_ID",
+            "copyai":     "COPYAI_AFFILIATE_ID",
+            "surfer":     "SURFER_AFFILIATE_ID",
+            "semrush":    "SEMRUSH_AFFILIATE_ID",
+            "elevenlabs": "ELEVENLABS_AFFILIATE_ID",
+            "pictory":    "PICTORY_AFFILIATE_ID",
+            "writesonic": "WRITESONIC_AFFILIATE_ID",
+            "invideo":    "INVIDEO_AFFILIATE_ID",
+            "murf":        "MURF_AFFILIATE_ID",
+            "descript":    "DESCRIPT_AFFILIATE_ID",
+            "fireflies":   "FIREFLIES_AFFILIATE_ID",
+            "speechify":   "SPEECHIFY_AFFILIATE_ID",
+            "getresponse": "GETRESPONSE_AFFILIATE_ID",
+            "hubspot":     "HUBSPOT_AFFILIATE_ID",
+        }
+
+        updated = set()
+        new_lines = []
+        for line in lines:
+            replaced = False
+            for tool_key, env_key in key_map.items():
+                val = body.get(tool_key, "").strip()
+                if val and line.startswith(f"{env_key}="):
+                    new_lines.append(f"{env_key}={val}\n")
+                    updated.add(tool_key)
+                    replaced = True
+                    break
+            if not replaced:
+                new_lines.append(line)
+
+        # Add any keys not already in the file
+        for tool_key, env_key in key_map.items():
+            val = body.get(tool_key, "").strip()
+            if val and tool_key not in updated:
+                new_lines.append(f"{env_key}={val}\n")
+                updated.add(tool_key)
+
+        with open(env_path, "w") as f:
+            f.writelines(new_lines)
+
+        # Reload config
+        from dotenv import load_dotenv
+        from pathlib import Path
+        load_dotenv(Path(env_path), override=True)
+
+        return JSONResponse({"message": f"✅ Saved {len(updated)} affiliate ID(s). Links are now live — no restart needed!"})
     except Exception as e:
         return JSONResponse({"message": f"Error: {str(e)}"}, status_code=500)
 

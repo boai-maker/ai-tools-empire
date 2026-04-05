@@ -4,20 +4,6 @@
 {% block meta_description %}Honest reviews of the best AI tools in 2026. Compare Jasper AI, Surfer SEO, ElevenLabs, Copy.ai, and more. Updated weekly.{% endblock %}
 
 {% block extra_head %}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "{{ site_name }}",
-  "url": "{{ site_url }}",
-  "description": "{{ site_tagline }}",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "{{ site_url }}/articles?q={search_term_string}",
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
 <style>
   /* ─── Hero ─── */
   .hero {
@@ -281,11 +267,11 @@
 
 <!-- Hero -->
 <section class="hero">
-  <div class="hero-badge">🔥 Updated March 2026</div>
+  <div class="hero-badge">🔥 Updated April 2026</div>
   <h1>Find the <span>Best AI Tools</span><br>for Your Business</h1>
   <p class="hero-sub">
     Independent reviews, honest comparisons, and the best deals on AI tools.
-    Join 12,000+ professionals who trust us to cut through the hype.
+    We test every tool so you don't waste money on the wrong one.
   </p>
   <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
     <a href="/tools" class="btn btn-primary btn-lg">Browse All Tools →</a>
@@ -294,17 +280,17 @@
   <div class="hero-stats">
     <div class="hero-stat"><div class="num">{{ subscriber_count }}+</div><div class="label">Newsletter Subscribers</div></div>
     <div class="hero-stat"><div class="num">{{ article_count }}+</div><div class="label">In-Depth Reviews</div></div>
-    <div class="hero-stat"><div class="num">50+</div><div class="label">AI Tools Tested</div></div>
-    <div class="hero-stat"><div class="num">4.9★</div><div class="label">Average Rating</div></div>
+    <div class="hero-stat"><div class="num">17+</div><div class="label">AI Tools Reviewed</div></div>
+    <div class="hero-stat"><div class="num">100%</div><div class="label">Independent</div></div>
   </div>
 </section>
 
 <!-- Social Proof Bar -->
 <div class="proof-bar">
   <div class="proof-bar-inner">
-    <div class="proof-item"><div class="proof-num">2.1M+</div><div class="proof-label">Monthly Readers</div></div>
-    <div class="proof-item"><div class="proof-num">$2.4M</div><div class="proof-label">Saved by Our Readers</div></div>
-    <div class="proof-item"><div class="proof-num">100%</div><div class="proof-label">Independent Reviews</div></div>
+    <div class="proof-item"><div class="proof-num">{{ article_count }}+</div><div class="proof-label">Tool Reviews Published</div></div>
+    <div class="proof-item"><div class="proof-num">17</div><div class="proof-label">AI Tools Tested</div></div>
+    <div class="proof-item"><div class="proof-num">100%</div><div class="proof-label">Independent — No Paid Placement</div></div>
     <div class="proof-item"><div class="proof-num">Weekly</div><div class="proof-label">Newsletter Updates</div></div>
   </div>
 </div>
@@ -357,11 +343,11 @@
         <h3>{{ tool.name }}</h3>
         <p>{{ tool.description }}</p>
         <div class="tool-meta">
-          <div class="tool-meta-item">💰 <strong>{{ tool.commission }}</strong></div>
-          <div class="tool-meta-item">🍪 <strong>{{ tool.cookie_days }}-day cookie</strong></div>
+          <div class="tool-meta-item">✅ <strong>Free trial available</strong></div>
+          <div class="tool-meta-item">🏷 <strong>{{ tool.category|title }}</strong></div>
         </div>
         <div style="display:flex;gap:10px;">
-          <a href="{{ tool.signup_url }}" class="btn btn-success btn-sm affiliate-link" data-tool="{{ key }}" target="_blank" rel="noopener">Try Free →</a>
+          <a href="/go/{{ key }}" class="btn btn-success btn-sm affiliate-link" data-tool="{{ key }}" target="_blank" rel="noopener">Start Free Trial →</a>
           <a href="/articles?q={{ tool.name|urlencode }}" class="btn btn-outline btn-sm">Read Review</a>
         </div>
       </div>
@@ -369,7 +355,7 @@
     </div>
 
     <div style="text-align:center;margin-top:36px;">
-      <a href="/tools" class="btn btn-outline">View All 50+ AI Tools →</a>
+      <a href="/tools" class="btn btn-outline">View All AI Tools →</a>
     </div>
   </div>
 </section>
@@ -436,18 +422,39 @@
   </div>
 </section>
 
+<!-- Methodology Strip (Agent 2 / Trust) -->
+<section style="background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:40px 20px;">
+  <div class="container" style="text-align:center;">
+    <p style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin:0 0 16px;">How We Review</p>
+    <div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);">
+        <span style="font-size:20px;">🧪</span><span><strong>Hands-on tested</strong> — not based on marketing pages</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);">
+        <span style="font-size:20px;">🚫</span><span><strong>No paid placements</strong> — rankings are earned</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);">
+        <span style="font-size:20px;">🔄</span><span><strong>Regularly updated</strong> as tools change</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);">
+        <span style="font-size:20px;">📋</span><span><a href="/how-we-test" style="color:var(--primary);font-weight:600;">See our full methodology →</a></span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Subscribe Section -->
 <section class="subscribe-section" id="subscribe">
-  <h2>📬 Join 12,000+ AI Enthusiasts</h2>
-  <p>Get the best AI tool reviews and exclusive deals every Monday. Free forever.</p>
+  <h2>📬 Stop Paying for the Wrong AI Tools</h2>
+  <p>Every Monday: one curated roundup of the best AI tools, honest comparisons, and deals our readers actually use. Free.</p>
   <form class="subscribe-form" onsubmit="handleSubscribe(event)">
     <input type="email" id="sub-email" placeholder="Enter your email..." required />
-    <button type="submit" class="btn btn-primary">Subscribe Free</button>
+    <button type="submit" class="btn btn-primary">Get the Newsletter</button>
   </form>
   <div class="subscribe-perks">
-    <span class="subscribe-perk">Weekly AI tool roundups</span>
+    <span class="subscribe-perk">Best tool picks each week</span>
     <span class="subscribe-perk">Exclusive discount codes</span>
-    <span class="subscribe-perk">No spam, ever</span>
+    <span class="subscribe-perk">No spam, unsubscribe anytime</span>
   </div>
 </section>
 

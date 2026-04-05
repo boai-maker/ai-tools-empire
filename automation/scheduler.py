@@ -11,6 +11,11 @@ Schedule:
   - 6:00 PM  → Post promo tweet
   - Monday 9AM → Send weekly newsletter
 """
+import sys
+import os
+# Ensure project root is on path so automation.* imports work
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import schedule
 import time
 import logging

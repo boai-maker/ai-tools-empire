@@ -55,6 +55,41 @@ SEED_TOPICS = [
     {"topic": "Best Jasper AI Alternatives in 2026 (Cheaper Options)", "keywords": "jasper ai alternatives, alternatives to jasper ai, cheaper ai writing tools", "tool_focus": "copyai", "priority": 8},
     {"topic": "Best Semrush Alternatives in 2026 (Free & Paid)", "keywords": "semrush alternatives, free semrush alternative, cheap seo tools", "tool_focus": "surfer", "priority": 8},
     {"topic": "Best Grammarly Alternatives for 2026", "keywords": "grammarly alternatives, best grammar checker, ai grammar tools", "tool_focus": "jasper", "priority": 7},
+    # New high-traffic comparisons
+    {"topic": "ChatGPT Plus vs Claude Pro: Which AI Is Worth $20/Month?", "keywords": "chatgpt plus vs claude pro, best ai subscription 2026", "tool_focus": None, "priority": 9},
+    {"topic": "Canva AI vs Adobe Firefly: Best AI Design Tool in 2026?", "keywords": "canva ai vs adobe firefly, best ai design tool 2026", "tool_focus": None, "priority": 8},
+    {"topic": "Jasper AI vs Writesonic: Which Writes Better Content?", "keywords": "jasper vs writesonic 2026, best ai writer comparison", "tool_focus": "jasper", "priority": 8},
+    {"topic": "Otter.ai vs Fireflies.ai: Best AI Meeting Tool in 2026?", "keywords": "otter ai vs fireflies ai, best meeting transcription tool", "tool_focus": "fireflies", "priority": 8},
+    {"topic": "Midjourney vs Stable Diffusion: Best AI Art Generator?", "keywords": "midjourney vs stable diffusion, best ai art generator 2026", "tool_focus": None, "priority": 8},
+    {"topic": "Claude AI vs ChatGPT: Which is Better for Business in 2026?", "keywords": "claude vs chatgpt, claude ai review, best ai chatbot 2026", "tool_focus": None, "priority": 9},
+    {"topic": "Ahrefs vs Moz: Which SEO Tool Is Worth It in 2026?", "keywords": "ahrefs vs moz, best seo tool 2026, ahrefs moz comparison", "tool_focus": "semrush", "priority": 8},
+    {"topic": "HubSpot vs ActiveCampaign: Best AI Marketing Tool?", "keywords": "hubspot vs activecampaign, best email marketing platform 2026", "tool_focus": None, "priority": 7},
+    # New reviews
+    {"topic": "Perplexity AI Review 2026: The Google Killer?", "keywords": "perplexity ai review, perplexity vs google, best ai search engine", "tool_focus": None, "priority": 8},
+    {"topic": "Notion AI Review 2026: Is It Worth the Upgrade?", "keywords": "notion ai review 2026, notion ai features, notion ai pricing", "tool_focus": None, "priority": 7},
+    {"topic": "Otter.ai Review 2026: Best AI Meeting Transcription?", "keywords": "otter ai review 2026, otter ai pricing, otter ai features", "tool_focus": "fireflies", "priority": 7},
+    {"topic": "Canva AI Review 2026: Is Magic Studio Worth It?", "keywords": "canva ai review, canva magic studio, canva ai features 2026", "tool_focus": None, "priority": 7},
+    {"topic": "HeyGen Review 2026: Best AI Video Avatar Tool?", "keywords": "heygen review, heygen pricing, heygen ai video", "tool_focus": "synthesia", "priority": 7},
+    {"topic": "Loom AI Review 2026: Best AI Video Messaging Tool?", "keywords": "loom ai review, loom pricing, loom ai features", "tool_focus": None, "priority": 6},
+    # New listicles
+    {"topic": "10 Best AI Tools for Social Media Marketing in 2026", "keywords": "best ai tools for social media, ai social media marketing 2026", "tool_focus": "jasper", "priority": 8},
+    {"topic": "7 Best AI Chatbots for Customer Service in 2026", "keywords": "best ai chatbots for customer service, ai customer support tools", "tool_focus": None, "priority": 7},
+    {"topic": "Best Free AI Tools in 2026 (No Credit Card Required)", "keywords": "best free ai tools 2026, free ai software, no cost ai tools", "tool_focus": None, "priority": 9},
+    {"topic": "10 Best AI Tools for Students in 2026 (Free & Paid)", "keywords": "best ai tools for students, ai study tools 2026", "tool_focus": None, "priority": 8},
+    {"topic": "Best AI Tools for Real Estate Agents in 2026", "keywords": "ai tools for real estate, best real estate ai software 2026", "tool_focus": None, "priority": 7},
+    {"topic": "Best AI Writing Tools for Bloggers in 2026 (Ranked)", "keywords": "best ai writing tools for bloggers, ai blogging tools 2026", "tool_focus": "jasper", "priority": 8},
+    {"topic": "5 Best AI Tools for YouTube Creators in 2026", "keywords": "best ai tools for youtube, ai youtube tools 2026", "tool_focus": "pictory", "priority": 8},
+    # How-to money guides (high intent)
+    {"topic": "How to Make Money with AI in 2026 (7 Proven Methods)", "keywords": "how to make money with ai 2026, ai income ideas, earn money ai", "tool_focus": "jasper", "priority": 9},
+    {"topic": "How to Start an AI Affiliate Marketing Business in 2026", "keywords": "ai affiliate marketing 2026, how to start affiliate marketing ai", "tool_focus": "jasper", "priority": 9},
+    {"topic": "How to Use Claude AI for Business: Complete Guide 2026", "keywords": "how to use claude ai for business, claude ai business guide", "tool_focus": None, "priority": 8},
+    {"topic": "How to Write SEO Content with AI Tools (Step-by-Step)", "keywords": "how to write seo content with ai, ai seo writing guide", "tool_focus": "surfer", "priority": 8},
+    {"topic": "How to Build a Passive Income Blog with AI in 2026", "keywords": "passive income blog with ai, ai blog income 2026", "tool_focus": "jasper", "priority": 8},
+    # Pricing deep-dives
+    {"topic": "ElevenLabs Pricing 2026: Which Plan Is Right for You?", "keywords": "elevenlabs pricing, elevenlabs plans, elevenlabs cost 2026", "tool_focus": "elevenlabs", "priority": 8},
+    {"topic": "Surfer SEO Pricing 2026: Is It Worth the Cost?", "keywords": "surfer seo pricing 2026, surfer seo cost, surfer seo plans", "tool_focus": "surfer", "priority": 8},
+    {"topic": "Pictory AI Pricing 2026: Free vs Paid Plans Compared", "keywords": "pictory ai pricing, pictory plans, pictory ai cost", "tool_focus": "pictory", "priority": 7},
+    {"topic": "Writesonic Pricing 2026: Best Plan for Your Budget?", "keywords": "writesonic pricing 2026, writesonic plans, writesonic cost", "tool_focus": "writesonic", "priority": 7},
 ]
 
 def build_article_prompt(topic: str, keywords: str, tool_focus: str = None) -> str:
@@ -130,7 +165,7 @@ def generate_article(topic: str, keywords: str, tool_focus: str = None) -> Optio
 
     try:
         message = client.messages.create(
-            model="claude-sonnet-4-5",
+            model="claude-sonnet-4-6",
             max_tokens=16000,
             messages=[{"role": "user", "content": prompt}]
         )
@@ -139,8 +174,33 @@ def generate_article(topic: str, keywords: str, tool_focus: str = None) -> Optio
         # Clean up any markdown code blocks
         raw = re.sub(r'^```json\s*', '', raw)
         raw = re.sub(r'\s*```$', '', raw)
+        raw = raw.strip()
 
-        data = json.loads(raw)
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            # Fallback: extract fields via regex for robustly escaped HTML content
+            def extract_field(text, field):
+                # Match "field": "value" where value may contain escaped chars
+                pattern = rf'"{field}"\s*:\s*"((?:[^"\\]|\\.)*)\"'
+                m = re.search(pattern, text, re.DOTALL)
+                return m.group(1) if m else None
+
+            # For content field, use a broader match between first "content": " and last closing
+            content_match = re.search(r'"content"\s*:\s*"(.*)"(?:\s*[,}])', raw, re.DOTALL)
+            if not content_match:
+                log.error(f"Could not extract content for '{topic}'")
+                return None
+
+            title = extract_field(raw, "title") or topic
+            meta = extract_field(raw, "meta_description") or f"Read our review of {topic}"
+            category = extract_field(raw, "category") or "writing"
+            tags = extract_field(raw, "tags") or ""
+            content_raw = content_match.group(1)
+            # Unescape JSON string escapes
+            content_raw = content_raw.replace('\\"', '"').replace('\\n', '\n').replace('\\t', '\t').replace('\\\\', '\\')
+            data = {"title": title, "meta_description": meta, "content": content_raw, "category": category, "tags": tags}
+
         slug = slugify(data["title"])[:80]
 
         return {
@@ -198,6 +258,24 @@ def run_content_generation(count: int = 3):
             )
             if saved:
                 mark_queue_item_done(queued["id"])
+                # Inject affiliate CTAs into the new article
+                try:
+                    import sys, os
+                    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                    from inject_affiliate_ctas import inject_ctas_into_content, CATEGORY_TOOL_MAP
+                    primary = article["featured_tool"] or (CATEGORY_TOOL_MAP.get(article["category"], ["jasper"])[0])
+                    cat_tools = CATEGORY_TOOL_MAP.get(article["category"], ["jasper"])
+                    secondary = next((t for t in cat_tools if t != primary), None)
+                    new_content = inject_ctas_into_content(article["content"], primary, secondary)
+                    if new_content != article["content"]:
+                        from database.db import get_conn
+                        conn = get_conn()
+                        conn.execute("UPDATE articles SET content=? WHERE slug=?", (new_content, article["slug"]))
+                        conn.commit()
+                        conn.close()
+                        log.info(f"CTAs injected into: {article['title']}")
+                except Exception as cta_err:
+                    log.warning(f"CTA injection failed: {cta_err}")
                 log.info(f"Published: {article['title']}")
                 generated += 1
             else:

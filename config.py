@@ -27,6 +27,9 @@ class Config:
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
 
+    # SEO
+    GOOGLE_SITE_VERIFICATION = os.getenv("GOOGLE_SITE_VERIFICATION", "")
+
     # Content generation schedule
     ARTICLES_PER_DAY = 3
     NEWSLETTER_DAY = "monday"  # Day to send weekly newsletter
@@ -45,6 +48,12 @@ class Config:
         "elevenlabs": os.getenv("ELEVENLABS_AFFILIATE_ID", "YOURELEVENLABSID"),
         "descript": os.getenv("DESCRIPT_AFFILIATE_ID", "YOURDESCRIPTID"),
         "fireflies": os.getenv("FIREFLIES_AFFILIATE_ID", "YOURFIREFLIESID"),
+        "speechify": os.getenv("SPEECHIFY_AFFILIATE_ID", "YOURSPEECHIFYID"),
+        "getresponse": os.getenv("GETRESPONSE_AFFILIATE_ID", "YOURGETRESPONSEID"),
+        "hubspot": os.getenv("HUBSPOT_AFFILIATE_ID", "YOURHUBSPOTID"),
+        "quillbot": os.getenv("QUILLBOT_AFFILIATE_ID", ""),
+        "kit": os.getenv("KIT_AFFILIATE_ID", ""),
+        "webflow": os.getenv("WEBFLOW_AFFILIATE_ID", ""),
     }
 
 config = Config()

@@ -15,7 +15,7 @@
   "headline": "{{ article.title }}",
   "description": "{{ article.meta_description }}",
   "datePublished": "{{ article.created_at[:10] if article.created_at else '' }}",
-  "dateModified": "{{ article.created_at[:10] if article.created_at else '' }}",
+  "dateModified": "{{ (article.updated_at or article.created_at)[:10] if (article.updated_at or article.created_at) else '' }}",
   "author": {
     "@type": "Organization",
     "name": "{{ site_name }}",
@@ -29,7 +29,20 @@
   "mainEntityOfPage": {
     "@type": "WebPage",
     "@id": "{{ site_url }}/articles/{{ article.slug }}"
-  }
+  },
+  "wordCount": {{ article.content | striptags | wordcount if article.content else 0 }}
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "{{ site_url }}/"},
+    {"@type": "ListItem", "position": 2, "name": "Articles", "item": "{{ site_url }}/articles"},
+    {"@type": "ListItem", "position": 3, "name": "{{ article.category|title }}", "item": "{{ site_url }}/articles?category={{ article.category }}"},
+    {"@type": "ListItem", "position": 4, "name": "{{ article.title }}", "item": "{{ site_url }}/articles/{{ article.slug }}"}
+  ]
 }
 </script>
 <style>
@@ -161,7 +174,7 @@
       <!-- Newsletter CTA -->
       <div style="background:linear-gradient(135deg,#312e81,#1e1b4b);border-radius:14px;padding:32px;text-align:center;margin:32px 0;">
         <h3 style="color:white;margin:0 0 8px;font-size:22px;">📬 Get Weekly AI Tool Deals</h3>
-        <p style="color:#a5b4fc;margin:0 0 20px;">Join 12,000+ readers getting the best AI tool reviews every Monday.</p>
+        <p style="color:#a5b4fc;margin:0 0 20px;">Get the best AI tool deals and reviews — free every Monday.</p>
         <form style="display:flex;gap:10px;max-width:380px;margin:0 auto;" onsubmit="handleSubscribeInline(event)">
           <input type="email" id="inline-email" placeholder="your@email.com" required style="flex:1;padding:12px 16px;border-radius:8px;border:none;font-size:14px;">
           <button type="submit" class="btn btn-primary" style="white-space:nowrap;">Subscribe</button>
@@ -202,9 +215,9 @@
           <div style="font-weight:800;font-size:18px;color:#15803d;">{{ featured_tool_data.name }}</div>
           <div style="color:#64748b;font-size:13px;margin:6px 0 12px;">{{ featured_tool_data.description }}</div>
           <div style="background:#dcfce7;border-radius:6px;padding:8px;margin-bottom:14px;font-size:13px;color:#166534;">
-            💰 Commission: <strong>{{ featured_tool_data.commission }}</strong>
+            ✅ Free trial · No credit card required
           </div>
-          <a href="{{ featured_tool_data.signup_url }}" class="btn btn-success affiliate-link" data-tool="{{ article.featured_tool }}" target="_blank" rel="noopener" style="width:100%;display:block;text-align:center;">
+          <a href="/go/{{ article.featured_tool }}" class="btn btn-success affiliate-link" data-tool="{{ article.featured_tool }}" target="_blank" rel="noopener" style="width:100%;display:block;text-align:center;">
             Try {{ featured_tool_data.name }} Free →
           </a>
           <div style="font-size:11px;color:#94a3b8;margin-top:8px;">Free trial · No credit card required</div>
@@ -218,9 +231,9 @@
         {% for key, tool in sidebar_tools.items() %}
         <div class="sidebar-tool">
           <div class="tool-name">{{ tool.name }}</div>
-          <div class="tool-commission">{{ tool.commission }}</div>
+          <div class="tool-commission">✅ Free trial available</div>
           <div class="tool-desc">{{ tool.description[:70] }}...</div>
-          <a href="{{ tool.signup_url }}" class="btn btn-primary btn-sm affiliate-link" data-tool="{{ key }}" target="_blank" rel="noopener">Try Free →</a>
+          <a href="/go/{{ key }}" class="btn btn-primary btn-sm affiliate-link" data-tool="{{ key }}" target="_blank" rel="noopener">Try Free →</a>
         </div>
         {% endfor %}
       </div>
@@ -240,6 +253,43 @@
 
 {% endblock %}
 
+<!-- Sticky Bottom CTA Bar -->
+{% if article.featured_tool and featured_tool_data %}
+<div id="sticky-cta" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:999;background:linear-gradient(90deg,#1e1b4b,#312e81);border-top:2px solid #4f46e5;padding:12px 24px;box-shadow:0 -4px 20px rgba(0,0,0,0.3);">
+  <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">⭐</span>
+      <div>
+        <div style="color:white;font-weight:700;font-size:15px;">{{ featured_tool_data.name }} — Recommended in this article</div>
+        <div style="color:#a5b4fc;font-size:12px;">Free trial available · No credit card required</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="/go/{{ article.featured_tool }}" class="affiliate-link" data-tool="{{ article.featured_tool }}" target="_blank" rel="noopener"
+         style="background:#4f46e5;color:white;padding:10px 24px;border-radius:8px;font-weight:700;text-decoration:none;font-size:14px;white-space:nowrap;border:2px solid #6366f1;">
+        Try {{ featured_tool_data.name }} Free →
+      </a>
+      <button onclick="document.getElementById('sticky-cta').style.display='none'" style="background:transparent;border:none;color:#a5b4fc;cursor:pointer;font-size:18px;padding:4px 8px;">✕</button>
+    </div>
+  </div>
+</div>
+<script>
+// Show sticky CTA after scrolling 40% of the article
+(function() {
+  var shown = false;
+  window.addEventListener('scroll', function() {
+    if (!shown) {
+      var scrollPct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+      if (scrollPct > 0.4) {
+        document.getElementById('sticky-cta').style.display = 'block';
+        shown = true;
+      }
+    }
+  });
+})();
+</script>
+{% endif %}
+
 {% block extra_js %}
 <script>
 // Auto-generate table of contents from H2 headings
@@ -255,6 +305,31 @@ if (headings.length > 0) {
 } else {
   document.getElementById('toc').style.display = 'none';
 }
+
+// Inject mid-article CTA box after 3rd paragraph
+(function() {
+  {% if article.featured_tool and featured_tool_data %}
+  const content = document.querySelector('.article-content');
+  if (content) {
+    const paras = content.querySelectorAll('p');
+    if (paras.length >= 3) {
+      const box = document.createElement('div');
+      box.style.cssText = 'background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #86efac;border-radius:14px;padding:24px;margin:28px 0;text-align:center;';
+      box.innerHTML = `
+        <div style="font-size:28px;margin-bottom:8px;">⭐</div>
+        <div style="font-weight:800;font-size:18px;color:#15803d;margin-bottom:6px;">Try {{ featured_tool_data.name }} Free</div>
+        <div style="color:#64748b;font-size:14px;margin-bottom:16px;">{{ featured_tool_data.description }}</div>
+        <a href="/go/{{ article.featured_tool }}" class="affiliate-link" data-tool="{{ article.featured_tool }}" target="_blank" rel="noopener"
+           style="display:inline-block;background:#16a34a;color:white;padding:12px 28px;border-radius:8px;font-weight:700;text-decoration:none;font-size:15px;">
+          Start Free Trial →
+        </a>
+        <div style="font-size:11px;color:#94a3b8;margin-top:8px;">No credit card required</div>
+      `;
+      paras[2].after(box);
+    }
+  }
+  {% endif %}
+})();
 
 async function handleSubscribeInline(e) {
   e.preventDefault();

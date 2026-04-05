@@ -14,6 +14,8 @@
   <meta property="og:url" content="{{ site_url }}{% block og_url %}/{% endblock %}" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="{{ site_name }}" />
+  <meta property="og:image" content="{{ site_url }}/static/og-image.png" />
+  <meta name="twitter:image" content="{{ site_url }}/static/og-image.png" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
@@ -27,7 +29,7 @@
   {% block google_verification %}{% endblock %}
   <meta name='impact-site-verification' value='927f3964-1095-45ec-8f2f-61480d9fbd31' />
 
-  <!-- Schema.org WebSite structured data -->
+  <!-- Schema.org structured data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -40,6 +42,22 @@
       "target": "{{ site_url }}/articles?q={search_term_string}",
       "query-input": "required name=search_term_string"
     }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "{{ site_name }}",
+    "url": "{{ site_url }}",
+    "logo": "{{ site_url }}/static/og-image.png",
+    "description": "Independent reviews and comparisons of the best AI tools.",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "editorial",
+      "url": "{{ site_url }}/contact"
+    },
+    "sameAs": []
   }
   </script>
 
@@ -261,15 +279,18 @@
       <a href="/articles?category=productivity">Productivity</a>
     </div>
     <div>
-      <h4>Popular</h4>
-      <a href="/articles">All Reviews</a>
-      <a href="/tools">Top AI Tools</a>
-      <a href="/#subscribe">Newsletter</a>
+      <h4>Best-Of Guides</h4>
+      <a href="/best-ai-writing-tools">Best AI Writing Tools</a>
+      <a href="/best-ai-seo-tools">Best AI SEO Tools</a>
+      <a href="/best-ai-video-tools">Best AI Video Tools</a>
+      <a href="/best-ai-voice-tools">Best AI Voice Tools</a>
+      <a href="/best-ai-productivity-tools">Best AI Productivity Tools</a>
     </div>
     <div>
       <h4>Company</h4>
       <a href="/about">About</a>
       <a href="/contact">Contact</a>
+      <a href="/how-we-test">How We Test</a>
       <a href="/privacy">Privacy Policy</a>
       <a href="/disclaimer">Affiliate Disclaimer</a>
     </div>

@@ -12,7 +12,8 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-SITE_URL = os.getenv("SITE_URL", "http://localhost:8000")
+# Always health-check localhost — the public domain may not be set up yet
+SITE_URL = "http://localhost:8000"
 ALERT_EMAIL = os.getenv("ADMIN_EMAIL", "")
 
 HEALTH_CHECKS = [

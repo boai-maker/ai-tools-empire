@@ -136,7 +136,7 @@
           <strong>{{ tool.rating }}</strong>
         </div>
         <div class="tool-commission-badge">💰 {{ tool.commission }}</div>
-        <a href="{{ tool.signup_url }}" class="btn btn-success btn-sm affiliate-link" data-tool="{{ key }}" target="_blank" rel="noopener">Try Free →</a>
+        <a href="/go/{{ key }}" class="btn btn-success btn-sm affiliate-link" data-tool="{{ key }}" target="_blank" rel="noopener">Try Free →</a>
         <a href="/articles?q={{ tool.name|urlencode }}" class="btn btn-outline btn-sm">Full Review</a>
       </div>
     </div>

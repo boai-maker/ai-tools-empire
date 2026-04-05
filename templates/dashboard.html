@@ -140,6 +140,58 @@
     <div id="guide-result" style="margin-top:16px;font-size:13px;color:#475569;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px;display:none;white-space:pre-wrap;max-height:200px;overflow-y:auto;font-family:monospace;"></div>
   </div>
 
+  <!-- Affiliate ID Setup -->
+  <div class="dash-card" style="margin-bottom:24px;border-color:#fde68a;background:linear-gradient(135deg,#fffbeb,#fff);">
+    <h3 style="color:#92400e;">🔑 Affiliate ID Setup — Required to Earn Revenue</h3>
+    <p style="font-size:13px;color:#78350f;margin:0 0 16px;">Add your affiliate IDs below. These are saved to your <code>.env</code> file and take effect on next page load.</p>
+    <div id="aff-status" style="margin-bottom:12px;font-size:13px;font-weight:600;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="aff-form">
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">Jasper AI ID <a href="https://www.jasper.ai/?fpr=" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <input id="aff-jasper" type="text" placeholder="your-jasper-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #fde68a;font-size:13px;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">Copy.ai ID <a href="https://www.copy.ai/?via=" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <input id="aff-copyai" type="text" placeholder="your-copyai-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #fde68a;font-size:13px;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">Surfer SEO ID <a href="https://surferseo.com/?via=" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <input id="aff-surfer" type="text" placeholder="your-surfer-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #fde68a;font-size:13px;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">Semrush ID <a href="https://www.semrush.com/partner/" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <input id="aff-semrush" type="text" placeholder="your-semrush-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #fde68a;font-size:13px;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">ElevenLabs ID <a href="https://elevenlabs.io/?from=" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <input id="aff-elevenlabs" type="text" placeholder="your-elevenlabs-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #fde68a;font-size:13px;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">Pictory ID <a href="https://pictory.ai/?ref=" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <input id="aff-pictory" type="text" placeholder="your-pictory-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #fde68a;font-size:13px;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">InVideo AI ID <a href="https://invideo.io/affiliates/" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <input id="aff-invideo" type="text" placeholder="your-invideo-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #fde68a;font-size:13px;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">Writesonic ID <a href="https://writesonic.com/affiliates" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <input id="aff-writesonic" type="text" placeholder="your-writesonic-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #fde68a;font-size:13px;box-sizing:border-box;">
+      </div>
+    </div>
+    <div style="margin-top:16px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;font-size:12px;color:#78350f;">
+      <strong>📋 Quick signup order (highest commissions first):</strong>
+      <a href="https://www.semrush.com/partner/" target="_blank" style="color:#92400e;margin:0 6px;">Semrush ($200/sale)</a> →
+      <a href="https://www.copy.ai/affiliates" target="_blank" style="color:#92400e;margin:0 6px;">Copy.ai (45%)</a> →
+      <a href="https://invideo.io/affiliates/" target="_blank" style="color:#92400e;margin:0 6px;">InVideo (50%)</a> →
+      <a href="https://pictory.ai/affiliate" target="_blank" style="color:#92400e;margin:0 6px;">Pictory (50%)</a> →
+      <a href="https://elevenlabs.io/referral" target="_blank" style="color:#92400e;margin:0 6px;">ElevenLabs (22%)</a> →
+      <a href="https://surferseo.com/affiliate/" target="_blank" style="color:#92400e;margin:0 6px;">Surfer SEO (25%)</a>
+      <br><em style="margin-top:4px;display:block;">All accept iCloud email. Use your Apple ID — no business account needed.</em>
+    </div>
+    <button onclick="saveAffiliateIds()" style="margin-top:14px;background:#f59e0b;color:white;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">💾 Save Affiliate IDs (activates instantly — no restart needed)</button>
+  </div>
+
   <div class="dash-grid">
     <!-- Top Clicked Tools -->
     <div class="dash-card">
@@ -264,6 +316,42 @@ async function fetchGuide(endpoint) {
     showToast('✅ ' + (d.message || 'Loaded'));
   } catch(e) {
     el.textContent = '❌ Error loading data';
+  }
+}
+
+async function saveAffiliateIds() {
+  const ids = {
+    jasper:     document.getElementById('aff-jasper').value.trim(),
+    copyai:     document.getElementById('aff-copyai').value.trim(),
+    surfer:     document.getElementById('aff-surfer').value.trim(),
+    semrush:    document.getElementById('aff-semrush').value.trim(),
+    elevenlabs: document.getElementById('aff-elevenlabs').value.trim(),
+    pictory:    document.getElementById('aff-pictory').value.trim(),
+    invideo:    document.getElementById('aff-invideo').value.trim(),
+    writesonic: document.getElementById('aff-writesonic').value.trim(),
+  };
+  const filled = Object.values(ids).filter(v => v.length > 0);
+  if (filled.length === 0) {
+    document.getElementById('aff-status').innerHTML = '<span style="color:#ef4444;">Enter at least one affiliate ID</span>';
+    return;
+  }
+  const el = document.getElementById('aff-status');
+  el.innerHTML = '⏳ Saving...';
+  try {
+    const r = await fetch(`/admin/save-affiliate-ids?pwd=${encodeURIComponent(ADMIN_PWD)}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(ids)
+    });
+    const d = await r.json();
+    if (r.ok) {
+      el.innerHTML = '<span style="color:#15803d;">✅ ' + d.message + '</span>';
+      showToast('✅ Affiliate IDs saved!');
+    } else {
+      el.innerHTML = '<span style="color:#ef4444;">❌ ' + (d.message || 'Error') + '</span>';
+    }
+  } catch(e) {
+    el.innerHTML = '<span style="color:#ef4444;">❌ Network error</span>';
   }
 }
 
