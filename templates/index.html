@@ -278,29 +278,23 @@
     <a href="#subscribe" class="btn btn-outline btn-lg" style="color:white;border-color:rgba(255,255,255,0.3)">Get Free Newsletter</a>
   </div>
   <div class="hero-stats">
+    {% if subscriber_count > 100 %}
     <div class="hero-stat"><div class="num">{{ subscriber_count }}+</div><div class="label">Newsletter Subscribers</div></div>
+    {% endif %}
     <div class="hero-stat"><div class="num">{{ article_count }}+</div><div class="label">In-Depth Reviews</div></div>
-    <div class="hero-stat"><div class="num">17+</div><div class="label">AI Tools Reviewed</div></div>
-    <div class="hero-stat"><div class="num">100%</div><div class="label">Independent</div></div>
+    <div class="hero-stat"><div class="num">17</div><div class="label">AI Tools Covered</div></div>
+    <div class="hero-stat"><div class="num">No</div><div class="label">Paid Placements</div></div>
   </div>
 </section>
 
-<!-- Social Proof Bar -->
-<div class="proof-bar">
-  <div class="proof-bar-inner">
-    <div class="proof-item"><div class="proof-num">{{ article_count }}+</div><div class="proof-label">Tool Reviews Published</div></div>
-    <div class="proof-item"><div class="proof-num">17</div><div class="proof-label">AI Tools Tested</div></div>
-    <div class="proof-item"><div class="proof-num">100%</div><div class="proof-label">Independent — No Paid Placement</div></div>
-    <div class="proof-item"><div class="proof-num">Weekly</div><div class="proof-label">Newsletter Updates</div></div>
-  </div>
-</div>
-
-<!-- Tools Strip -->
+<!-- Use-case nav bar — replaces redundant proof bar -->
 <div class="tools-strip">
   <div class="tools-strip-inner">
-    {% for key, tool in categories.items() %}
-    <a href="/articles?category={{ key }}" class="tool-chip">{{ tool.icon }} {{ tool.label }}</a>
-    {% endfor %}
+    <a href="/best-ai-writing-tools" class="tool-chip">✍️ Best Writing Tools</a>
+    <a href="/best-ai-seo-tools" class="tool-chip">🔍 Best SEO Tools</a>
+    <a href="/best-ai-video-tools" class="tool-chip">🎬 Best Video Tools</a>
+    <a href="/best-ai-voice-tools" class="tool-chip">🎙️ Best Voice Tools</a>
+    <a href="/best-ai-productivity-tools" class="tool-chip">⚡ Best Productivity Tools</a>
   </div>
 </div>
 
@@ -309,7 +303,7 @@
   <div class="container">
     <div class="section-header">
       <h2>🏆 Top AI Tools Right Now</h2>
-      <p>Our highest-rated tools, ranked by performance, value, and ease of use.</p>
+      <p>Our top picks across writing, SEO, video, voice, and productivity — each with a free trial.</p>
     </div>
 
     <!-- Category Tabs -->
@@ -332,13 +326,6 @@
             {% else %}⚡{% endif %}
           </div>
           {% if tool.badge %}<span class="tool-badge {% if loop.index % 3 == 0 %}purple{% elif loop.index % 2 == 0 %}blue{% endif %}">{{ tool.badge }}</span>{% endif %}
-        </div>
-        <div class="rating-row">
-          <span class="stars">
-            {% for i in range(tool.rating|int) %}★{% endfor %}
-          </span>
-          <span class="rating-num">{{ tool.rating }}</span>
-          <span class="review-count">({{ "{:,}".format(tool.reviews) }} reviews)</span>
         </div>
         <h3>{{ tool.name }}</h3>
         <p>{{ tool.description }}</p>
@@ -392,12 +379,12 @@
     <!-- Teaser cards shown while AI generates real content -->
     <div class="articles-grid">
       {% set teasers = [
-        ("✍️","WRITING","Jasper AI vs Copy.ai: Which is Better in 2026?","We tested both for 3 months. Here's our honest verdict on features, pricing, and output quality.","writing"),
-        ("🔍","SEO","10 Best AI SEO Tools That Actually Work in 2026","Ranked by real ranking results, not just features lists. Includes free and paid options.","seo"),
-        ("🎬","VIDEO","Best AI Video Generators in 2026 (Free & Paid)","Create professional videos without filming. We ranked every major AI video tool by output quality.","video"),
-        ("🎙️","AUDIO","ElevenLabs vs Murf AI: Most Realistic Voice?","The ultimate voice AI showdown. We ran 50 test samples to find the winner.","audio"),
-        ("⚡","PRODUCTIVITY","12 Best AI Tools for Entrepreneurs in 2026","The exact AI stack that saves 10+ hours per week. Ranked by ROI.","productivity"),
-        ("✍️","WRITING","How to Write 5 Blog Posts a Week Using AI","The exact workflow top bloggers use to 5x their output without sacrificing quality.","writing")
+        ("✍️","WRITING","Jasper AI vs Copy.ai: Which is Better in 2026?","A head-to-head comparison of features, pricing, and output quality for two leading AI writing tools.","writing"),
+        ("🔍","SEO","Best AI SEO Tools in 2026","A breakdown of the top AI-powered SEO tools by use case, pricing, and capabilities.","seo"),
+        ("🎬","VIDEO","Best AI Video Generators in 2026","Compare the leading AI video tools for content creators — features, pricing, and output quality.","video"),
+        ("🎙️","AUDIO","ElevenLabs vs Murf AI: Voice Quality Compared","A direct comparison of two leading AI voice tools across quality, pricing, and ease of use.","audio"),
+        ("⚡","PRODUCTIVITY","Best AI Tools for Entrepreneurs in 2026","A curated breakdown of AI tools worth adding to your business stack.","productivity"),
+        ("✍️","WRITING","How to Use AI for Content Creation","A practical guide to integrating AI writing tools into a content workflow.","writing")
       ] %}
       {% for icon, cat, title, desc, slug in teasers %}
       <div class="article-card" style="opacity:0.85;">
@@ -412,7 +399,7 @@
       {% endfor %}
     </div>
     <div style="text-align:center;margin-top:20px;padding:16px;background:#f0f9ff;border-radius:10px;border:1px solid #bae6fd;">
-      <p style="color:#0369a1;font-size:14px;margin:0;">🤖 <strong>AI is writing these reviews right now.</strong> Add your <code>ANTHROPIC_API_KEY</code> to <code>.env</code> and run <code>bash start_full.sh</code> to publish instantly.</p>
+      <p style="color:#0369a1;font-size:14px;margin:0;">📖 More in-depth reviews are on the way. <a href="/articles" style="color:#0369a1;font-weight:600;">Browse all current reviews →</a></p>
     </div>
     {% endif %}
 
@@ -428,7 +415,7 @@
     <p style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin:0 0 16px;">How We Review</p>
     <div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);">
-        <span style="font-size:20px;">🧪</span><span><strong>Hands-on tested</strong> — not based on marketing pages</span>
+        <span style="font-size:20px;">🧪</span><span><strong>Research-based reviews</strong> — features, pricing, and real use cases</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);">
         <span style="font-size:20px;">🚫</span><span><strong>No paid placements</strong> — rankings are earned</span>

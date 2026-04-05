@@ -100,8 +100,8 @@ async def homepage(request: Request):
     ctx.update({
         "articles": articles,
         "featured_tools": dict(list(AFFILIATE_PROGRAMS.items())[:6]),
-        "subscriber_count": max(get_subscriber_count(), 12000),  # Social proof floor
-        "article_count": max(len(get_articles(limit=999)), 50),
+        "subscriber_count": get_subscriber_count(),  # Real count — no floor
+        "article_count": len(get_articles(limit=999)),  # Real count — no floor
     })
     return templates.TemplateResponse("index.html", ctx)
 
@@ -182,45 +182,46 @@ async def article_page(request: Request, slug: str):
 
 @app.get("/about", response_class=HTMLResponse)
 async def about_page(request: Request):
+    article_count = len(get_articles(limit=999))
     ctx = base_ctx(request)
     ctx["page_title"] = "About Us"
     ctx["page_content"] = f"""
     <div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:60px 20px;text-align:center;margin-bottom:0;">
       <h1 style="color:white;font-size:42px;font-weight:800;margin:0 0 12px;">About {config.SITE_NAME}</h1>
-      <p style="color:#94a3b8;font-size:18px;margin:0;">We test every AI tool so you don't have to.</p>
+      <p style="color:#94a3b8;font-size:18px;margin:0;">Independent research on AI tools for businesses and creators.</p>
     </div>
     <div style="max-width:760px;margin:60px auto;padding:0 24px;">
-      <p style="font-size:18px;color:#475569;line-height:1.8;">{config.SITE_NAME} is an independent review publication helping businesses, creators, and entrepreneurs find the right AI tools.</p>
-      <p style="color:#475569;line-height:1.8;">We've reviewed 50+ AI tools across writing, SEO, video creation, voice generation, and productivity. Every review is based on real hands-on testing — not sponsored content.</p>
+      <p style="font-size:18px;color:#475569;line-height:1.8;">{config.SITE_NAME} is an independent review publication covering AI tools for writing, SEO, video, voice, and productivity.</p>
+      <p style="color:#475569;line-height:1.8;">We research and review AI tools so you can make informed decisions before spending money. We cover features, real pricing, and who each tool is actually for — not rewrites of marketing pages.</p>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:40px 0;">
         <div style="background:white;border:1px solid #e2e8f0;border-radius:12px;padding:24px;text-align:center;">
-          <div style="font-size:32px;font-weight:900;color:#6366f1;">50+</div>
-          <div style="color:#64748b;font-size:14px;margin-top:4px;">AI Tools Reviewed</div>
+          <div style="font-size:32px;font-weight:900;color:#6366f1;">{article_count}+</div>
+          <div style="color:#64748b;font-size:14px;margin-top:4px;">Articles &amp; Reviews</div>
         </div>
         <div style="background:white;border:1px solid #e2e8f0;border-radius:12px;padding:24px;text-align:center;">
-          <div style="font-size:32px;font-weight:900;color:#6366f1;">12k+</div>
-          <div style="color:#64748b;font-size:14px;margin-top:4px;">Newsletter Subscribers</div>
+          <div style="font-size:32px;font-weight:900;color:#6366f1;">17</div>
+          <div style="color:#64748b;font-size:14px;margin-top:4px;">AI Tools Covered</div>
         </div>
         <div style="background:white;border:1px solid #e2e8f0;border-radius:12px;padding:24px;text-align:center;">
-          <div style="font-size:32px;font-weight:900;color:#6366f1;">100%</div>
-          <div style="color:#64748b;font-size:14px;margin-top:4px;">Independent Reviews</div>
+          <div style="font-size:32px;font-weight:900;color:#6366f1;">5</div>
+          <div style="color:#64748b;font-size:14px;margin-top:4px;">Categories</div>
         </div>
         <div style="background:white;border:1px solid #e2e8f0;border-radius:12px;padding:24px;text-align:center;">
-          <div style="font-size:32px;font-weight:900;color:#6366f1;">2026</div>
-          <div style="color:#64748b;font-size:14px;margin-top:4px;">Always Up to Date</div>
+          <div style="font-size:32px;font-weight:900;color:#6366f1;">Free</div>
+          <div style="color:#64748b;font-size:14px;margin-top:4px;">Weekly Newsletter</div>
         </div>
       </div>
-      <h2 style="font-size:26px;font-weight:800;margin:40px 0 16px;">Our Promise</h2>
+      <h2 style="font-size:26px;font-weight:800;margin:40px 0 16px;">Our Editorial Policy</h2>
       <ul style="color:#475569;line-height:2;font-size:15px;">
-        <li>100% independent reviews — we are never paid to write positive reviews</li>
-        <li>Honest pros and cons on every tool, even our top earners</li>
-        <li>Updated regularly as tools release new features or change pricing</li>
-        <li>Transparent affiliate disclosure on every single page</li>
+        <li>We are never paid to write positive reviews — commissions come only from purchases you make</li>
+        <li>We include honest limitations and cons on every tool we cover</li>
+        <li>We update content when pricing, features, or our assessment changes</li>
+        <li>Affiliate links are disclosed on every page where they appear</li>
       </ul>
       <h2 style="font-size:26px;font-weight:800;margin:40px 0 16px;">Affiliate Disclosure</h2>
-      <p style="color:#475569;line-height:1.8;">We earn a commission when you purchase through our links, at no extra cost to you. This supports our free content. We only recommend tools we genuinely believe in.</p>
+      <p style="color:#475569;line-height:1.8;">This site earns affiliate commissions when you purchase through our links, at no extra cost to you. This supports the free content we publish. See our full <a href="/disclaimer" style="color:#6366f1;">affiliate disclaimer</a> and <a href="/how-we-test" style="color:#6366f1;">how we review</a> for details.</p>
       <div style="margin-top:40px;text-align:center;">
-        <a href="/tools" class="btn btn-primary">Browse Top AI Tools →</a>
+        <a href="/tools" class="btn btn-primary">Browse AI Tools →</a>
       </div>
     </div>
     """
@@ -389,8 +390,8 @@ async def how_we_test(request: Request):
 </div>
 <div style="max-width:760px;margin:60px auto;padding:0 24px;color:#475569;line-height:1.8;font-size:15px;">
   <p>Every tool reviewed on AI Tools Empire goes through the same structured evaluation process. We don't accept payment for positive reviews. Our rankings are based entirely on hands-on testing.</p>
-  <h2 style="color:#1e293b;font-size:22px;font-weight:700;margin:32px 0 12px;">1. Hands-On Trial</h2>
-  <p>We sign up for each tool's free trial or paid plan and use it for real tasks — writing, SEO research, video creation, or audio production depending on the category. We don't review based on feature lists or marketing pages.</p>
+  <h2 style="color:#1e293b;font-size:22px;font-weight:700;margin:32px 0 12px;">1. Research &amp; Testing</h2>
+  <p>We research each tool using official documentation, pricing pages, published user feedback, and where possible, direct product trials. Our goal is to give you an accurate picture of what each tool does, what it costs, and who it's actually for — not a rewrite of the marketing page.</p>
   <h2 style="color:#1e293b;font-size:22px;font-weight:700;margin:32px 0 12px;">2. Scoring Criteria</h2>
   <p>Each tool is scored across five dimensions:</p>
   <ul>

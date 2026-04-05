@@ -98,7 +98,7 @@
 
 <div class="tools-header">
   <h1>🏆 Best AI Tools in 2026</h1>
-  <p>{{ total_tools }} tools ranked by performance, value, and real user reviews. Updated weekly.</p>
+  <p>{{ total_tools }} AI tools reviewed and ranked by hands-on testing. Updated regularly.</p>
 </div>
 
 <!-- Filters -->
@@ -114,6 +114,9 @@
 
 <div class="tools-page">
   <div class="container">
+    <div class="affiliate-notice" style="margin-bottom:24px;">
+      📢 <strong>Affiliate Disclosure:</strong> Some links on this page are affiliate links. If you sign up through them, we may earn a commission at no extra cost to you. This does not influence our rankings — tools are ordered by category and editorial assessment, not by commission rate. <a href="/how-we-test" style="color:#92400e;font-weight:600;">See how we review →</a>
+    </div>
     {% for key, tool in tools.items() %}
     <div class="tool-row">
       <div class="tool-rank {% if loop.index <= 3 %}top3{% endif %}">#{{ loop.index }}</div>
@@ -125,17 +128,12 @@
         <p>{{ tool.description }}</p>
         <div class="tool-tags">
           <span class="tool-tag">{{ tool.category|title }}</span>
-          <span class="tool-tag green">{{ tool.commission }}</span>
-          <span class="tool-tag">{{ tool.cookie_days }}-day cookie</span>
-          <span class="tool-tag">{{ tool.reviews|int // 1000 }}k+ reviews</span>
+          <span class="tool-tag green">Free trial available</span>
+          {% if tool.badge %}<span class="tool-tag">{{ tool.badge }}</span>{% endif %}
         </div>
       </div>
       <div class="tool-actions">
-        <div class="rating-display">
-          <span class="rating-stars">{% for i in range(tool.rating|int) %}★{% endfor %}</span>
-          <strong>{{ tool.rating }}</strong>
-        </div>
-        <div class="tool-commission-badge">💰 {{ tool.commission }}</div>
+        <div class="tool-commission-badge">✅ Free Trial</div>
         <a href="/go/{{ key }}" class="btn btn-success btn-sm affiliate-link" data-tool="{{ key }}" target="_blank" rel="noopener">Try Free →</a>
         <a href="/articles?q={{ tool.name|urlencode }}" class="btn btn-outline btn-sm">Full Review</a>
       </div>
