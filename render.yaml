@@ -1,17 +1,85 @@
 services:
+  # ── Web Server ─────────────────────────────────────────────────────────────
   - type: web
     name: aitoolsempire
     runtime: python
+    region: oregon
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
     envVars:
       - key: SITE_URL
         value: https://aitoolsempire.co
       - key: SITE_NAME
         value: AI Tools Empire
       - key: ADMIN_PASSWORD
-        value: empire2024secure
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
       - key: ANTHROPIC_API_KEY
         sync: false
-    plan: free
-    region: oregon
+      - key: TWITTER_API_KEY
+        sync: false
+      - key: TWITTER_API_SECRET
+        sync: false
+      - key: TWITTER_ACCESS_TOKEN
+        sync: false
+      - key: TWITTER_ACCESS_SECRET
+        sync: false
+      - key: YOUTUBE_CLIENT_ID
+        sync: false
+      - key: YOUTUBE_CLIENT_SECRET
+        sync: false
+      - key: YOUTUBE_REFRESH_TOKEN
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: PICTORY_AFFILIATE_ID
+        value: kenneth46
+      - key: ELEVENLABS_AFFILIATE_ID
+        value: https://try.elevenlabs.io/i3pg30ciu5n8
+      - key: FIREFLIES_AFFILIATE_ID
+        value: kenneth39
+      - key: JASPER_AFFILIATE_ID
+        sync: false
+      - key: COPYAI_AFFILIATE_ID
+        sync: false
+      - key: WRITESONIC_AFFILIATE_ID
+        sync: false
+      - key: SURFER_AFFILIATE_ID
+        sync: false
+      - key: SEMRUSH_AFFILIATE_ID
+        sync: false
+      - key: INVIDEO_AFFILIATE_ID
+        sync: false
+      - key: MURF_AFFILIATE_ID
+        sync: false
+      - key: DESCRIPT_AFFILIATE_ID
+        sync: false
+      - key: SPEECHIFY_AFFILIATE_ID
+        sync: false
+      - key: GETRESPONSE_AFFILIATE_ID
+        sync: false
+      - key: HUBSPOT_AFFILIATE_ID
+        sync: false
+      - key: QUILLBOT_AFFILIATE_ID
+        sync: false
+      - key: KIT_AFFILIATE_ID
+        sync: false
+      - key: WEBFLOW_AFFILIATE_ID
+        sync: false
+      - key: GRAMMARLY_AFFILIATE_ID
+        sync: false
+      - key: SYNTHESIA_AFFILIATE_ID
+        sync: false
+      - key: RUNWAY_AFFILIATE_ID
+        sync: false
+      - key: DOMINIC_TELEGRAM_TOKEN
+        sync: false
+      - key: DOMINIC_TELEGRAM_CHAT_ID
+        sync: false
+      - key: GOOGLE_SITE_VERIFICATION
+        value: MOExWVZvG4tLW-Z5rh6NLp5rTa8TbOoGzYVtUo2-s3M

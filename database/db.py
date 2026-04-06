@@ -86,6 +86,20 @@ def init_db():
         )
     """)
 
+    # Welcome sequence queue — one row per pending sequence email per subscriber
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS sequence_queue (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL,
+            name TEXT DEFAULT '',
+            seq_num INTEGER NOT NULL,
+            send_after TEXT NOT NULL,
+            sent INTEGER DEFAULT 0,
+            sent_at TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
     # Email campaigns
     c.execute("""
         CREATE TABLE IF NOT EXISTS email_campaigns (
@@ -248,5 +262,47 @@ def mark_queue_item_done(item_id):
     conn.execute("""
         UPDATE content_queue SET status='done', published_at=CURRENT_TIMESTAMP WHERE id=?
     """, (item_id,))
+    conn.commit()
+    conn.close()
+
+# --- Sequence Queue ---
+def enqueue_sequence(email: str, name: str = ""):
+    """Queue emails 2-5 for a new subscriber. Email 1 is sent immediately on subscribe."""
+    from datetime import timedelta
+    from automation.sequences.runner import DELAYS_HOURS
+    conn = get_conn()
+    # Skip seq 1 (sent immediately); queue 2-5
+    for seq_num in range(2, 6):
+        delay_h = DELAYS_HOURS[seq_num - 1]
+        send_after = (datetime.utcnow() + timedelta(hours=delay_h)).strftime("%Y-%m-%d %H:%M:%S")
+        conn.execute("""
+            INSERT OR IGNORE INTO sequence_queue (email, name, seq_num, send_after)
+            VALUES (?, ?, ?, ?)
+        """, (email.lower(), name, seq_num, send_after))
+    conn.commit()
+    conn.close()
+
+def get_due_sequence_emails():
+    """Return sequence queue rows whose send_after has passed and haven't been sent."""
+    conn = get_conn()
+    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    rows = conn.execute("""
+        SELECT sq.id, sq.email, sq.name, sq.seq_num
+        FROM sequence_queue sq
+        JOIN subscribers s ON sq.email = s.email
+        WHERE sq.sent = 0
+          AND sq.send_after <= ?
+          AND s.status = 'active'
+        ORDER BY sq.send_after ASC
+        LIMIT 100
+    """, (now,)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def mark_sequence_sent(queue_id: int):
+    conn = get_conn()
+    conn.execute("""
+        UPDATE sequence_queue SET sent=1, sent_at=CURRENT_TIMESTAMP WHERE id=?
+    """, (queue_id,))
     conn.commit()
     conn.close()

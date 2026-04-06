@@ -1,0 +1,88 @@
+{% macro render_comparison(tool_a, tool_b, rows, winner=None, cta_a=None, cta_b=None) %}
+{#
+  Usage:
+    {% from 'macros/comparison_table.html' import render_comparison %}
+    {{ render_comparison(
+        tool_a={"name": "Jasper AI", "logo_emoji": "✍️", "price": "$49/mo", "badge": "Best for Teams"},
+        tool_b={"name": "Copy.ai", "logo_emoji": "📝", "price": "$49/mo", "badge": "Best Free Tier"},
+        rows=[
+          {"feature": "Free Plan", "a": "No", "b": "Yes (2,000 words)", "winner": "b"},
+          {"feature": "Starting Price", "a": "$49/mo", "b": "$49/mo", "winner": "tie"},
+          {"feature": "AI Model", "a": "Jasper (Claude/GPT)", "b": "GPT-4", "winner": "tie"},
+          {"feature": "Templates", "a": "50+", "b": "90+", "winner": "b"},
+          {"feature": "SEO Mode", "a": "Yes (Surfer integration)", "b": "No", "winner": "a"},
+          {"feature": "Brand Voice", "a": "Yes", "b": "Limited", "winner": "a"},
+          {"feature": "Chrome Extension", "a": "Yes", "b": "Yes", "winner": "tie"},
+        ],
+        winner="a",
+        cta_a={"label": "Try Jasper Free", "url": "https://jasper.ai"},
+        cta_b={"label": "Try Copy.ai Free", "url": "https://copy.ai"},
+    ) }}
+#}
+<div class="comparison-wrap" style="margin:36px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+
+  {# Header row #}
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-radius:12px 12px 0 0;overflow:hidden;border:1px solid #e2e8f0;border-bottom:none;">
+    <div style="background:#f8fafc;padding:16px;font-weight:700;color:#64748b;font-size:13px;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;">Feature</div>
+    <div style="background:{% if winner == 'a' %}#6366f1{% else %}#1e293b{% endif %};padding:16px;text-align:center;color:white;">
+      <div style="font-size:22px;margin-bottom:4px;">{{ tool_a.logo_emoji or '🔵' }}</div>
+      <div style="font-weight:700;font-size:15px;">{{ tool_a.name }}</div>
+      <div style="font-size:12px;opacity:.85;margin-top:2px;">{{ tool_a.price or '' }}</div>
+      {% if tool_a.badge %}<div style="display:inline-block;background:rgba(255,255,255,.2);border-radius:12px;padding:2px 10px;font-size:11px;margin-top:6px;">{{ tool_a.badge }}</div>{% endif %}
+    </div>
+    <div style="background:{% if winner == 'b' %}#6366f1{% else %}#334155{% endif %};padding:16px;text-align:center;color:white;">
+      <div style="font-size:22px;margin-bottom:4px;">{{ tool_b.logo_emoji or '🟢' }}</div>
+      <div style="font-weight:700;font-size:15px;">{{ tool_b.name }}</div>
+      <div style="font-size:12px;opacity:.85;margin-top:2px;">{{ tool_b.price or '' }}</div>
+      {% if tool_b.badge %}<div style="display:inline-block;background:rgba(255,255,255,.2);border-radius:12px;padding:2px 10px;font-size:11px;margin-top:6px;">{{ tool_b.badge }}</div>{% endif %}
+    </div>
+  </div>
+
+  {# Feature rows #}
+  {% for row in rows %}
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid #e2e8f0;border-top:none;{% if loop.last %}border-radius:0 0 12px 12px;overflow:hidden;{% endif %}">
+    <div style="padding:13px 16px;background:{% if loop.index is odd %}#f8fafc{% else %}white{% endif %};font-size:14px;font-weight:600;color:#374151;border-right:1px solid #e2e8f0;">
+      {{ row.feature }}
+    </div>
+    <div style="padding:13px 16px;background:{% if row.winner == 'a' %}#f0fdf4{% elif loop.index is odd %}#fafafa{% else %}white{% endif %};text-align:center;font-size:14px;color:#374151;border-right:1px solid #e2e8f0;position:relative;">
+      {{ row.a }}
+      {% if row.winner == 'a' %}<span style="position:absolute;top:8px;right:8px;font-size:11px;">✅</span>{% endif %}
+    </div>
+    <div style="padding:13px 16px;background:{% if row.winner == 'b' %}#f0fdf4{% elif loop.index is odd %}#fafafa{% else %}white{% endif %};text-align:center;font-size:14px;color:#374151;position:relative;">
+      {{ row.b }}
+      {% if row.winner == 'b' %}<span style="position:absolute;top:8px;right:8px;font-size:11px;">✅</span>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  {# Verdict bar #}
+  {% if winner %}
+  <div style="margin-top:16px;padding:14px 20px;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd;border-radius:10px;display:flex;align-items:center;gap:12px;">
+    <span style="font-size:20px;">🏆</span>
+    <div>
+      <span style="font-weight:700;color:#0369a1;">Our Pick: </span>
+      <span style="color:#0c4a6e;">{% if winner == 'a' %}{{ tool_a.name }}{% elif winner == 'b' %}{{ tool_b.name }}{% else %}Tie — depends on use case{% endif %}</span>
+    </div>
+  </div>
+  {% endif %}
+
+  {# CTA row #}
+  {% if cta_a or cta_b %}
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+    {% if cta_a %}
+    <a href="{{ cta_a.url }}" target="_blank" rel="noopener sponsored"
+       style="display:block;background:#6366f1;color:white;text-align:center;padding:13px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;">
+      {{ cta_a.label or 'Try ' + tool_a.name }}
+    </a>
+    {% endif %}
+    {% if cta_b %}
+    <a href="{{ cta_b.url }}" target="_blank" rel="noopener sponsored"
+       style="display:block;background:#334155;color:white;text-align:center;padding:13px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;">
+      {{ cta_b.label or 'Try ' + tool_b.name }}
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endmacro %}

@@ -190,11 +190,48 @@ async def article_page(request: Request, slug: str):
         if k != featured_tool_key
     }
 
-    # Related articles (same category)
-    related = [
-        a for a in get_articles(limit=10, category=article.get("category"))
-        if a["slug"] != slug
-    ][:3]
+    # Related articles — use hand-picked related_slugs first, fallback to same category
+    import json as _json2
+    related = []
+    raw_related = article.get("related_slugs") or ""
+    if raw_related:
+        try:
+            related_slug_list = _json2.loads(raw_related)[:4]
+            from database.db import get_conn
+            conn = get_conn()
+            for rs in related_slug_list:
+                row = conn.execute(
+                    'SELECT slug, title, meta_description, category FROM articles WHERE slug=? AND status="published"',
+                    (rs,)
+                ).fetchone()
+                if row:
+                    related.append(dict(row))
+            conn.close()
+        except Exception:
+            pass
+    if not related:
+        related = [
+            a for a in get_articles(limit=10, category=article.get("category"))
+            if a["slug"] != slug
+        ][:4]
+
+    # Parse faq_data for template schema rendering
+    import json as _json
+    faq_pairs = []
+    raw_faq = article.get("faq_data") or ""
+    if raw_faq:
+        try:
+            faq_pairs = _json.loads(raw_faq)
+        except Exception:
+            faq_pairs = []
+
+    # Comparison table data (for vs/comparison articles)
+    comparison_data = None
+    try:
+        from tools.comparison_generator import get_comparison_data
+        comparison_data = get_comparison_data(slug)
+    except Exception:
+        pass
 
     ctx = base_ctx(request)
     ctx.update({
@@ -202,8 +239,16 @@ async def article_page(request: Request, slug: str):
         "featured_tool_data": featured_tool_data,
         "sidebar_tools": sidebar_tools,
         "related_articles": related,
+        "faq_pairs": faq_pairs,
+        "comparison": comparison_data,
     })
     return templates.TemplateResponse("article.html", ctx)
+
+
+@app.get("/free-ai-kit", response_class=HTMLResponse)
+async def free_ai_kit(request: Request):
+    """Standalone lead magnet page — printable / saveable as PDF."""
+    return templates.TemplateResponse("lead_magnet.html", {"request": request})
 
 
 @app.get("/about", response_class=HTMLResponse)
@@ -317,6 +362,7 @@ async def services_page(request: Request):
 class SubscribeRequest(BaseModel):
     email: str
     name: str = ""
+    source: str = "website"
 
 @app.post("/subscribe")
 async def subscribe(request: Request, body: SubscribeRequest):
@@ -324,16 +370,23 @@ async def subscribe(request: Request, body: SubscribeRequest):
     if not email or "@" not in email:
         return JSONResponse({"success": False, "message": "Invalid email"})
 
-    added = add_subscriber(email, body.name, source="website")
+    added = add_subscriber(email, body.name, source=body.source or "website")
     if not added:
         return JSONResponse({"success": True, "message": "Already subscribed!"})
 
-    # Send welcome email in background
+    # Send Email 1 immediately (welcome + kit delivery)
     try:
-        from automation.email_sender import send_welcome_email
-        send_welcome_email(email, body.name)
+        from automation.sequences.runner import send_sequence_email
+        send_sequence_email(email, body.name or "there", seq_num=1)
     except Exception as e:
-        log.warning(f"Welcome email failed: {e}")
+        log.warning(f"Sequence email 1 failed: {e}")
+
+    # Queue emails 2-5 for delivery over the next 10 days
+    try:
+        from database.db import enqueue_sequence
+        enqueue_sequence(email, body.name or "")
+    except Exception as e:
+        log.warning(f"Sequence queue failed: {e}")
 
     return JSONResponse({"success": True, "message": "Subscribed! Check your inbox."})
 
@@ -366,7 +419,7 @@ async def affiliate_redirect(tool_key: str, request: Request):
         "murf":       f"https://murf.ai/?ref={os.getenv('MURF_AFFILIATE_ID', '')}",
         "elevenlabs": f"https://elevenlabs.io/?from={os.getenv('ELEVENLABS_AFFILIATE_ID', '')}",
         "descript":   f"https://www.descript.com/affiliates?ref={os.getenv('DESCRIPT_AFFILIATE_ID', '')}",
-        "fireflies":   f"https://fireflies.ai/?ref={os.getenv('FIREFLIES_AFFILIATE_ID', '')}",
+        "fireflies":   f"https://fireflies.ai/?fpr={os.getenv('FIREFLIES_AFFILIATE_ID', '')}",
         "speechify":   f"https://speechify.com/affiliate/?ref={os.getenv('SPEECHIFY_AFFILIATE_ID', '')}",
         "getresponse": f"https://www.getresponse.com/?a={os.getenv('GETRESPONSE_AFFILIATE_ID', '')}",
         "hubspot":     f"https://www.hubspot.com/?hubs_signup-cta={os.getenv('HUBSPOT_AFFILIATE_ID', '')}",

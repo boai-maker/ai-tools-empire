@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="msvalidate.01" content="B2E182ED31C84A001A6588A0B698D229" />
   <title>{% block title %}{{ site_name }}{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}{{ site_tagline }}{% endblock %}" />
   <meta name="robots" content="index, follow" />
@@ -56,14 +57,16 @@
       "@type": "ContactPoint",
       "contactType": "editorial",
       "url": "{{ site_url }}/contact"
-    },
-    "sameAs": []
+    }
   }
   </script>
 
-  <!-- Fonts -->
+  <!-- Fonts — preconnect + display=swap prevents render-blocking -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="shortcut icon" href="/static/favicon.svg">
 
   <style>
     *, *::before, *::after { box-sizing: border-box; }
@@ -300,6 +303,24 @@
   </div>
 </footer>
 
+<!-- Exit-Intent Email Popup -->
+<div id="exit-popup" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:20px;padding:40px 36px;max-width:460px;width:90%;margin:auto;position:relative;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+    <button onclick="closePopup()" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer;line-height:1;">✕</button>
+    <div style="font-size:40px;margin-bottom:12px;">🎁</div>
+    <h2 style="color:white;font-size:24px;margin:0 0 8px;">Wait — Free AI Tools Starter Kit</h2>
+    <p style="color:#a5b4fc;font-size:15px;margin:0 0 24px;">Get our curated list of the 7 best free AI tools that pay for themselves — delivered instantly to your inbox.</p>
+    <form onsubmit="handlePopupSubscribe(event)" style="display:flex;flex-direction:column;gap:12px;">
+      <input type="email" id="popup-email" placeholder="Enter your email address" required
+        style="padding:14px 16px;border-radius:10px;border:none;font-size:15px;width:100%;box-sizing:border-box;">
+      <button type="submit" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;padding:14px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;">
+        Send Me the Free Kit →
+      </button>
+    </form>
+    <p style="color:#64748b;font-size:12px;margin:12px 0 0;">No spam. Unsubscribe anytime.</p>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -331,5 +352,58 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 </script>
 
 {% block extra_js %}{% endblock %}
+
+<script>
+// Exit-intent + scroll popup logic
+(function() {
+  const POPUP_KEY = 'popup_shown';
+  if (sessionStorage.getItem(POPUP_KEY)) return;
+
+  function showPopup() {
+    if (sessionStorage.getItem(POPUP_KEY)) return;
+    sessionStorage.setItem(POPUP_KEY, '1');
+    const el = document.getElementById('exit-popup');
+    el.style.display = 'flex';
+  }
+
+  // Exit intent (desktop)
+  document.addEventListener('mouseleave', function(e) {
+    if (e.clientY < 10) showPopup();
+  });
+
+  // Scroll 60% trigger (mobile + desktop fallback)
+  window.addEventListener('scroll', function() {
+    const scrolled = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+    if (scrolled > 0.6) showPopup();
+  }, { passive: true });
+
+  // Close on backdrop click
+  document.getElementById('exit-popup').addEventListener('click', function(e) {
+    if (e.target === this) closePopup();
+  });
+})();
+
+function closePopup() {
+  document.getElementById('exit-popup').style.display = 'none';
+}
+
+async function handlePopupSubscribe(e) {
+  e.preventDefault();
+  const email = document.getElementById('popup-email').value.trim();
+  if (!email) return;
+  try {
+    const r = await fetch('/subscribe', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email, name: '', source: 'exit-popup' })
+    });
+    const d = await r.json();
+    closePopup();
+    showToast(d.success ? '✅ Check your inbox — kit is on its way!' : '⚠️ ' + (d.message || 'Error'));
+  } catch(err) {
+    showToast('⚠️ Something went wrong. Please try again.');
+  }
+}
+</script>
 </body>
 </html>

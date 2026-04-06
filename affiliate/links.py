@@ -5,22 +5,6 @@ Register for these programs to get your affiliate IDs:
 from config import config
 
 AFFILIATE_PROGRAMS = {
-    "jasper": {
-        "name": "Jasper AI",
-        "description": "AI writing assistant for marketers and content teams",
-        "commission": "30% recurring monthly",
-        "commission_pct": 30,
-        "cookie_days": 60,
-        "avg_sale": 49,
-        "category": "writing",
-        "logo": "jasper.png",
-        "badge": "Most Popular",
-        "rating": 4.8,
-        "reviews": 12400,
-        "signup_url": f"https://www.jasper.ai/?fpr={config.AFFILIATE_IDS['jasper']}",
-        "review_keywords": ["jasper ai review", "jasper ai vs copy ai", "best ai writing tool"],
-        "monthly_est_commission": 200,  # conservative estimate
-    },
     "copyai": {
         "name": "Copy.ai",
         "description": "AI-powered copywriting for blogs, ads, and social media",
@@ -98,7 +82,7 @@ AFFILIATE_PROGRAMS = {
         "badge": "Best AI Video",
         "rating": 4.6,
         "reviews": 4100,
-        "signup_url": f"https://pictory.ai/?ref={config.AFFILIATE_IDS['pictory']}",
+        "signup_url": f"https://pictory.ai?ref={config.AFFILIATE_IDS['pictory']}",
         "review_keywords": ["pictory ai review", "pictory ai pricing", "best ai video tools"],
         "monthly_est_commission": 150,
     },
@@ -178,7 +162,7 @@ AFFILIATE_PROGRAMS = {
         "badge": "Best Meeting AI",
         "rating": 4.6,
         "reviews": 4400,
-        "signup_url": f"https://fireflies.ai/?ref={config.AFFILIATE_IDS['fireflies']}",
+        "signup_url": f"https://fireflies.ai/?fpr={config.AFFILIATE_IDS['fireflies']}",
         "review_keywords": ["fireflies ai review", "fireflies ai pricing", "best meeting ai tools"],
         "monthly_est_commission": 95,
     },
@@ -295,23 +279,6 @@ AFFILIATE_PROGRAMS = {
         "apply_url": "https://www.grammarly.com/affiliates",
         "network": "Impact.com",
     },
-    "canva": {
-        "name": "Canva",
-        "description": "AI-powered design platform — create graphics, presentations, videos, and more",
-        "commission": "Up to $36 per Canva Pro sale",
-        "commission_pct": None,
-        "commission_flat": 36,
-        "cookie_days": 30,
-        "avg_sale": 12.99,
-        "category": "productivity",
-        "logo": "canva.png",
-        "badge": "100M+ Users",
-        "signup_url": f"https://partner.canva.com/{config.AFFILIATE_IDS.get('canva', '')}",
-        "review_keywords": ["canva review", "canva ai features", "canva vs figma", "best design ai tools"],
-        "monthly_est_commission": 120,
-        "apply_url": "https://www.canva.com/affiliates/",
-        "network": "Impact.com",
-    },
     "synthesia": {
         "name": "Synthesia",
         "description": "Create AI videos with digital avatars — no camera or filming needed",
@@ -373,3 +340,22 @@ def get_monthly_revenue_estimate() -> dict:
         breakdown[tool["name"]] = est
         total += est
     return {"total_monthly": total, "total_weekly": total / 4.33, "breakdown": breakdown}
+
+
+# ── Programs NOT yet active — apply and move to AFFILIATE_PROGRAMS once approved ──
+PENDING_PROGRAMS = {
+    "jasper": {
+        "name": "Jasper AI",
+        "description": "AI writing assistant for marketers and content teams",
+        "apply_url": "https://www.jasper.ai/affiliates",
+        "network": "Direct",
+        "commission": "30% recurring monthly",
+    },
+    "canva": {
+        "name": "Canva",
+        "description": "AI-powered design platform",
+        "apply_url": "https://www.canva.com/affiliates/",
+        "network": "Impact.com",
+        "commission": "Up to $36 per Canva Pro sale",
+    },
+}

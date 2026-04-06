@@ -4,6 +4,25 @@
 {% block meta_description %}In-depth AI tool reviews, comparisons, and buying guides. We test every tool so you don't have to.{% endblock %}
 
 {% block extra_head %}
+{# ── ItemList schema for the articles index (Task 2) ── #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "AI Tool Reviews & Comparisons 2026",
+  "url": "{{ site_url }}/articles",
+  "itemListElement": [
+    {% for a in articles[:20] %}
+    {
+      "@type": "ListItem",
+      "position": {{ loop.index }},
+      "name": {{ a.title | tojson }},
+      "url": "{{ site_url }}/articles/{{ a.slug }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
 <style>
   .articles-header {
     background: linear-gradient(135deg, #0f172a, #1e1b4b);

@@ -147,12 +147,12 @@
     <div id="aff-status" style="margin-bottom:12px;font-size:13px;font-weight:600;"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="aff-form">
       <div>
-        <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">Jasper AI ID <a href="https://www.jasper.ai/?fpr=" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
-        <input id="aff-jasper" type="text" placeholder="your-jasper-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #fde68a;font-size:13px;box-sizing:border-box;">
+        <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">Grammarly ID <a href="https://www.grammarly.com/affiliates" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <input id="aff-grammarly" type="text" placeholder="your-grammarly-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #fde68a;font-size:13px;box-sizing:border-box;">
       </div>
       <div>
-        <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">Copy.ai ID <a href="https://www.copy.ai/?via=" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
-        <input id="aff-copyai" type="text" placeholder="your-copyai-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #fde68a;font-size:13px;box-sizing:border-box;">
+        <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">GetResponse ID <a href="https://www.getresponse.com/affiliate" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <input id="aff-getresponse" type="text" placeholder="your-getresponse-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #fde68a;font-size:13px;box-sizing:border-box;">
       </div>
       <div>
         <label style="font-size:12px;font-weight:700;color:#92400e;display:block;margin-bottom:4px;">Surfer SEO ID <a href="https://surferseo.com/?via=" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
@@ -182,7 +182,7 @@
     <div style="margin-top:16px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;font-size:12px;color:#78350f;">
       <strong>📋 Quick signup order (highest commissions first):</strong>
       <a href="https://www.semrush.com/partner/" target="_blank" style="color:#92400e;margin:0 6px;">Semrush ($200/sale)</a> →
-      <a href="https://www.copy.ai/affiliates" target="_blank" style="color:#92400e;margin:0 6px;">Copy.ai (45%)</a> →
+      <a href="https://www.grammarly.com/affiliates" target="_blank" style="color:#92400e;margin:0 6px;">Grammarly ($20/upgrade)</a> →
       <a href="https://invideo.io/affiliates/" target="_blank" style="color:#92400e;margin:0 6px;">InVideo (50%)</a> →
       <a href="https://pictory.ai/affiliate" target="_blank" style="color:#92400e;margin:0 6px;">Pictory (50%)</a> →
       <a href="https://elevenlabs.io/referral" target="_blank" style="color:#92400e;margin:0 6px;">ElevenLabs (22%)</a> →
@@ -321,14 +321,14 @@ async function fetchGuide(endpoint) {
 
 async function saveAffiliateIds() {
   const ids = {
-    jasper:     document.getElementById('aff-jasper').value.trim(),
-    copyai:     document.getElementById('aff-copyai').value.trim(),
-    surfer:     document.getElementById('aff-surfer').value.trim(),
-    semrush:    document.getElementById('aff-semrush').value.trim(),
-    elevenlabs: document.getElementById('aff-elevenlabs').value.trim(),
-    pictory:    document.getElementById('aff-pictory').value.trim(),
-    invideo:    document.getElementById('aff-invideo').value.trim(),
-    writesonic: document.getElementById('aff-writesonic').value.trim(),
+    grammarly:   document.getElementById('aff-grammarly').value.trim(),
+    getresponse: document.getElementById('aff-getresponse').value.trim(),
+    surfer:      document.getElementById('aff-surfer').value.trim(),
+    semrush:     document.getElementById('aff-semrush').value.trim(),
+    elevenlabs:  document.getElementById('aff-elevenlabs').value.trim(),
+    pictory:     document.getElementById('aff-pictory').value.trim(),
+    invideo:     document.getElementById('aff-invideo').value.trim(),
+    writesonic:  document.getElementById('aff-writesonic').value.trim(),
   };
   const filled = Object.values(ids).filter(v => v.length > 0);
   if (filled.length === 0) {

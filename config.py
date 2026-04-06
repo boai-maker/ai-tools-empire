@@ -18,6 +18,18 @@ class Config:
     TWITTER_ACCESS_TOKEN = os.getenv("TWITTER_ACCESS_TOKEN", "")
     TWITTER_ACCESS_SECRET = os.getenv("TWITTER_ACCESS_SECRET", "")
 
+    # Reddit
+    REDDIT_CLIENT_ID = os.getenv("REDDIT_CLIENT_ID", "")
+    REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET", "")
+    REDDIT_USERNAME = os.getenv("REDDIT_USERNAME", "")
+    REDDIT_PASSWORD = os.getenv("REDDIT_PASSWORD", "")
+    REDDIT_USER_AGENT = os.getenv("REDDIT_USER_AGENT", "AIToolsEmpire/1.0")
+
+    # YouTube
+    YOUTUBE_CLIENT_ID = os.getenv("YOUTUBE_CLIENT_ID", "")
+    YOUTUBE_CLIENT_SECRET = os.getenv("YOUTUBE_CLIENT_SECRET", "")
+    YOUTUBE_REFRESH_TOKEN = os.getenv("YOUTUBE_REFRESH_TOKEN", "")
+
     # Site
     SITE_NAME = os.getenv("SITE_NAME", "AI Tools Empire")
     SITE_URL = os.getenv("SITE_URL", "http://localhost:8000")
@@ -26,6 +38,12 @@ class Config:
     # Admin
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+
+    # SMTP (Gmail fallback — use when RESEND_API_KEY is not set)
+    SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USER = os.getenv("SMTP_USER", "")        # your Gmail address
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "") # Gmail App Password (not your login password)
 
     # SEO
     GOOGLE_SITE_VERIFICATION = os.getenv("GOOGLE_SITE_VERIFICATION", "")

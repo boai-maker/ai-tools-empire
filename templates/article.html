@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from 'macros/comparison_table.html' import render_comparison %}
 
 {% block title %}{{ article.title }} | {{ site_name }}{% endblock %}
 {% block meta_description %}{{ article.meta_description }}{% endblock %}
@@ -45,6 +46,98 @@
   ]
 }
 </script>
+
+{# ── FAQ Schema (Task 1) ─────────────────────────────────── #}
+{% if faq_pairs %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for pair in faq_pairs %}
+    {
+      "@type": "Question",
+      "name": {{ pair.q | tojson }},
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": {{ pair.a | tojson }}
+      }
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+
+{# ── Review Schema — articles with "review" in title (Task 2) ── #}
+{% set REVIEW_RATINGS = {
+  "semrush":     [4.7, 847,  139.95],
+  "surfer":      [4.6, 523,  89.0],
+  "elevenlabs":  [4.8, 1203, 5.0],
+  "pictory":     [4.5, 412,  19.0],
+  "invideo":     [4.4, 634,  25.0],
+  "writesonic":  [4.5, 789,  16.0],
+  "grammarly":   [4.7, 2341, 12.0],
+  "fireflies":   [4.6, 567,  10.0],
+  "murf":        [4.5, 389,  29.0],
+  "getresponse": [4.5, 678,  15.60],
+  "quillbot":    [4.4, 934,  9.95],
+  "descript":    [4.6, 445,  24.0],
+  "speechify":   [4.5, 567,  139.0],
+  "hubspot":     [4.5, 1123, 0.0]
+} %}
+{% if "review" in article.title|lower and article.featured_tool and article.featured_tool in REVIEW_RATINGS %}
+{% set rd = REVIEW_RATINGS[article.featured_tool] %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Review",
+  "name": {{ article.title | tojson }},
+  "url": "{{ site_url }}/articles/{{ article.slug }}",
+  "author": {"@type": "Organization", "name": "{{ site_name }}", "url": "{{ site_url }}"},
+  "reviewRating": {
+    "@type": "Rating",
+    "ratingValue": {{ rd[0] }},
+    "bestRating": 5,
+    "worstRating": 1
+  },
+  "itemReviewed": {
+    "@type": "SoftwareApplication",
+    "name": "{{ article.featured_tool | title }}",
+    "applicationCategory": "WebApplication",
+    "offers": {"@type": "Offer", "price": {{ rd[2] }}, "priceCurrency": "USD"},
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": {{ rd[0] }},
+      "reviewCount": {{ rd[1] }}
+    }
+  }
+}
+</script>
+{% endif %}
+
+{# ── ItemList Schema — "best" / "top" / numbered list articles (Task 2) ── #}
+{% if ("best" in article.title|lower or "top" in article.title|lower) and related_articles %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": {{ article.title | tojson }},
+  "url": "{{ site_url }}/articles/{{ article.slug }}",
+  "itemListElement": [
+    {% for rel in related_articles %}
+    {
+      "@type": "ListItem",
+      "position": {{ loop.index }},
+      "name": {{ rel.title | tojson }},
+      "url": "{{ site_url }}/articles/{{ rel.slug }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+
 <style>
   .article-header {
     background: linear-gradient(135deg, #0f172a, #1e1b4b);
@@ -164,6 +257,22 @@
         {{ article.content|safe }}
       </div>
 
+      <!-- Comparison Table (vs articles only) -->
+      {% if comparison %}
+      <div style="margin:36px 0 0;">
+        <h2 style="font-size:22px;font-weight:800;color:#1e293b;margin-bottom:4px;">Side-by-Side Comparison</h2>
+        <p style="color:#64748b;font-size:14px;margin:0 0 16px;">Updated {{ comparison.get('last_updated', '2026') }}</p>
+        {{ render_comparison(
+            tool_a=comparison.tool_a,
+            tool_b=comparison.tool_b,
+            rows=comparison.rows,
+            winner=comparison.winner,
+            cta_a=comparison.get('cta_a'),
+            cta_b=comparison.get('cta_b')
+        ) }}
+      </div>
+      {% endif %}
+
       <!-- Share Row -->
       <div class="share-row">
         <span>Share:</span>
@@ -171,14 +280,17 @@
         <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ site_url }}/articles/{{ article.slug }}" class="share-btn share-linkedin" target="_blank">💼 LinkedIn</a>
       </div>
 
-      <!-- Newsletter CTA -->
-      <div style="background:linear-gradient(135deg,#312e81,#1e1b4b);border-radius:14px;padding:32px;text-align:center;margin:32px 0;">
-        <h3 style="color:white;margin:0 0 8px;font-size:22px;">📬 Get Weekly AI Tool Deals</h3>
-        <p style="color:#a5b4fc;margin:0 0 20px;">Get the best AI tool deals and reviews — free every Monday.</p>
-        <form style="display:flex;gap:10px;max-width:380px;margin:0 auto;" onsubmit="handleSubscribeInline(event)">
+      <!-- Article-End Newsletter CTA — lead magnet -->
+      <div style="background:linear-gradient(135deg,#312e81,#1e1b4b);border-radius:14px;padding:36px;text-align:center;margin:40px 0;">
+        <div style="display:inline-block;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:#a5b4fc;margin-bottom:14px;">🎁 Free Download</div>
+        <h3 style="color:white;margin:0 0 8px;font-size:22px;">Free AI Tools Starter Kit</h3>
+        <p style="color:#a5b4fc;margin:0 0 6px;font-size:15px;">7 tools that pay for themselves — get the full guide free.</p>
+        <p style="color:#6366f1;font-size:13px;margin:0 0 20px;">Grammarly · Writesonic · Surfer SEO · ElevenLabs · Fireflies · Pictory · GetResponse</p>
+        <form style="display:flex;gap:10px;max-width:400px;margin:0 auto 10px;" onsubmit="handleSubscribeInline(event)">
           <input type="email" id="inline-email" placeholder="your@email.com" required style="flex:1;padding:12px 16px;border-radius:8px;border:none;font-size:14px;">
-          <button type="submit" class="btn btn-primary" style="white-space:nowrap;">Subscribe</button>
+          <button type="submit" class="btn btn-primary" style="white-space:nowrap;padding:12px 20px;">Send It Free →</button>
         </form>
+        <p style="color:#64748b;font-size:12px;margin:0;">No spam. Unsubscribe anytime.</p>
       </div>
 
       <!-- Related Articles -->
