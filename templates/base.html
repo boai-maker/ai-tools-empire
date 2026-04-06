@@ -61,349 +61,223 @@
   }
   </script>
 
-  <!-- Fonts — preconnect + display=swap prevents render-blocking -->
+  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Design System + CSS -->
+  <link rel="stylesheet" href="/static/css/design-system.css">
+  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
   <link rel="shortcut icon" href="/static/favicon.svg">
 
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    :root {
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --secondary: #8b5cf6;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --text: #1e293b;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --bg: #f8fafc;
-      --white: #ffffff;
-      --radius: 10px;
-      --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-      --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-    }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      line-height: 1.6;
-    }
-    a { color: var(--primary); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-
-    /* ─── Nav ─── */
-    .nav {
-      background: white;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .nav-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 64px;
-    }
-    .nav-logo {
-      font-size: 20px;
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-decoration: none;
-    }
-    .nav-links { display: flex; gap: 24px; align-items: center; }
-    .nav-links a {
-      color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 500;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .nav-links a:hover { color: var(--primary); }
-    .nav-cta {
-      background: var(--primary);
-      color: white !important;
-      padding: 8px 18px;
-      border-radius: 8px;
-      font-weight: 600;
-    }
-    .nav-cta:hover { background: var(--primary-dark) !important; text-decoration: none !important; }
-
-    /* ─── Layout ─── */
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 32px;
-      margin: 40px auto;
-      max-width: 1100px;
-      padding: 0 20px;
-    }
-    @media (max-width: 768px) {
-      .main-grid { grid-template-columns: 1fr; }
-      .nav-links .hide-mobile { display: none; }
-    }
-
-    /* ─── Buttons ─── */
-    .btn {
-      display: inline-block;
-      padding: 12px 24px;
-      border-radius: var(--radius);
-      font-weight: 600;
-      font-size: 15px;
-      text-decoration: none;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-    }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); text-decoration: none; }
-    .btn-success { background: var(--success); color: white; }
-    .btn-success:hover { background: #059669; transform: translateY(-1px); text-decoration: none; }
-    .btn-outline { border: 2px solid var(--primary); color: var(--primary); background: transparent; }
-    .btn-outline:hover { background: var(--primary); color: white; text-decoration: none; }
-    .btn-lg { padding: 16px 32px; font-size: 17px; }
-    .btn-sm { padding: 8px 16px; font-size: 13px; }
-
-    /* ─── Cards ─── */
-    .card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: var(--shadow);
-    }
-
-    /* ─── Article content styles ─── */
-    .article-content h2 { font-size: 26px; color: var(--text); margin: 32px 0 16px; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
-    .article-content h3 { font-size: 20px; color: var(--text); margin: 24px 0 12px; }
-    .article-content p { margin: 0 0 16px; line-height: 1.75; color: #374151; }
-    .article-content ul, .article-content ol { margin: 0 0 16px; padding-left: 24px; }
-    .article-content li { margin: 6px 0; color: #374151; line-height: 1.7; }
-    .article-content table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
-    .article-content th { background: var(--primary); color: white; padding: 12px 16px; text-align: left; }
-    .article-content td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
-    .article-content tr:nth-child(even) td { background: #f8fafc; }
-    .article-content .tldr-box { background: #f0fdf4; border: 2px solid #86efac; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
-    .article-content .tldr-box strong { color: #15803d; }
-    .article-content .cta-button { display: inline-block; background: var(--success); color: white; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 16px; text-decoration: none; margin: 8px 0; transition: all 0.2s; }
-    .article-content .cta-button:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.3); text-decoration: none; }
-    .article-content .comparison-table th { background: #4f46e5; }
-
-    /* ─── Affiliate disclosure ─── */
-    .affiliate-notice {
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 13px;
-      color: #92400e;
-      margin-bottom: 24px;
-    }
-
-    /* ─── Footer ─── */
-    footer {
-      background: var(--text);
-      color: #94a3b8;
-      padding: 48px 0 24px;
-      margin-top: 80px;
-    }
-    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-    .footer-brand p { font-size: 14px; line-height: 1.7; margin-top: 12px; }
-    footer h4 { color: white; font-size: 14px; margin: 0 0 16px; text-transform: uppercase; letter-spacing: 0.05em; }
-    footer a { color: #94a3b8; font-size: 14px; text-decoration: none; display: block; margin-bottom: 8px; }
-    footer a:hover { color: white; }
-    .footer-bottom { max-width: 1100px; margin: 40px auto 0; padding: 20px 20px 0; border-top: 1px solid #334155; font-size: 13px; text-align: center; }
-    @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
-
-    /* ─── Toast notification ─── */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: var(--success);
-      color: white;
-      padding: 14px 20px;
-      border-radius: 10px;
-      font-weight: 600;
-      box-shadow: var(--shadow-lg);
-      z-index: 9999;
-      transform: translateY(100px);
-      opacity: 0;
-      transition: all 0.3s ease;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
-  </style>
   {% block extra_head %}{% endblock %}
 </head>
 <body>
 
-<!-- Navigation -->
-<nav class="nav">
-  <div class="nav-inner">
-    <a href="/" class="nav-logo">🤖 {{ site_name }}</a>
-    <div class="nav-links">
-      <a href="/tools" class="hide-mobile">Top AI Tools</a>
-      <a href="/articles" class="hide-mobile">Reviews</a>
-      <a href="/articles?category=seo" class="hide-mobile">SEO</a>
-      <a href="/articles?category=video" class="hide-mobile">Video AI</a>
-      <a href="/services" class="hide-mobile" style="color:#10b981;font-weight:700;">✍️ Hire Us</a>
-      <a href="/#subscribe" class="nav-cta">Free Newsletter</a>
+<!-- ══════════════════════════════════════════════════
+     NAVIGATION
+     ══════════════════════════════════════════════════ -->
+<header>
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+
+      <!-- Logo -->
+      <a href="/" class="nav-logo" aria-label="{{ site_name }} home">
+        <div class="nav-logo-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="white" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="nav-logo-text">{{ site_name }}</span>
+      </a>
+
+      <!-- Desktop center links -->
+      <div class="nav-links" role="menubar">
+        <a href="/tools" class="nav-link" role="menuitem">Tools</a>
+        <a href="/articles" class="nav-link" role="menuitem">Reviews</a>
+        <a href="/articles?category=writing" class="nav-link" role="menuitem">Writing</a>
+        <a href="/articles?category=seo" class="nav-link" role="menuitem">SEO</a>
+        <a href="/articles?category=video" class="nav-link" role="menuitem">Video AI</a>
+        <a href="/services" class="nav-link" role="menuitem" style="color:#34d399;">Hire Us</a>
+      </div>
+
+      <!-- Desktop right actions -->
+      <div class="nav-actions">
+        <a href="/#subscribe" class="btn btn-ghost-white btn-sm" style="font-size:0.8rem;">Newsletter</a>
+        <a href="/tools" class="btn btn-primary btn-sm">Best Tools →</a>
+      </div>
+
+      <!-- Mobile hamburger -->
+      <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
     </div>
-  </div>
-</nav>
+
+    <!-- Mobile slide-down menu -->
+    <nav id="mobile-menu" class="nav-mobile-menu" aria-label="Mobile navigation">
+      <a href="/tools" class="nav-mobile-link">Tools Directory</a>
+      <a href="/articles" class="nav-mobile-link">All Reviews</a>
+      <a href="/articles?category=writing" class="nav-mobile-link">AI Writing Tools</a>
+      <a href="/articles?category=seo" class="nav-mobile-link">AI SEO Tools</a>
+      <a href="/articles?category=video" class="nav-mobile-link">AI Video Tools</a>
+      <a href="/articles?category=audio" class="nav-mobile-link">AI Voice Tools</a>
+      <a href="/articles?category=productivity" class="nav-mobile-link">Productivity AI</a>
+      <a href="/services" class="nav-mobile-link" style="color:#34d399;font-weight:600;">✍️ Hire Us</a>
+      <a href="/#subscribe" class="nav-mobile-link">Free Newsletter</a>
+      <div style="padding:var(--spacing-3) 0 var(--spacing-2);">
+        <a href="/tools" class="btn btn-primary" style="width:100%;justify-content:center;display:flex;">Best AI Tools →</a>
+      </div>
+    </nav>
+  </nav>
+</header>
 
 {% block content %}{% endblock %}
 
-<!-- Footer -->
-<footer>
+<!-- ══════════════════════════════════════════════════
+     FOOTER
+     ══════════════════════════════════════════════════ -->
+<footer class="footer" role="contentinfo">
   <div class="footer-grid">
-    <div class="footer-brand">
-      <a href="/" style="color:white;font-size:18px;font-weight:800;text-decoration:none;">🤖 {{ site_name }}</a>
-      <p>Independent reviews and comparisons of the best AI tools. We help you pick the right tool — honestly.</p>
-      <p style="font-size:12px;margin-top:16px;">Disclosure: We earn affiliate commissions when you purchase through our links, at no extra cost to you.</p>
-    </div>
+
+    <!-- Brand column -->
     <div>
-      <h4>Categories</h4>
-      <a href="/articles?category=writing">AI Writing</a>
-      <a href="/articles?category=seo">AI SEO</a>
-      <a href="/articles?category=video">AI Video</a>
-      <a href="/articles?category=audio">AI Voice</a>
-      <a href="/articles?category=productivity">Productivity</a>
+      <a href="/" class="footer-brand-logo" aria-label="{{ site_name }} home">
+        <div class="nav-logo-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="white" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="footer-brand-text">{{ site_name }}</span>
+      </a>
+      <p class="footer-brand-desc">
+        Independent reviews and honest comparisons of the best AI tools. We test every tool so you spend your money on the right one.
+      </p>
+      <div class="footer-social" aria-label="Social media links">
+        <a href="https://twitter.com/aitoolsempire" class="footer-social-link" aria-label="Twitter" rel="noopener noreferrer" target="_blank">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.258 5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="https://youtube.com/@aitoolsempire" class="footer-social-link" aria-label="YouTube" rel="noopener noreferrer" target="_blank">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M21.582 7.186a2.506 2.506 0 0 0-1.762-1.773C18.254 5 12 5 12 5s-6.254 0-7.82.413A2.506 2.506 0 0 0 2.418 7.186C2 8.763 2 12 2 12s0 3.237.418 4.814a2.506 2.506 0 0 0 1.762 1.773C5.746 19 12 19 12 19s6.254 0 7.82-.413a2.506 2.506 0 0 0 1.762-1.773C22 15.237 22 12 22 12s0-3.237-.418-4.814zM10 15V9l5.2 3-5.2 3z"/></svg>
+        </a>
+        <a href="https://linkedin.com/company/aitoolsempire" class="footer-social-link" aria-label="LinkedIn" rel="noopener noreferrer" target="_blank">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+        </a>
+      </div>
     </div>
-    <div>
-      <h4>Best-Of Guides</h4>
-      <a href="/best-ai-writing-tools">Best AI Writing Tools</a>
-      <a href="/best-ai-seo-tools">Best AI SEO Tools</a>
-      <a href="/best-ai-video-tools">Best AI Video Tools</a>
-      <a href="/best-ai-voice-tools">Best AI Voice Tools</a>
-      <a href="/best-ai-productivity-tools">Best AI Productivity Tools</a>
+
+    <!-- Quick links -->
+    <div class="footer-col">
+      <h4>AI Tools</h4>
+      <a href="/tools">All Tools</a>
+      <a href="/tools?category=writing">Writing AI</a>
+      <a href="/tools?category=seo">SEO Tools</a>
+      <a href="/tools?category=video">Video AI</a>
+      <a href="/tools?category=audio">Voice AI</a>
+      <a href="/tools?category=productivity">Productivity</a>
     </div>
-    <div>
-      <h4>Company</h4>
-      <a href="/about">About</a>
-      <a href="/contact">Contact</a>
-      <a href="/how-we-test">How We Test</a>
-      <a href="/privacy">Privacy Policy</a>
-      <a href="/disclaimer">Affiliate Disclaimer</a>
+
+    <!-- Resources -->
+    <div class="footer-col">
+      <h4>Resources</h4>
+      <a href="/articles">All Reviews</a>
+      <a href="/best-ai-writing-tools">Best Writing Tools</a>
+      <a href="/best-ai-seo-tools">Best SEO Tools</a>
+      <a href="/best-ai-video-tools">Best Video Tools</a>
+      <a href="/static/ai-tools-cheatsheet.html" target="_blank">Free Cheat Sheet</a>
+      <a href="/how-we-test">How We Review</a>
     </div>
+
+    <!-- Newsletter mini form -->
+    <div class="footer-col">
+      <h4>Weekly Digest</h4>
+      <p style="font-size:var(--font-size-sm);color:var(--color-text-muted);line-height:var(--line-height-relaxed);margin-bottom:var(--spacing-3);">
+        New tool reviews, deals, and guides — every week. Free.
+      </p>
+      <form class="footer-newsletter-form" onsubmit="handleFooterSubscribe(event)">
+        <input type="email" id="footer-email" placeholder="your@email.com" required autocomplete="email" />
+        <button type="submit">Join</button>
+      </form>
+      <p style="font-size:var(--font-size-xs);color:var(--color-text-muted);margin-top:var(--spacing-2);">No spam. Unsubscribe anytime.</p>
+    </div>
+
   </div>
+
+  <!-- Bottom bar -->
   <div class="footer-bottom">
-    <p>© {{ current_year }} {{ site_name }}. All rights reserved. | Built with ❤️ and AI</p>
+    <p>© {{ current_year }} {{ site_name }}. All rights reserved.</p>
+    <div class="footer-bottom-links">
+      <a href="/privacy">Privacy</a>
+      <a href="/disclaimer">Affiliate Disclaimer</a>
+      <a href="/contact">Contact</a>
+      <a href="/about">About</a>
+    </div>
+    <p style="font-size:0.7rem;max-width:480px;text-align:right;">
+      We earn affiliate commissions when you purchase through our links, at no extra cost to you. Rankings are based on editorial merit only.
+    </p>
   </div>
 </footer>
 
-<!-- Exit-Intent Email Popup -->
-<div id="exit-popup" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
-  <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:20px;padding:40px 36px;max-width:460px;width:90%;margin:auto;position:relative;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.5);">
-    <button onclick="closePopup()" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer;line-height:1;">✕</button>
-    <div style="font-size:40px;margin-bottom:12px;">🎁</div>
-    <h2 style="color:white;font-size:24px;margin:0 0 8px;">Wait — Free AI Tools Starter Kit</h2>
-    <p style="color:#a5b4fc;font-size:15px;margin:0 0 24px;">Get our curated list of the 7 best free AI tools that pay for themselves — delivered instantly to your inbox.</p>
-    <form onsubmit="handlePopupSubscribe(event)" style="display:flex;flex-direction:column;gap:12px;">
-      <input type="email" id="popup-email" placeholder="Enter your email address" required
-        style="padding:14px 16px;border-radius:10px;border:none;font-size:15px;width:100%;box-sizing:border-box;">
-      <button type="submit" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;padding:14px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;">
-        Send Me the Free Kit →
-      </button>
+<!-- ══════════════════════════════════════════════════
+     EXIT-INTENT POPUP
+     ══════════════════════════════════════════════════ -->
+<div id="exit-popup" role="dialog" aria-modal="true" aria-labelledby="popup-heading">
+  <div class="exit-popup-card">
+    <button class="exit-popup-close" onclick="closePopup()" aria-label="Close popup">✕</button>
+    <div class="exit-popup-icon">🎁</div>
+    <h2 id="popup-heading">Free AI Tools Starter Kit</h2>
+    <p>Get our curated list of the 7 best free AI tools that pay for themselves — delivered instantly to your inbox.</p>
+    <form class="exit-popup-form" onsubmit="handlePopupSubscribe(event)">
+      <input type="email" id="popup-email" placeholder="Enter your email address" required autocomplete="email" />
+      <button type="submit" class="btn btn-primary">Send Me the Free Kit →</button>
     </form>
-    <p style="color:#64748b;font-size:12px;margin:12px 0 0;">No spam. Unsubscribe anytime.</p>
+    <p class="exit-popup-fine">No spam. Unsubscribe anytime.</p>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- Toast notification -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- JavaScript -->
+<script src="/static/js/main.js"></script>
 
 <script>
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 4000);
-}
-
-// Track affiliate clicks
-document.querySelectorAll('.affiliate-link').forEach(link => {
-  link.addEventListener('click', function() {
-    const tool = this.dataset.tool;
-    fetch(`/track/click/${tool}?source=${encodeURIComponent(window.location.pathname)}`, {method:'POST'});
-  });
-});
-
-// Smooth scroll for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', function(e) {
-    const target = document.querySelector(this.getAttribute('href'));
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth' });
+async function handleFooterSubscribe(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button');
+  const email = document.getElementById('footer-email').value.trim();
+  if (!email) return;
+  btn.textContent = '...';
+  btn.disabled = true;
+  try {
+    const r = await fetch('/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, source: 'footer' })
+    });
+    const d = await r.json();
+    if (d.success) {
+      btn.textContent = '✓ Done!';
+      document.getElementById('footer-email').value = '';
+      showToast('✓ Subscribed! Welcome aboard.');
+    } else {
+      btn.textContent = d.message || 'Try again';
+      btn.disabled = false;
     }
-  });
-});
+  } catch {
+    btn.textContent = 'Error';
+    btn.disabled = false;
+  }
+}
 </script>
 
 {% block extra_js %}{% endblock %}
 
-<script>
-// Exit-intent + scroll popup logic
-(function() {
-  const POPUP_KEY = 'popup_shown';
-  if (sessionStorage.getItem(POPUP_KEY)) return;
-
-  function showPopup() {
-    if (sessionStorage.getItem(POPUP_KEY)) return;
-    sessionStorage.setItem(POPUP_KEY, '1');
-    const el = document.getElementById('exit-popup');
-    el.style.display = 'flex';
-  }
-
-  // Exit intent (desktop)
-  document.addEventListener('mouseleave', function(e) {
-    if (e.clientY < 10) showPopup();
-  });
-
-  // Scroll 60% trigger (mobile + desktop fallback)
-  window.addEventListener('scroll', function() {
-    const scrolled = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-    if (scrolled > 0.6) showPopup();
-  }, { passive: true });
-
-  // Close on backdrop click
-  document.getElementById('exit-popup').addEventListener('click', function(e) {
-    if (e.target === this) closePopup();
-  });
-})();
-
-function closePopup() {
-  document.getElementById('exit-popup').style.display = 'none';
-}
-
-async function handlePopupSubscribe(e) {
-  e.preventDefault();
-  const email = document.getElementById('popup-email').value.trim();
-  if (!email) return;
-  try {
-    const r = await fetch('/subscribe', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ email, name: '', source: 'exit-popup' })
-    });
-    const d = await r.json();
-    closePopup();
-    showToast(d.success ? '✅ Check your inbox — kit is on its way!' : '⚠️ ' + (d.message || 'Error'));
-  } catch(err) {
-    showToast('⚠️ Something went wrong. Please try again.');
-  }
-}
-</script>
 </body>
 </html>

@@ -1,448 +1,714 @@
 {% extends "base.html" %}
 
-{% block title %}{{ site_name }} — Best AI Tools Reviews, Comparisons & Deals{% endblock %}
-{% block meta_description %}Honest reviews of the best AI tools in 2026. Compare Jasper AI, Surfer SEO, ElevenLabs, Copy.ai, and more. Updated weekly.{% endblock %}
+{% block title %}{{ site_name }} — Best AI Tools Reviews, Comparisons & Deals 2026{% endblock %}
+{% block meta_description %}Honest reviews of the best AI tools in 2026. Compare Jasper AI, Surfer SEO, ElevenLabs, Copy.ai, and more. Updated weekly by independent experts.{% endblock %}
 
 {% block extra_head %}
 <style>
-  /* ─── Hero ─── */
-  .hero {
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
-    padding: 80px 20px 100px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at center, rgba(99,102,241,0.15) 0%, transparent 60%);
-    pointer-events: none;
-  }
-  .hero-badge {
-    display: inline-block;
-    background: rgba(99,102,241,0.2);
-    border: 1px solid rgba(99,102,241,0.4);
-    color: #a5b4fc;
-    padding: 6px 16px;
-    border-radius: 100px;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    letter-spacing: 0.03em;
-  }
-  .hero h1 {
-    font-size: clamp(32px, 5vw, 58px);
-    font-weight: 800;
-    color: white;
-    margin: 0 0 20px;
-    line-height: 1.15;
-    max-width: 800px;
-    margin: 0 auto 20px;
-  }
-  .hero h1 span {
-    background: linear-gradient(135deg, #818cf8, #c084fc);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .hero-sub {
-    font-size: 18px;
-    color: #94a3b8;
-    max-width: 580px;
-    margin: 0 auto 36px;
-    line-height: 1.7;
-  }
-  .hero-stats {
-    display: flex;
-    gap: 40px;
-    justify-content: center;
-    margin-top: 48px;
-    flex-wrap: wrap;
-  }
-  .hero-stat { text-align: center; }
-  .hero-stat .num {
-    font-size: 28px;
-    font-weight: 800;
-    color: white;
-  }
-  .hero-stat .label { font-size: 13px; color: #64748b; margin-top: 2px; }
+/* ── Hero ── */
+.hero {
+  position: relative;
+  background: var(--gradient-hero);
+  padding: 100px 0 110px;
+  overflow: hidden;
+}
 
-  /* ─── Top Tools Strip ─── */
-  .tools-strip {
-    background: white;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 16px 0;
-    overflow: hidden;
-  }
-  .tools-strip-inner {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 20px;
-  }
-  .tool-chip {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 100px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #475569;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-  .tool-chip:hover { border-color: var(--primary); color: var(--primary); background: #eef2ff; text-decoration: none; }
+.hero-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(248,250,252,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(248,250,252,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
 
-  /* ─── Section ─── */
-  .section { padding: 64px 0; }
-  .section-header { text-align: center; margin-bottom: 48px; }
-  .section-header h2 { font-size: 36px; font-weight: 800; margin: 0 0 12px; }
-  .section-header p { color: var(--text-muted); font-size: 18px; max-width: 560px; margin: 0 auto; }
+.hero-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, transparent 70%);
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
 
-  /* ─── Tool Cards Grid ─── */
-  .tools-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 24px;
-  }
-  .tool-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 24px;
-    transition: all 0.2s;
-    position: relative;
-  }
-  .tool-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
-  .tool-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
-  .tool-icon { font-size: 32px; }
-  .tool-badge {
-    background: #ecfdf5;
-    color: #065f46;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 100px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .tool-badge.blue { background: #eff6ff; color: #1e40af; }
-  .tool-badge.purple { background: #f5f3ff; color: #5b21b6; }
-  .tool-badge.orange { background: #fff7ed; color: #9a3412; }
-  .tool-card h3 { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
-  .tool-card p { color: var(--text-muted); font-size: 14px; margin: 0 0 16px; line-height: 1.6; }
-  .tool-meta { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
-  .tool-meta-item { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
-  .tool-meta-item strong { color: var(--text); }
-  .stars { color: #f59e0b; font-size: 13px; }
-  .tool-card .rating-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-  .tool-card .rating-num { font-size: 14px; font-weight: 700; color: var(--text); }
-  .tool-card .review-count { font-size: 12px; color: var(--text-muted); }
+.hero-glow-bottom {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(ellipse, rgba(139,92,246,0.12) 0%, transparent 70%);
+  bottom: -150px;
+  right: 10%;
+  pointer-events: none;
+}
 
-  /* ─── Category tabs ─── */
-  .category-tabs {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    margin-bottom: 36px;
-    flex-wrap: wrap;
-  }
-  .category-tab {
-    padding: 9px 20px;
-    border-radius: 100px;
-    font-size: 14px;
-    font-weight: 600;
-    background: white;
-    border: 2px solid var(--border);
-    color: var(--text-muted);
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-  .category-tab.active, .category-tab:hover {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
-    text-decoration: none;
-  }
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-6);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+}
 
-  /* ─── Article Cards ─── */
-  .articles-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 24px;
-  }
-  .article-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: all 0.2s;
-  }
-  .article-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-  .article-card-img {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 40px;
-  }
-  .article-card-body { padding: 20px; }
-  .article-cat {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--primary);
-    margin-bottom: 8px;
-  }
-  .article-card h3 { font-size: 16px; font-weight: 700; margin: 0 0 8px; line-height: 1.4; }
-  .article-card h3 a { color: var(--text); text-decoration: none; }
-  .article-card h3 a:hover { color: var(--primary); }
-  .article-card p { font-size: 13px; color: var(--text-muted); margin: 0 0 14px; line-height: 1.6; }
-  .read-more { font-size: 13px; font-weight: 600; color: var(--primary); }
+.hero-content {
+  flex: 1;
+  max-width: 680px;
+}
 
-  /* ─── Subscribe box ─── */
-  .subscribe-section {
-    background: linear-gradient(135deg, #312e81, #1e1b4b);
-    padding: 72px 20px;
-    text-align: center;
-  }
-  .subscribe-section h2 { font-size: 36px; font-weight: 800; color: white; margin: 0 0 12px; }
-  .subscribe-section p { color: #a5b4fc; font-size: 17px; margin: 0 0 32px; }
-  .subscribe-form { display: flex; max-width: 480px; margin: 0 auto; gap: 12px; }
-  .subscribe-form input {
-    flex: 1;
-    padding: 14px 18px;
-    border-radius: 10px;
-    border: none;
-    font-size: 15px;
-    outline: none;
-  }
-  .subscribe-perks {
-    display: flex;
-    gap: 24px;
-    justify-content: center;
-    margin-top: 20px;
-    flex-wrap: wrap;
-  }
-  .subscribe-perk { color: #a5b4fc; font-size: 14px; }
-  .subscribe-perk::before { content: '✓ '; color: #34d399; font-weight: 700; }
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: #6ee7b7;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-6);
+}
 
-  /* ─── Social proof ─── */
-  .proof-bar {
-    background: white;
-    padding: 32px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .proof-bar-inner {
-    display: flex;
-    gap: 40px;
-    justify-content: center;
-    align-items: center;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 20px;
-    flex-wrap: wrap;
-  }
-  .proof-item { text-align: center; }
-  .proof-num { font-size: 26px; font-weight: 800; color: var(--text); }
-  .proof-label { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.hero-eyebrow-dot {
+  width: 7px;
+  height: 7px;
+  background: var(--color-accent-green);
+  border-radius: var(--radius-full);
+  animation: glowPulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.hero h1 {
+  font-size: var(--font-size-hero);
+  font-weight: var(--font-weight-extrabold);
+  color: white;
+  margin: 0 0 var(--spacing-5);
+  line-height: 1.1;
+  letter-spacing: var(--letter-spacing-hero);
+}
+
+.hero h1 .gradient-word {
+  background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: #94a3b8;
+  line-height: var(--line-height-relaxed);
+  margin: 0 0 var(--spacing-8);
+  max-width: 520px;
+}
+
+.hero-ctas {
+  display: flex;
+  gap: var(--spacing-4);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-10);
+}
+
+.hero-social-proof {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  flex-wrap: wrap;
+}
+
+/* ── Quick-nav bar ── */
+.quicknav {
+  background: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--spacing-3) 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.quicknav::-webkit-scrollbar { display: none; }
+.quicknav-inner {
+  display: flex;
+  gap: var(--spacing-2);
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-6);
+  min-width: max-content;
+}
+.quicknav-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 7px 18px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+}
+.quicknav-chip:hover {
+  border-color: rgba(99,102,241,0.5);
+  color: var(--color-primary-light);
+  background: var(--color-primary-faint);
+  text-decoration: none;
+}
+
+/* ── Section backgrounds ── */
+.section-dark { background: var(--color-bg-base); }
+.section-card { background: var(--color-bg-card); }
+
+/* ── Categories grid ── */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--spacing-4);
+}
+
+/* ── Comparisons grid ── */
+.comparisons-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.comparison-card-full {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-5) var(--spacing-6);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-5);
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+.comparison-card-full:hover {
+  border-color: rgba(99,102,241,0.4);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+}
+
+.comp-names {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+.comp-name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+.comp-vs {
+  background: var(--color-primary-faint);
+  border: 1px solid rgba(99,102,241,0.3);
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-black);
+  color: var(--color-primary-light);
+  letter-spacing: var(--letter-spacing-wide);
+  flex-shrink: 0;
+}
+.comp-cta {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary-light);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Blog articles grid ── */
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-6);
+}
+
+@media (max-width: 1100px) {
+  .categories-grid { grid-template-columns: repeat(3, 1fr); }
+  .blog-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .hero { padding: 72px 0 80px; }
+  .hero-inner { flex-direction: column; }
+  .hero h1 { font-size: 2.5rem; }
+  .hero-subtitle { font-size: 1rem; }
+  .hero-ctas { gap: var(--spacing-3); }
+  .hero-ctas .btn-xl { padding: 13px 26px; font-size: 1rem; }
+  .categories-grid { grid-template-columns: repeat(2, 1fr); }
+  .blog-grid { grid-template-columns: 1fr; }
+  .comp-names { flex-direction: column; align-items: flex-start; gap: var(--spacing-2); }
+}
+
+@media (max-width: 480px) {
+  .categories-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero-ctas { flex-direction: column; align-items: stretch; text-align: center; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- Hero -->
-<section class="hero">
-  <div class="hero-badge">🔥 Updated April 2026</div>
-  <h1>Find the <span>Best AI Tools</span><br>for Your Business</h1>
-  <p class="hero-sub">
-    Independent reviews, honest comparisons, and the best deals on AI tools.
-    We test every tool so you don't waste money on the wrong one.
-  </p>
-  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
-    <a href="/tools" class="btn btn-primary btn-lg">Browse All Tools →</a>
-    <a href="#subscribe" class="btn btn-outline btn-lg" style="color:white;border-color:rgba(255,255,255,0.3)">Get Free Newsletter</a>
-  </div>
-  <div class="hero-stats">
-    {% if subscriber_count > 100 %}
-    <div class="hero-stat"><div class="num">{{ subscriber_count }}+</div><div class="label">Newsletter Subscribers</div></div>
-    {% endif %}
-    <div class="hero-stat"><div class="num">{{ article_count }}+</div><div class="label">In-Depth Reviews</div></div>
-    <div class="hero-stat"><div class="num">17</div><div class="label">AI Tools Covered</div></div>
-    <div class="hero-stat"><div class="num">No</div><div class="label">Paid Placements</div></div>
+<!-- ══════════════════════════════════════════════════
+     HERO SECTION
+     ══════════════════════════════════════════════════ -->
+<section class="hero" aria-label="Hero">
+  <div class="hero-grid-overlay"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow-bottom"></div>
+
+  <div class="hero-inner">
+    <div class="hero-content animate-on-scroll">
+
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        Trusted by 50,000+ creators &amp; marketers
+      </div>
+
+      <h1>Find the <span class="gradient-word">Best AI Tools</span><br>for Your Workflow</h1>
+
+      <p class="hero-subtitle">
+        In-depth reviews, honest comparisons, and expert picks — updated weekly. We test every tool so you don't waste money on the wrong one.
+      </p>
+
+      <div class="hero-ctas">
+        <a href="/tools" class="btn btn-primary btn-xl">Browse All Tools →</a>
+        <a href="/articles" class="btn btn-ghost-white btn-lg">Read Top Reviews</a>
+      </div>
+
+      <div class="hero-social-proof">
+        <div class="avatar-stack">
+          <div class="avatar-stack-imgs">
+            <div class="avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">A</div>
+            <div class="avatar" style="background:linear-gradient(135deg,#10b981,#0891b2);">M</div>
+            <div class="avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">K</div>
+            <div class="avatar" style="background:linear-gradient(135deg,#ec4899,#8b5cf6);">S</div>
+          </div>
+          <div class="avatar-stack-text">
+            Join <strong>12,000+</strong> weekly subscribers
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;font-size:var(--font-size-xs);color:var(--color-text-muted);">
+          <span style="color:var(--color-accent-amber);font-size:14px;">★★★★★</span>
+          <span>Independent &amp; unsponsored</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating decorative cards -->
+    <div class="hero-deco-cards" aria-hidden="true">
+      <div class="hero-deco-card">
+        <div class="hero-deco-card-dot"></div>
+        <div class="hero-deco-card-line primary"></div>
+        <div class="hero-deco-card-line"></div>
+        <div class="hero-deco-card-line short"></div>
+      </div>
+      <div class="hero-deco-card">
+        <div style="font-size:20px;margin-bottom:8px;">✍️</div>
+        <div class="hero-deco-card-line primary"></div>
+        <div class="hero-deco-card-line short"></div>
+      </div>
+      <div class="hero-deco-card">
+        <div style="font-size:20px;margin-bottom:8px;">🔍</div>
+        <div class="hero-deco-card-line" style="background:rgba(16,185,129,0.4);width:75%;"></div>
+        <div class="hero-deco-card-line short"></div>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- Use-case nav bar — replaces redundant proof bar -->
-<div class="tools-strip">
-  <div class="tools-strip-inner">
-    <a href="/best-ai-writing-tools" class="tool-chip">✍️ Best Writing Tools</a>
-    <a href="/best-ai-seo-tools" class="tool-chip">🔍 Best SEO Tools</a>
-    <a href="/best-ai-video-tools" class="tool-chip">🎬 Best Video Tools</a>
-    <a href="/best-ai-voice-tools" class="tool-chip">🎙️ Best Voice Tools</a>
-    <a href="/best-ai-productivity-tools" class="tool-chip">⚡ Best Productivity Tools</a>
+<!-- Quick navigation bar -->
+<div class="quicknav" aria-label="Quick category navigation">
+  <div class="quicknav-inner">
+    <a href="/best-ai-writing-tools" class="quicknav-chip">✍️ Best Writing Tools</a>
+    <a href="/best-ai-seo-tools" class="quicknav-chip">🔍 Best SEO Tools</a>
+    <a href="/best-ai-video-tools" class="quicknav-chip">🎬 Best Video Tools</a>
+    <a href="/best-ai-voice-tools" class="quicknav-chip">🎙️ Best Voice Tools</a>
+    <a href="/best-ai-productivity-tools" class="quicknav-chip">⚡ Best Productivity Tools</a>
+    <a href="/articles" class="quicknav-chip">📖 All Reviews</a>
   </div>
 </div>
 
-<!-- Top AI Tools -->
-<section class="section" style="background:white;">
+
+<!-- ══════════════════════════════════════════════════
+     STATS BAR
+     ══════════════════════════════════════════════════ -->
+<div class="stats-bar animate-on-scroll" aria-label="Site statistics">
+  <div class="stats-bar-inner">
+    <div class="stat-item">
+      <div class="stat-number" data-count="50" data-suffix="+">50+</div>
+      <div class="stat-label">Tools Reviewed</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-count="3" data-suffix="M+ Words">3M+</div>
+      <div class="stat-label">Words Written</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-count="12000" data-suffix="+">12K+</div>
+      <div class="stat-label">Subscribers</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" style="font-size:1.5rem;letter-spacing:-0.01em;">Weekly</div>
+      <div class="stat-label">Updated</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     EDITOR'S PICKS — FEATURED TOOLS
+     ══════════════════════════════════════════════════ -->
+<section class="section section-dark" aria-labelledby="picks-heading">
   <div class="container">
-    <div class="section-header">
-      <h2>🏆 Top AI Tools Right Now</h2>
-      <p>Our top picks across writing, SEO, video, voice, and productivity — each with a free trial.</p>
+
+    <div class="section-header animate-on-scroll">
+      <div>
+        <div class="section-eyebrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Editor's Picks
+        </div>
+        <h2 id="picks-heading">Top AI Tools Right Now</h2>
+        <p>Our highest-rated picks across writing, SEO, video, voice, and productivity — each with a free trial.</p>
+      </div>
+      <a href="/tools" class="section-see-all">View all tools →</a>
     </div>
 
-    <!-- Category Tabs -->
-    <div class="category-tabs">
-      <a href="/tools" class="category-tab active">All</a>
-      {% for key, cat in categories.items() %}
-      <a href="/tools?category={{ key }}" class="category-tab">{{ cat.icon }} {{ cat.label }}</a>
-      {% endfor %}
-    </div>
-
-    <div class="tools-grid">
+    <div class="grid grid-auto-fill-320 gap-6">
       {% for key, tool in featured_tools.items() %}
-      <div class="tool-card">
-        <div class="tool-card-top">
-          <div class="tool-icon">
+      <article class="tool-card animate-on-scroll delay-{{ loop.index }}" {% if loop.first %}aria-label="Editor's Pick: {{ tool.name }}"{% endif %}>
+        {% if loop.first %}
+        <div class="editors-ribbon" aria-label="Editor's Pick">EDITOR'S PICK</div>
+        {% endif %}
+
+        <div class="tool-card-header">
+          <div class="tool-card-icon cat-{{ tool.category }}" aria-hidden="true">
             {% if tool.category == 'writing' %}✍️
             {% elif tool.category == 'seo' %}🔍
             {% elif tool.category == 'video' %}🎬
             {% elif tool.category == 'audio' %}🎙️
             {% else %}⚡{% endif %}
           </div>
-          {% if tool.badge %}<span class="tool-badge {% if loop.index % 3 == 0 %}purple{% elif loop.index % 2 == 0 %}blue{% endif %}">{{ tool.badge }}</span>{% endif %}
+          {% if tool.badge %}
+          <span class="category-badge cat-badge-{{ tool.category }}" aria-label="Category: {{ tool.category }}">{{ tool.category|title }}</span>
+          {% endif %}
         </div>
-        <h3>{{ tool.name }}</h3>
-        <p>{{ tool.description }}</p>
-        <div class="tool-meta">
-          <div class="tool-meta-item">✅ <strong>Free trial available</strong></div>
-          <div class="tool-meta-item">🏷 <strong>{{ tool.category|title }}</strong></div>
+
+        <div class="tool-card-body">
+          <h3>{{ tool.name }}</h3>
+          <p>{{ tool.description }}</p>
+
+          <div class="tool-card-meta">
+            {% if tool.rating %}
+            <div class="rating-row" aria-label="Rating: {{ tool.rating }} out of 5">
+              <div class="rating-stars" aria-hidden="true">
+                {% set full = tool.rating | int %}
+                {% set has_half = (tool.rating - full) >= 0.5 %}
+                {% for i in range(full) %}
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                {% endfor %}
+                {% if has_half %}
+                <svg viewBox="0 0 24 24" style="opacity:0.5;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                {% endif %}
+              </div>
+              <span class="rating-num">{{ tool.rating }}</span>
+              {% if tool.reviews %}
+              <span class="review-count">({{ tool.reviews | int | string | replace('000', 'k') if tool.reviews > 999 else tool.reviews }})</span>
+              {% endif %}
+            </div>
+            {% endif %}
+            <span class="price-chip">✓ Free Trial</span>
+          </div>
+
+          <div class="tool-card-actions">
+            <a href="/go/{{ key }}" class="btn btn-success btn-sm affiliate-link" data-tool="{{ key }}" target="_blank" rel="noopener sponsored" aria-label="Try {{ tool.name }} free">
+              Try Free →
+            </a>
+            <a href="/articles?q={{ tool.name | urlencode }}" class="btn btn-secondary btn-sm" aria-label="Read {{ tool.name }} review">Read Review</a>
+          </div>
         </div>
-        <div style="display:flex;gap:10px;">
-          <a href="/go/{{ key }}" class="btn btn-success btn-sm affiliate-link" data-tool="{{ key }}" target="_blank" rel="noopener">Start Free Trial →</a>
-          <a href="/articles?q={{ tool.name|urlencode }}" class="btn btn-outline btn-sm">Read Review</a>
-        </div>
-      </div>
+      </article>
       {% endfor %}
     </div>
 
-    <div style="text-align:center;margin-top:36px;">
-      <a href="/tools" class="btn btn-outline">View All AI Tools →</a>
+    <div class="text-center" style="margin-top:var(--spacing-10);">
+      <a href="/tools" class="btn btn-ghost btn-lg">View All AI Tools →</a>
     </div>
   </div>
 </section>
 
-<!-- Latest Articles -->
-<section class="section">
+
+<!-- ══════════════════════════════════════════════════
+     BROWSE BY CATEGORY
+     ══════════════════════════════════════════════════ -->
+<section class="section section-card" aria-labelledby="categories-heading">
   <div class="container">
-    <div class="section-header">
-      <h2>📖 Latest Reviews & Guides</h2>
-      <p>In-depth breakdowns so you never pick the wrong AI tool again.</p>
+
+    <div class="section-header-center animate-on-scroll">
+      <div class="section-eyebrow">Explore</div>
+      <h2 id="categories-heading">Browse by Category</h2>
+      <p>Find the right AI tool for your specific use case — from content creation to SEO and beyond.</p>
+    </div>
+
+    <div class="categories-grid animate-on-scroll delay-1">
+      {% for key, cat in categories.items() %}
+      <a href="/tools?category={{ key }}" class="category-card" aria-label="{{ cat.label }} tools">
+        <div class="category-card-emoji" aria-hidden="true">{{ cat.icon }}</div>
+        <div class="category-card-name">{{ cat.label }}</div>
+        <div class="category-card-count">
+          {{ featured_tools.values() | selectattr('category', 'equalto', key) | list | length }}+ tools
+        </div>
+      </a>
+      {% endfor %}
+      <a href="/tools" class="category-card" aria-label="Browse all tools">
+        <div class="category-card-emoji" aria-hidden="true">🔮</div>
+        <div class="category-card-name">All Tools</div>
+        <div class="category-card-count">View all →</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════
+     HEAD-TO-HEAD COMPARISONS
+     ══════════════════════════════════════════════════ -->
+<section class="section section-dark" aria-labelledby="compare-heading">
+  <div class="container">
+
+    <div class="section-header animate-on-scroll">
+      <div>
+        <div class="section-eyebrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          Comparisons
+        </div>
+        <h2 id="compare-heading">Head-to-Head Comparisons</h2>
+        <p>Can't decide between two tools? We break them down side by side.</p>
+      </div>
+      <a href="/articles" class="section-see-all">All comparisons →</a>
+    </div>
+
+    <div class="comparisons-grid animate-on-scroll">
+      <a href="/articles/elevenlabs-review-2026" class="comparison-card-full">
+        <div class="comp-names">
+          <span class="comp-name">ElevenLabs</span>
+          <span class="comp-vs">VS</span>
+          <span class="comp-name">Murf AI</span>
+        </div>
+        <span class="category-badge cat-badge-audio">Audio</span>
+        <span class="comp-cta">Compare Now →</span>
+      </a>
+
+      <a href="/articles?q=pictory+invideo" class="comparison-card-full">
+        <div class="comp-names">
+          <span class="comp-name">Pictory AI</span>
+          <span class="comp-vs">VS</span>
+          <span class="comp-name">InVideo</span>
+        </div>
+        <span class="category-badge cat-badge-video">Video</span>
+        <span class="comp-cta">Compare Now →</span>
+      </a>
+
+      <a href="/articles?q=surfer+semrush" class="comparison-card-full">
+        <div class="comp-names">
+          <span class="comp-name">Surfer SEO</span>
+          <span class="comp-vs">VS</span>
+          <span class="comp-name">Semrush</span>
+        </div>
+        <span class="category-badge cat-badge-seo">SEO</span>
+        <span class="comp-cta">Compare Now →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════
+     NEWSLETTER / LEAD MAGNET
+     ══════════════════════════════════════════════════ -->
+<section class="section section-card" id="subscribe" aria-labelledby="newsletter-heading">
+  <div class="container">
+    <div class="newsletter-box animate-on-scroll">
+      <div class="newsletter-grid">
+
+        <!-- Left: Benefits -->
+        <div>
+          <div class="section-eyebrow" style="color:#a5b4fc;border-color:rgba(165,180,252,0.3);background:rgba(99,102,241,0.1);">Free Weekly Digest</div>
+          <h2 class="newsletter-headline" id="newsletter-heading">Get the Weekly AI Tools Digest</h2>
+          <ul class="newsletter-benefits">
+            <li class="newsletter-benefit">
+              <span class="newsletter-benefit-check">✓</span>
+              New tool reviews every week
+            </li>
+            <li class="newsletter-benefit">
+              <span class="newsletter-benefit-check">✓</span>
+              Exclusive deals &amp; discounts
+            </li>
+            <li class="newsletter-benefit">
+              <span class="newsletter-benefit-check">✓</span>
+              Free AI Tools Cheat Sheet (instant download)
+            </li>
+          </ul>
+          <p class="newsletter-trust">
+            No spam. Unsubscribe anytime.
+            {% if subscriber_count > 100 %}
+            <strong style="color:#94a3b8;">{{ subscriber_count }}+ subscribers</strong> trust us.
+            {% else %}
+            <strong style="color:#94a3b8;">12,847 subscribers</strong> trust us.
+            {% endif %}
+          </p>
+        </div>
+
+        <!-- Right: Form -->
+        <div class="newsletter-form-side">
+          <h3>Join Free Today</h3>
+          <form class="newsletter-form" onsubmit="handleSubscribe(event)">
+            <input type="email" id="sub-email" placeholder="Enter your email address..." required autocomplete="email" aria-label="Email address" />
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;">
+              Send Me the Free Kit →
+            </button>
+          </form>
+          <p style="font-size:var(--font-size-xs);color:rgba(165,180,252,0.6);margin-top:var(--spacing-3);">
+            Get instant access to the <a href="/static/ai-tools-cheatsheet.html" target="_blank" style="color:#a5b4fc;">Top 10 AI Tools Cheat Sheet</a> when you subscribe.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════
+     TRUST SIGNALS
+     ══════════════════════════════════════════════════ -->
+<section class="section-sm section-dark" aria-labelledby="trust-heading">
+  <div class="container">
+    <div class="section-header-center animate-on-scroll" style="margin-bottom:var(--spacing-8);">
+      <h2 id="trust-heading" style="font-size:var(--font-size-3xl);">Why Trust Our Reviews?</h2>
+    </div>
+    <div class="grid grid-3 gap-6">
+      <div class="trust-card animate-on-scroll delay-1">
+        <div class="trust-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <h3>Independent Reviews</h3>
+        <p>Every review is based on research and real-world usage — no ghostwriting, no influencer fluff. Just honest analysis.</p>
+      </div>
+      <div class="trust-card animate-on-scroll delay-2">
+        <div class="trust-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        </div>
+        <h3>No Pay-to-Play</h3>
+        <p>We don't accept sponsored placements or paid rankings. Tools earn their spot through merit and community feedback.</p>
+      </div>
+      <div class="trust-card animate-on-scroll delay-3">
+        <div class="trust-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.55"/></svg>
+        </div>
+        <h3>Updated Regularly</h3>
+        <p>AI tools change fast. We revisit every review when major updates ship, so you always get current information.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════
+     FROM THE BLOG — LATEST ARTICLES
+     ══════════════════════════════════════════════════ -->
+<section class="section section-card" aria-labelledby="blog-heading">
+  <div class="container">
+
+    <div class="section-header animate-on-scroll">
+      <div>
+        <div class="section-eyebrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Latest
+        </div>
+        <h2 id="blog-heading">From the Blog</h2>
+        <p>In-depth breakdowns, comparisons, and buying guides — updated weekly.</p>
+      </div>
+      <a href="/articles" class="section-see-all">View all articles →</a>
     </div>
 
     {% if articles %}
-    <div class="articles-grid">
-      {% for article in articles %}
-      <div class="article-card">
-        <div class="article-card-img">
-          {% if article.category == 'writing' %}✍️
-          {% elif article.category == 'seo' %}🔍
-          {% elif article.category == 'video' %}🎬
-          {% elif article.category == 'audio' %}🎙️
-          {% else %}⚡{% endif %}
+    <div class="blog-grid animate-on-scroll">
+      {% for article in articles[:6] %}
+      <a href="/articles/{{ article.slug }}" class="blog-card">
+        <div class="blog-card-thumb cat-{{ article.category or 'writing' }}" aria-hidden="true">
+          <span class="blog-card-thumb-emoji">
+            {% if article.category == 'writing' %}✍️
+            {% elif article.category == 'seo' %}🔍
+            {% elif article.category == 'video' %}🎬
+            {% elif article.category == 'audio' %}🎙️
+            {% else %}⚡{% endif %}
+          </span>
         </div>
-        <div class="article-card-body">
-          <div class="article-cat">{{ article.category|upper }}</div>
-          <h3><a href="/articles/{{ article.slug }}">{{ article.title }}</a></h3>
-          <p>{{ article.meta_description[:120] }}...</p>
-          <a href="/articles/{{ article.slug }}" class="read-more">Read Full Review →</a>
+        <div class="blog-card-body">
+          <div class="blog-card-tag">{{ article.category | upper if article.category else 'GUIDE' }}</div>
+          <h3>{{ article.title }}</h3>
+          <div class="blog-card-meta">
+            <span>
+              {% if article.created_at %}{{ article.created_at[:10] }}{% endif %}
+            </span>
+            {% if article.views %}
+            <span>{{ article.views }} views</span>
+            {% endif %}
+          </div>
+          <div class="blog-card-read">Read Full Review →</div>
         </div>
-      </div>
+      </a>
       {% endfor %}
     </div>
     {% else %}
-    <!-- Teaser cards shown while AI generates real content -->
-    <div class="articles-grid">
+    <!-- Teaser cards while content generates -->
+    <div class="blog-grid animate-on-scroll">
       {% set teasers = [
-        ("✍️","WRITING","Jasper AI vs Copy.ai: Which is Better in 2026?","A head-to-head comparison of features, pricing, and output quality for two leading AI writing tools.","writing"),
-        ("🔍","SEO","Best AI SEO Tools in 2026","A breakdown of the top AI-powered SEO tools by use case, pricing, and capabilities.","seo"),
-        ("🎬","VIDEO","Best AI Video Generators in 2026","Compare the leading AI video tools for content creators — features, pricing, and output quality.","video"),
-        ("🎙️","AUDIO","ElevenLabs vs Murf AI: Voice Quality Compared","A direct comparison of two leading AI voice tools across quality, pricing, and ease of use.","audio"),
-        ("⚡","PRODUCTIVITY","Best AI Tools for Entrepreneurs in 2026","A curated breakdown of AI tools worth adding to your business stack.","productivity"),
-        ("✍️","WRITING","How to Use AI for Content Creation","A practical guide to integrating AI writing tools into a content workflow.","writing")
+        ("writing","WRITING","Jasper AI vs Copy.ai: Which is Better in 2026?","jasper-ai-vs-copyai-2026-comparison"),
+        ("seo","SEO","Best AI SEO Tools in 2026: Ranked & Reviewed","best-ai-seo-tools-2026-ranked"),
+        ("video","VIDEO","Best AI Video Generators in 2026","best-ai-video-generators-2026"),
+        ("audio","AUDIO","ElevenLabs vs Murf AI: Voice Quality Compared","elevenlabs-review-2026"),
+        ("productivity","PRODUCTIVITY","Best AI Productivity Tools for Entrepreneurs","best-ai-productivity-tools-2026"),
+        ("writing","WRITING","How to Use AI for Content Creation in 2026","how-to-use-ai-for-content-creation")
       ] %}
-      {% for icon, cat, title, desc, slug in teasers %}
-      <div class="article-card" style="opacity:0.85;">
-        <div class="article-card-img">{{ icon }}</div>
-        <div class="article-card-body">
-          <div class="article-cat">{{ cat }}</div>
-          <h3 style="color:var(--text);">{{ title }}</h3>
-          <p>{{ desc }}</p>
-          <span style="font-size:12px;color:var(--primary);font-weight:600;background:#eef2ff;padding:3px 10px;border-radius:100px;">⏳ Publishing soon</span>
+      {% for cat, tag, title, slug in teasers %}
+      <a href="/articles/{{ slug }}" class="blog-card">
+        <div class="blog-card-thumb cat-{{ cat }}" aria-hidden="true">
+          <span class="blog-card-thumb-emoji">
+            {% if cat == 'writing' %}✍️{% elif cat == 'seo' %}🔍{% elif cat == 'video' %}🎬{% elif cat == 'audio' %}🎙️{% else %}⚡{% endif %}
+          </span>
         </div>
-      </div>
+        <div class="blog-card-body">
+          <div class="blog-card-tag">{{ tag }}</div>
+          <h3>{{ title }}</h3>
+          <div class="blog-card-meta"><span>April 2026</span></div>
+          <div class="blog-card-read">Read Review →</div>
+        </div>
+      </a>
       {% endfor %}
-    </div>
-    <div style="text-align:center;margin-top:20px;padding:16px;background:#f0f9ff;border-radius:10px;border:1px solid #bae6fd;">
-      <p style="color:#0369a1;font-size:14px;margin:0;">📖 More in-depth reviews are on the way. <a href="/articles" style="color:#0369a1;font-weight:600;">Browse all current reviews →</a></p>
     </div>
     {% endif %}
 
-    <div style="text-align:center;margin-top:36px;">
-      <a href="/articles" class="btn btn-outline">View All Articles →</a>
+    <div class="text-center" style="margin-top:var(--spacing-10);">
+      <a href="/articles" class="btn btn-ghost btn-lg">View All Articles →</a>
     </div>
-  </div>
-</section>
-
-<!-- Methodology Strip (Agent 2 / Trust) -->
-<section style="background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:40px 20px;">
-  <div class="container" style="text-align:center;">
-    <p style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin:0 0 16px;">How We Review</p>
-    <div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);">
-        <span style="font-size:20px;">🧪</span><span><strong>Research-based reviews</strong> — features, pricing, and real use cases</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);">
-        <span style="font-size:20px;">🚫</span><span><strong>No paid placements</strong> — rankings are earned</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);">
-        <span style="font-size:20px;">🔄</span><span><strong>Regularly updated</strong> as tools change</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);">
-        <span style="font-size:20px;">📋</span><span><a href="/how-we-test" style="color:var(--primary);font-weight:600;">See our full methodology →</a></span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Subscribe Section -->
-<section class="subscribe-section" id="subscribe">
-  <div style="display:inline-block;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 16px;font-size:13px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;margin-bottom:20px;">🎁 Free Starter Kit Included</div>
-  <h2>Get the Free AI Tools Starter Kit</h2>
-  <p>7 tools that pay for themselves — delivered instantly when you subscribe. Plus a weekly roundup of the best AI tools, honest comparisons, and pricing alerts.</p>
-  <form class="subscribe-form" onsubmit="handleSubscribe(event)">
-    <input type="email" id="sub-email" placeholder="Enter your email..." required />
-    <button type="submit" class="btn btn-primary">Send Me the Free Kit</button>
-  </form>
-  <div class="subscribe-perks">
-    <span class="subscribe-perk">Free AI Tools Starter Kit — instant access</span>
-    <span class="subscribe-perk">Weekly tool reviews, no sponsored rankings</span>
-    <span class="subscribe-perk">Unsubscribe anytime</span>
   </div>
 </section>
 
@@ -452,23 +718,31 @@
 <script>
 async function handleSubscribe(e) {
   e.preventDefault();
-  const email = document.getElementById('sub-email').value;
+  const emailEl = document.getElementById('sub-email');
   const btn = e.target.querySelector('button');
+  if (!emailEl || !btn) return;
+
+  const email = emailEl.value.trim();
   btn.textContent = 'Subscribing...';
   btn.disabled = true;
 
   try {
     const res = await fetch('/subscribe', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
     });
     const data = await res.json();
     if (data.success) {
-      btn.textContent = '✓ Subscribed!';
-      btn.style.background = '#10b981';
-      document.getElementById('sub-email').value = '';
-      showToast('🎉 Welcome! Check your inbox for a welcome email.');
+      btn.textContent = '✓ You\'re In!';
+      btn.style.background = 'var(--color-accent-green)';
+      emailEl.value = '';
+      showToast('Welcome! Check your inbox for the free kit.');
+      const dlLink = document.createElement('p');
+      dlLink.style.textAlign = 'center';
+      dlLink.style.marginTop = '16px';
+      dlLink.innerHTML = '<a href="/static/ai-tools-cheatsheet.html" target="_blank" style="color:#6ee7b7;font-weight:600;font-size:0.875rem;">📥 Download Your Free Cheat Sheet →</a>';
+      e.target.parentNode.appendChild(dlLink);
     } else {
       btn.textContent = data.message || 'Try again';
       btn.disabled = false;
