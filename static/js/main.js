@@ -174,7 +174,7 @@
         var tool = this.dataset.tool;
         if (tool) {
           fetch('/track/click/' + tool + '?source=' + encodeURIComponent(window.location.pathname), {
-            method: 'POST'
+            method: 'POST', keepalive: true
           }).catch(function () {}); // silent fail
         }
       });

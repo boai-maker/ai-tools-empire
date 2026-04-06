@@ -116,13 +116,41 @@ async function handleContact(e) {
   const btn = document.getElementById('c-btn');
   const result = document.getElementById('c-result');
   btn.textContent = 'Sending...'; btn.disabled = true;
-  // Simulate send (wire to a real email API like Resend in production)
-  await new Promise(r => setTimeout(r, 800));
-  btn.textContent = '✓ Message Sent!';
-  btn.style.background = 'var(--success)';
-  result.style.color = 'var(--success)';
-  result.textContent = "Thanks! We'll get back to you within 24 hours.";
-  document.getElementById('c-message').value = '';
+  result.textContent = '';
+
+  const payload = {
+    name: document.getElementById('c-name').value.trim(),
+    email: document.getElementById('c-email').value.trim(),
+    subject: document.getElementById('c-subject').value,
+    message: document.getElementById('c-message').value.trim(),
+  };
+
+  try {
+    const r = await fetch('/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const d = await r.json();
+    if (d.success) {
+      btn.textContent = '✓ Message Sent!';
+      btn.style.background = 'var(--color-accent-green)';
+      result.style.color = 'var(--color-accent-green)';
+      result.textContent = d.message;
+      document.getElementById('c-message').value = '';
+      showToast('✓ Message sent successfully!');
+    } else {
+      btn.textContent = 'Send Message →';
+      btn.disabled = false;
+      result.style.color = 'var(--color-error)';
+      result.textContent = d.message || 'Something went wrong.';
+    }
+  } catch (err) {
+    btn.textContent = 'Send Message →';
+    btn.disabled = false;
+    result.style.color = 'var(--color-error)';
+    result.textContent = 'Network error. Please try again.';
+  }
 }
 </script>
 {% endblock %}

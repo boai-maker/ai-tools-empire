@@ -3,10 +3,12 @@ AI Tools Empire — Main FastAPI Server
 Serves the website, handles subscriptions, affiliate tracking, and admin actions.
 """
 import os
+import time
 import hashlib
 import logging
 from datetime import datetime
 from contextlib import asynccontextmanager
+from collections import defaultdict
 
 from fastapi import FastAPI, Request, Form, HTTPException, Depends
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
@@ -27,10 +29,48 @@ from affiliate.links import AFFILIATE_PROGRAMS, CATEGORIES, get_monthly_revenue_
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
+# ── Rate Limiter (in-memory) ─────────────────────────────────────────────────
+_rate_buckets: dict = defaultdict(list)
+
+def _rate_limited(ip: str, bucket: str, max_requests: int, window_seconds: int) -> bool:
+    """Return True if the IP has exceeded max_requests in the rolling window."""
+    key = f"{bucket}:{ip}"
+    now = time.time()
+    cutoff = now - window_seconds
+    _rate_buckets[key] = [t for t in _rate_buckets[key] if t > cutoff]
+    if len(_rate_buckets[key]) >= max_requests:
+        return True
+    _rate_buckets[key].append(now)
+    return False
+
+# ── Subscriber count cache ───────────────────────────────────────────────────
+_sub_cache = {"count": 0, "expires": 0.0}
+
+def get_subscriber_count_cached() -> int:
+    if time.time() < _sub_cache["expires"]:
+        return _sub_cache["count"]
+    count = get_subscriber_count()
+    _sub_cache.update(count=count, expires=time.time() + 300)
+    return count
+
 # ── App lifespan ──────────────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    # Add performance indexes
+    try:
+        import sqlite3
+        db = sqlite3.connect("data.db")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_articles_status_created ON articles(status, created_at DESC)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_subscribers_email ON subscribers(email)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_clicks_tool ON affiliate_clicks(tool_key)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_views_path ON page_views(path)")
+        db.commit()
+        db.close()
+        log.info("DB indexes verified")
+    except Exception as e:
+        log.warning(f"Index creation skipped: {e}")
     # Seed content queue on first run
     try:
         from automation.content_generator import populate_initial_queue
@@ -89,6 +129,11 @@ async def track_pageviews(request: Request, call_next):
             )
         except Exception:
             pass
+    # Security headers
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     return response
 
 # ── Pages ─────────────────────────────────────────────────────────────────────
@@ -100,7 +145,7 @@ async def homepage(request: Request):
     ctx.update({
         "articles": articles,
         "featured_tools": dict(list(AFFILIATE_PROGRAMS.items())[:6]),
-        "subscriber_count": get_subscriber_count(),  # Real count — no floor
+        "subscriber_count": get_subscriber_count_cached(),
         "article_count": len(get_articles(limit=999)),  # Real count — no floor
     })
     return templates.TemplateResponse("index.html", ctx)
@@ -351,6 +396,58 @@ async def contact_page(request: Request):
     return templates.TemplateResponse("contact.html", ctx)
 
 
+class ContactRequest(BaseModel):
+    name: str
+    email: str
+    subject: str = "general"
+    message: str
+
+@app.post("/contact")
+async def contact_submit(request: Request, body: ContactRequest):
+    # Rate limit: 3 per hour per IP
+    if _rate_limited(ip_hash(request), "contact", 3, 3600):
+        return JSONResponse({"success": False, "message": "Too many messages. Please try again later."}, status_code=429)
+
+    name = body.name.strip()[:100]
+    email = body.email.lower().strip()
+    subject = body.subject.strip()[:100]
+    message = body.message.strip()[:5000]
+
+    if not name or not email or "@" not in email or not message:
+        return JSONResponse({"success": False, "message": "Please fill in all fields."})
+
+    # Build and send email to site owner
+    html_body = f"""
+    <div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+      <h2 style="color:#6366f1;">New Contact Form Submission</h2>
+      <table style="width:100%;border-collapse:collapse;">
+        <tr><td style="padding:8px;font-weight:600;color:#64748b;">From:</td><td style="padding:8px;">{name} &lt;{email}&gt;</td></tr>
+        <tr><td style="padding:8px;font-weight:600;color:#64748b;">Subject:</td><td style="padding:8px;">{subject}</td></tr>
+      </table>
+      <hr style="border:1px solid #e2e8f0;margin:16px 0;">
+      <div style="white-space:pre-wrap;line-height:1.6;">{message}</div>
+      <hr style="border:1px solid #e2e8f0;margin:16px 0;">
+      <p style="font-size:12px;color:#94a3b8;">Sent from {config.SITE_NAME} contact form</p>
+    </div>
+    """
+    try:
+        from automation.email_sender import _send_via_resend, _send_via_smtp
+        sent = False
+        if hasattr(config, 'RESEND_API_KEY') and config.RESEND_API_KEY:
+            sent = _send_via_resend([config.SMTP_USER or "bosaibot@gmail.com"], f"[Contact] {subject} — {name}", html_body)
+        if not sent:
+            sent = _send_via_smtp([config.SMTP_USER or "bosaibot@gmail.com"], f"[Contact] {subject} — {name}", html_body)
+        if sent:
+            log.info(f"Contact form sent from {email} re: {subject}")
+            return JSONResponse({"success": True, "message": "Message sent! We'll reply within 24 hours."})
+        else:
+            log.error(f"Contact form email failed for {email}")
+            return JSONResponse({"success": False, "message": "Email delivery failed. Please try again."})
+    except Exception as e:
+        log.error(f"Contact form error: {e}")
+        return JSONResponse({"success": False, "message": "Something went wrong. Please email us directly."})
+
+
 @app.get("/services", response_class=HTMLResponse)
 async def services_page(request: Request):
     ctx = base_ctx(request)
@@ -366,6 +463,10 @@ class SubscribeRequest(BaseModel):
 
 @app.post("/subscribe")
 async def subscribe(request: Request, body: SubscribeRequest):
+    # Rate limit: 5 per minute per IP
+    if _rate_limited(ip_hash(request), "subscribe", 5, 60):
+        return JSONResponse({"success": False, "message": "Too many requests. Try again in a minute."}, status_code=429)
+
     email = body.email.lower().strip()
     if not email or "@" not in email:
         return JSONResponse({"success": False, "message": "Invalid email"})
@@ -393,6 +494,9 @@ async def subscribe(request: Request, body: SubscribeRequest):
 
 @app.post("/track/click/{tool_key}")
 async def track_click(tool_key: str, request: Request, source: str = ""):
+    # Rate limit: 30 per minute per IP
+    if _rate_limited(ip_hash(request), "track", 30, 60):
+        return JSONResponse({"ok": True})
     try:
         log_click(tool_key, source, ip_hash(request))
     except Exception:
@@ -639,16 +743,30 @@ def verify_admin(request: Request):
     return True
 
 
+def _admin_authed(request: Request) -> bool:
+    """Check if admin is authenticated via cookie or query param (legacy fallback)."""
+    cookie_token = request.cookies.get("admin_session")
+    if cookie_token and cookie_token == hashlib.sha256(config.ADMIN_PASSWORD.encode()).hexdigest():
+        return True
+    # Legacy fallback: query param (will be removed in future)
+    pwd = request.query_params.get("pwd", "")
+    return pwd == config.ADMIN_PASSWORD
+
+
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(request: Request):
-    # Simple password check via query param for first login
-    pwd = request.query_params.get("pwd", "")
-    if pwd != config.ADMIN_PASSWORD:
-        html = """<!DOCTYPE html><html><body style='font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;background:#f8fafc'>
-        <form method='get' style='text-align:center;background:white;padding:40px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.1)'>
-          <h2 style='margin:0 0 20px;'>🔐 Admin Login</h2>
-          <input name='pwd' type='password' placeholder='Password' style='padding:12px 18px;border-radius:8px;border:1px solid #e2e8f0;font-size:15px;width:240px;margin-bottom:12px;display:block;'>
-          <button type='submit' style='background:#6366f1;color:white;border:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;width:100%'>Login</button>
+    if not _admin_authed(request):
+        # Dark-themed login form using POST (password in body, not URL)
+        html = """<!DOCTYPE html><html><head>
+        <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <link rel="stylesheet" href="/static/css/design-system.css">
+        <title>Admin Login</title></head>
+        <body style='font-family:var(--font-family);display:flex;align-items:center;justify-content:center;height:100vh;background:var(--color-bg-base);'>
+        <form method='post' action='/admin/login' style='text-align:center;background:var(--color-bg-card);padding:40px;border-radius:14px;border:1px solid var(--color-border);box-shadow:var(--shadow-lg);'>
+          <h2 style='margin:0 0 20px;color:var(--color-text-primary);font-weight:800;'>🔐 Admin Login</h2>
+          <input name='pwd' type='password' placeholder='Password' autocomplete='current-password'
+            style='padding:12px 18px;border-radius:8px;border:1px solid var(--color-border);font-size:15px;width:240px;margin-bottom:12px;display:block;background:var(--color-bg-elevated);color:var(--color-text-primary);outline:none;'>
+          <button type='submit' style='background:var(--color-primary);color:white;border:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;width:100%;'>Login</button>
         </form></body></html>"""
         return HTMLResponse(html)
 
@@ -662,13 +780,32 @@ async def admin_dashboard(request: Request):
         "recent_articles": recent_articles,
         "affiliate_programs": AFFILIATE_PROGRAMS,
     })
-    return templates.TemplateResponse("dashboard.html", ctx)
+    response = templates.TemplateResponse("dashboard.html", ctx)
+    # Refresh session cookie on each dashboard visit
+    session_hash = hashlib.sha256(config.ADMIN_PASSWORD.encode()).hexdigest()
+    response.set_cookie("admin_session", session_hash, httponly=True, samesite="lax", max_age=86400)
+    return response
+
+
+@app.post("/admin/login")
+async def admin_login(pwd: str = Form(...)):
+    if pwd != config.ADMIN_PASSWORD:
+        html = """<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="/static/css/design-system.css"></head>
+        <body style='font-family:var(--font-family);display:flex;align-items:center;justify-content:center;height:100vh;background:var(--color-bg-base);'>
+        <div style='text-align:center;background:var(--color-bg-card);padding:40px;border-radius:14px;border:1px solid var(--color-border);'>
+          <p style='color:var(--color-error);font-weight:600;margin:0 0 16px;'>Invalid password</p>
+          <a href='/admin' style='color:var(--color-primary-light);'>Try again</a>
+        </div></body></html>"""
+        return HTMLResponse(html, status_code=401)
+    response = RedirectResponse(url="/admin", status_code=303)
+    session_hash = hashlib.sha256(config.ADMIN_PASSWORD.encode()).hexdigest()
+    response.set_cookie("admin_session", session_hash, httponly=True, samesite="lax", max_age=86400)
+    return response
 
 
 @app.post("/admin/generate-content")
 async def admin_generate_content(request: Request):
-    pwd = request.query_params.get("pwd", request.headers.get("X-Admin-Token", ""))
-    if pwd != config.ADMIN_PASSWORD:
+    if not _admin_authed(request):
         raise HTTPException(401)
     try:
         from automation.content_generator import run_content_generation
@@ -680,8 +817,7 @@ async def admin_generate_content(request: Request):
 
 @app.post("/admin/send-welcomes")
 async def admin_send_welcomes(request: Request):
-    pwd = request.query_params.get("pwd", request.headers.get("X-Admin-Token", ""))
-    if pwd != config.ADMIN_PASSWORD:
+    if not _admin_authed(request):
         raise HTTPException(401)
     try:
         from automation.email_sender import send_welcome_to_pending
@@ -693,8 +829,7 @@ async def admin_send_welcomes(request: Request):
 
 @app.post("/admin/send-newsletter")
 async def admin_send_newsletter(request: Request):
-    pwd = request.query_params.get("pwd", request.headers.get("X-Admin-Token", ""))
-    if pwd != config.ADMIN_PASSWORD:
+    if not _admin_authed(request):
         raise HTTPException(401)
     try:
         from automation.email_sender import send_weekly_newsletter
@@ -706,8 +841,7 @@ async def admin_send_newsletter(request: Request):
 
 @app.post("/admin/post-tweet")
 async def admin_post_tweet(request: Request):
-    pwd = request.query_params.get("pwd", request.headers.get("X-Admin-Token", ""))
-    if pwd != config.ADMIN_PASSWORD:
+    if not _admin_authed(request):
         raise HTTPException(401)
     try:
         from automation.social_poster import run_social_posting
@@ -719,8 +853,7 @@ async def admin_post_tweet(request: Request):
 
 @app.post("/admin/save-affiliate-ids")
 async def admin_save_affiliate_ids(request: Request):
-    pwd = request.query_params.get("pwd", request.headers.get("X-Admin-Token", ""))
-    if pwd != config.ADMIN_PASSWORD:
+    if not _admin_authed(request):
         raise HTTPException(401)
     try:
         body = await request.json()
@@ -782,8 +915,7 @@ async def admin_save_affiliate_ids(request: Request):
 
 @app.post("/admin/add-topic")
 async def admin_add_topic(request: Request, topic: str = Form(...), keywords: str = Form(""), tool_focus: str = Form("")):
-    pwd = request.query_params.get("pwd", request.headers.get("X-Admin-Token", ""))
-    if pwd != config.ADMIN_PASSWORD:
+    if not _admin_authed(request):
         raise HTTPException(401)
     add_to_queue(topic, keywords, tool_focus or None, priority=9)
     return JSONResponse({"message": f"Topic queued: {topic}"})
@@ -791,8 +923,7 @@ async def admin_add_topic(request: Request, topic: str = Form(...), keywords: st
 
 @app.get("/admin/service-summary")
 async def admin_service_summary(request: Request):
-    pwd = request.query_params.get("pwd", request.headers.get("X-Admin-Token", ""))
-    if pwd != config.ADMIN_PASSWORD:
+    if not _admin_authed(request):
         raise HTTPException(401)
     try:
         from automation.service_seller import get_mrr_summary, PACKAGES
@@ -809,8 +940,7 @@ async def admin_service_summary(request: Request):
 
 @app.post("/admin/export-youtube-scripts")
 async def admin_export_youtube(request: Request):
-    pwd = request.query_params.get("pwd", request.headers.get("X-Admin-Token", ""))
-    if pwd != config.ADMIN_PASSWORD:
+    if not _admin_authed(request):
         raise HTTPException(401)
     try:
         from automation.youtube_engine import export_all_scripts, VIDEO_TOPICS
@@ -822,8 +952,7 @@ async def admin_export_youtube(request: Request):
 
 @app.get("/admin/reddit-guide")
 async def admin_reddit_guide(request: Request):
-    pwd = request.query_params.get("pwd", request.headers.get("X-Admin-Token", ""))
-    if pwd != config.ADMIN_PASSWORD:
+    if not _admin_authed(request):
         raise HTTPException(401)
     try:
         from automation.reddit_blitz import get_weekly_posting_schedule, get_karma_building_comments, POSTS
