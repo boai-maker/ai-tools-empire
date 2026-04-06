@@ -4,6 +4,7 @@ Serves the website, handles subscriptions, affiliate tracking, and admin actions
 """
 import os
 import time
+import html as html_lib
 import hashlib
 import logging
 from datetime import datetime
@@ -41,6 +42,11 @@ def _rate_limited(ip: str, bucket: str, max_requests: int, window_seconds: int) 
     if len(_rate_buckets[key]) >= max_requests:
         return True
     _rate_buckets[key].append(now)
+    # Evict empty keys to prevent memory leak
+    if len(_rate_buckets) > 10000:
+        stale = [k for k, v in _rate_buckets.items() if not v]
+        for k in stale:
+            del _rate_buckets[k]
     return False
 
 # ── Subscriber count cache ───────────────────────────────────────────────────
@@ -408,10 +414,10 @@ async def contact_submit(request: Request, body: ContactRequest):
     if _rate_limited(ip_hash(request), "contact", 3, 3600):
         return JSONResponse({"success": False, "message": "Too many messages. Please try again later."}, status_code=429)
 
-    name = body.name.strip()[:100]
+    name = html_lib.escape(body.name.strip()[:100])
     email = body.email.lower().strip()
-    subject = body.subject.strip()[:100]
-    message = body.message.strip()[:5000]
+    subject = html_lib.escape(body.subject.strip()[:100])
+    message = html_lib.escape(body.message.strip()[:5000])
 
     if not name or not email or "@" not in email or not message:
         return JSONResponse({"success": False, "message": "Please fill in all fields."})
@@ -735,13 +741,6 @@ async def unsubscribe(email: str = ""):
 
 
 # ── Admin Endpoints (protected) ───────────────────────────────────────────────
-
-def verify_admin(request: Request):
-    token = request.cookies.get("admin_token") or request.headers.get("X-Admin-Token")
-    if token != config.ADMIN_PASSWORD:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    return True
-
 
 def _admin_authed(request: Request) -> bool:
     """Check if admin is authenticated via cookie or query param (legacy fallback)."""
