@@ -169,13 +169,27 @@
      AFFILIATE CLICK TRACKING
      ══════════════════════════════════════ */
   function initAffiliateTracking() {
-    document.querySelectorAll('.affiliate-link').forEach(function (link) {
+    // Track clicks on elements with .affiliate-link class OR data-tool attr
+    document.querySelectorAll('.affiliate-link, [data-tool]').forEach(function (link) {
       link.addEventListener('click', function () {
         var tool = this.dataset.tool;
         if (tool) {
           fetch('/track/click/' + tool + '?source=' + encodeURIComponent(window.location.pathname), {
             method: 'POST', keepalive: true
-          }).catch(function () {}); // silent fail
+          }).catch(function () {});
+        }
+      });
+    });
+
+    // Also track ALL /go/ links (catches article CTAs that lack data-tool)
+    document.querySelectorAll('a[href^="/go/"]').forEach(function (link) {
+      link.addEventListener('click', function () {
+        var href = this.getAttribute('href') || '';
+        var tool = href.replace('/go/', '').split('?')[0];
+        if (tool) {
+          fetch('/track/click/' + tool + '?source=' + encodeURIComponent(window.location.pathname), {
+            method: 'POST', keepalive: true
+          }).catch(function () {});
         }
       });
     });
