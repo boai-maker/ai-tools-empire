@@ -474,8 +474,14 @@ async def subscribe(request: Request, body: SubscribeRequest):
         return JSONResponse({"success": False, "message": "Too many requests. Try again in a minute."}, status_code=429)
 
     email = body.email.lower().strip()
-    if not email or "@" not in email:
+    if not email or "@" not in email or "." not in email.split("@")[-1]:
         return JSONResponse({"success": False, "message": "Invalid email"})
+
+    # Block obviously fake/disposable domains
+    _blocked_domains = {"fake.com", "test.com", "example.com", "mailinator.com", "tempmail.com", "throwaway.email", "guerrillamail.com", "sharklasers.com"}
+    domain = email.split("@")[-1]
+    if domain in _blocked_domains:
+        return JSONResponse({"success": False, "message": "Please use a real email address."})
 
     added = add_subscriber(email, body.name, source=body.source or "website")
     if not added:
