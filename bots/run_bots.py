@@ -379,26 +379,14 @@ if __name__ == "__main__":
         misfire_grace_time=1800,
     )
 
-    # Daily 12:00 PM ET: Fiverr Message Check #1
+    # Every hour 8AM-10PM ET: Fiverr Message Check (fast response = higher ranking)
     scheduler.add_job(
         job_fiverr_responder,
         "cron",
-        hour=12,
-        minute=0,
-        id="fiverr_responder_noon",
-        name="Fiverr Responder Noon",
-        max_instances=1,
-        misfire_grace_time=1800,
-    )
-
-    # Daily 5:00 PM ET: Fiverr Message Check #2
-    scheduler.add_job(
-        job_fiverr_responder,
-        "cron",
-        hour=17,
-        minute=0,
-        id="fiverr_responder_evening",
-        name="Fiverr Responder Evening",
+        hour="8-22",
+        minute=15,
+        id="fiverr_responder_hourly",
+        name="Fiverr Responder (Hourly)",
         max_instances=1,
         misfire_grace_time=1800,
     )
