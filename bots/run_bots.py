@@ -29,6 +29,9 @@ from bots.offer_optimizer_bot import run_offer_optimizer_bot
 from bots.reputation_bot import run_reputation_bot
 from bots.admin_notification_bot import run_admin_notification_bot
 from bots.master_controller import run_health_check
+from bots.affiliate_gmail_monitor import run_affiliate_gmail_monitor
+from bots.youtube_shorts_bot import run_youtube_shorts_bot
+from bots.fiverr_responder import run_fiverr_responder
 
 # Configure logging
 logging.basicConfig(
@@ -96,6 +99,15 @@ def job_offer_optimizer_bot():
 
 def job_reputation_bot():
     _safe_run(run_reputation_bot, "reputation_bot")
+
+def job_affiliate_gmail_monitor():
+    _safe_run(run_affiliate_gmail_monitor, "affiliate_gmail_monitor")
+
+def job_youtube_shorts():
+    _safe_run(run_youtube_shorts_bot, "youtube_shorts_bot")
+
+def job_fiverr_responder():
+    _safe_run(run_fiverr_responder, "fiverr_responder")
 
 
 def on_job_error(event):
@@ -342,6 +354,65 @@ if __name__ == "__main__":
         name="Reputation Bot",
         max_instances=1,
         misfire_grace_time=3600,
+    )
+
+    # Every 2 hours: affiliate Gmail monitor (checks for approval emails)
+    scheduler.add_job(
+        job_affiliate_gmail_monitor,
+        "interval",
+        hours=2,
+        id="affiliate_gmail_monitor",
+        name="Affiliate Gmail Monitor",
+        max_instances=1,
+        misfire_grace_time=600,
+    )
+
+    # Daily 10:00 AM ET: YouTube Short #1
+    scheduler.add_job(
+        job_youtube_shorts,
+        "cron",
+        hour=10,
+        minute=0,
+        id="youtube_shorts_am",
+        name="YouTube Shorts AM",
+        max_instances=1,
+        misfire_grace_time=1800,
+    )
+
+    # Daily 12:00 PM ET: Fiverr Message Check #1
+    scheduler.add_job(
+        job_fiverr_responder,
+        "cron",
+        hour=12,
+        minute=0,
+        id="fiverr_responder_noon",
+        name="Fiverr Responder Noon",
+        max_instances=1,
+        misfire_grace_time=1800,
+    )
+
+    # Daily 5:00 PM ET: Fiverr Message Check #2
+    scheduler.add_job(
+        job_fiverr_responder,
+        "cron",
+        hour=17,
+        minute=0,
+        id="fiverr_responder_evening",
+        name="Fiverr Responder Evening",
+        max_instances=1,
+        misfire_grace_time=1800,
+    )
+
+    # Daily 4:00 PM ET: YouTube Short #2
+    scheduler.add_job(
+        job_youtube_shorts,
+        "cron",
+        hour=16,
+        minute=0,
+        id="youtube_shorts_pm",
+        name="YouTube Shorts PM",
+        max_instances=1,
+        misfire_grace_time=1800,
     )
 
     print("\n  Scheduled jobs:")
