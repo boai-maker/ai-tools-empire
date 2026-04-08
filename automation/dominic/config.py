@@ -34,7 +34,7 @@ class DominicConfig:
 
     # --- Anthropic ---
     anthropic_api_key: str = ""
-    claude_model: str = "claude-3-5-haiku-20241022"
+    claude_model: str = "claude-sonnet-4-20250514"
 
     # --- Twitter ---
     twitter_api_key: str = ""

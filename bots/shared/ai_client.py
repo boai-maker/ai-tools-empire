@@ -21,7 +21,7 @@ def ask_claude(
     prompt: str,
     system: str = None,
     max_tokens: int = 1500,
-    model: str = "claude-3-5-haiku-20241022"
+    model: str = "claude-sonnet-4-20250514"
 ) -> str:
     """
     Call Claude with the given prompt. Returns text response.
