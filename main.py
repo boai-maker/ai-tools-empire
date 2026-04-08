@@ -463,7 +463,11 @@ async def services_page(request: Request):
 @app.get("/resume", response_class=HTMLResponse)
 async def resume_service_page(request: Request):
     """Free resume review landing page — leads into $49 rewrite service."""
-    return HTMLResponse(open("static/resume-landing.html").read())
+    resume_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "resume-landing.html")
+    try:
+        return HTMLResponse(open(resume_path).read())
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Resume page not found")
 
 
 # ── API Endpoints ─────────────────────────────────────────────────────────────
