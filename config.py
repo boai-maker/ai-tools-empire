@@ -76,6 +76,27 @@ class Config:
         "canva": os.getenv("CANVA_AFFILIATE_ID", ""),
         "synthesia": os.getenv("SYNTHESIA_AFFILIATE_ID", ""),
         "runway": os.getenv("RUNWAY_AFFILIATE_ID", ""),
+        # New programs (v2 — April 2026)
+        "notion": os.getenv("NOTION_AFFILIATE_ID", ""),
+        "scalenut": os.getenv("SCALENUT_AFFILIATE_ID", ""),
+        "anyword": os.getenv("ANYWORD_AFFILIATE_ID", ""),
+        "seranking": os.getenv("SERANKING_AFFILIATE_ID", ""),
+        "make": os.getenv("MAKE_AFFILIATE_ID", ""),
+        "fliki": os.getenv("FLIKI_AFFILIATE_ID", ""),
+        "rytr": os.getenv("RYTR_AFFILIATE_ID", ""),
+        "koala": os.getenv("KOALA_AFFILIATE_ID", ""),
+        "frase": os.getenv("FRASE_AFFILIATE_ID", ""),
+        "hostinger": os.getenv("HOSTINGER_AFFILIATE_ID", ""),
+        "heygen": os.getenv("HEYGEN_AFFILIATE_ID", ""),
+        "colossyan": os.getenv("COLOSSYAN_AFFILIATE_ID", ""),
+        "playht": os.getenv("PLAYHT_AFFILIATE_ID", ""),
+        "lovo": os.getenv("LOVO_AFFILIATE_ID", ""),
+        "mangools": os.getenv("MANGOOLS_AFFILIATE_ID", ""),
+        "fotor": os.getenv("FOTOR_AFFILIATE_ID", ""),
+        "hypotenuse": os.getenv("HYPOTENUSE_AFFILIATE_ID", ""),
+        "clickup": os.getenv("CLICKUP_AFFILIATE_ID", ""),
+        "zapier": os.getenv("ZAPIER_AFFILIATE_ID", ""),
+        "wix": os.getenv("WIX_AFFILIATE_ID", ""),
     }
 
 config = Config()
