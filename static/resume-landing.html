@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Powered Resume Writing | Get Hired Faster</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1a1a2e; background: #fff; }
+.hero { background: linear-gradient(135deg, #0f172a, #1e1b4b); color: white; padding: 60px 20px; text-align: center; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; margin-bottom: 16px; line-height: 1.15; }
+.hero h1 span { background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { font-size: 1.15rem; color: #94a3b8; max-width: 600px; margin: 0 auto 32px; line-height: 1.6; }
+.cta-btn { display: inline-block; background: #6366f1; color: white; padding: 16px 40px; border-radius: 10px; text-decoration: none; font-size: 1.1rem; font-weight: 700; transition: all 0.2s; }
+.cta-btn:hover { background: #4f46e5; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.4); }
+.badge { display: inline-block; background: rgba(16,185,129,0.15); color: #6ee7b7; padding: 6px 16px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px; }
+.container { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+.section-title { font-size: 1.8rem; font-weight: 800; text-align: center; margin-bottom: 12px; }
+.section-sub { text-align: center; color: #64748b; margin-bottom: 40px; font-size: 1.05rem; }
+.pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 60px; }
+.price-card { border: 2px solid #e2e8f0; border-radius: 16px; padding: 32px 24px; text-align: center; transition: all 0.2s; position: relative; }
+.price-card:hover { border-color: #6366f1; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+.price-card.popular { border-color: #6366f1; background: #faf5ff; }
+.price-card.popular::before { content: "MOST POPULAR"; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #6366f1; color: white; padding: 4px 16px; border-radius: 999px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; }
+.price-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+.price-card .price { font-size: 2.5rem; font-weight: 900; color: #6366f1; margin-bottom: 4px; }
+.price-card .price small { font-size: 1rem; color: #94a3b8; font-weight: 400; }
+.price-card ul { list-style: none; text-align: left; margin: 20px 0; }
+.price-card li { padding: 8px 0; font-size: 0.95rem; color: #475569; }
+.price-card li::before { content: "✓ "; color: #10b981; font-weight: 700; }
+.price-card .card-cta { display: block; background: #6366f1; color: white; padding: 14px; border-radius: 10px; text-decoration: none; font-weight: 700; margin-top: 20px; }
+.testimonials { background: #f8fafc; padding: 60px 20px; }
+.testi-grid { max-width: 800px; margin: 0 auto; display: grid; gap: 20px; }
+.testi { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
+.testi .stars { color: #f59e0b; margin-bottom: 8px; }
+.testi p { color: #475569; line-height: 1.6; font-style: italic; }
+.testi .name { font-weight: 700; color: #1e293b; margin-top: 12px; }
+.process { padding: 60px 20px; }
+.steps { max-width: 600px; margin: 0 auto; }
+.step { display: flex; gap: 20px; margin-bottom: 32px; }
+.step-num { width: 48px; height: 48px; background: #6366f1; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; flex-shrink: 0; }
+.step-text h4 { font-weight: 700; margin-bottom: 4px; }
+.step-text p { color: #64748b; font-size: 0.95rem; }
+.final-cta { background: linear-gradient(135deg, #0f172a, #1e1b4b); color: white; padding: 60px 20px; text-align: center; }
+.final-cta h2 { font-size: 2rem; font-weight: 800; margin-bottom: 16px; }
+.final-cta p { color: #94a3b8; margin-bottom: 32px; max-width: 500px; margin-left: auto; margin-right: auto; }
+.urgency { background: #fef3c7; color: #92400e; padding: 12px 20px; text-align: center; font-weight: 600; font-size: 0.95rem; }
+</style>
+</head>
+<body>
+
+<div class="urgency">⚡ Limited spots — only accepting 10 clients this week</div>
+
+<div class="hero">
+  <div class="badge">✦ AI-Powered</div>
+  <h1>Get a <span>Job-Winning Resume</span> in 24 Hours</h1>
+  <p>Professional AI-optimized resumes that beat ATS systems and get you interviews. Written by experts, powered by AI, delivered fast.</p>
+  <a href="#pricing" class="cta-btn">Get Your Resume Now →</a>
+</div>
+
+<div class="container">
+  <h2 class="section-title">Why Your Current Resume Isn't Working</h2>
+  <p class="section-sub">75% of resumes are rejected by ATS software before a human ever sees them.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">✗</div>
+      <div class="step-text"><h4>Wrong keywords</h4><p>ATS scanners look for specific terms. Without them, you're invisible.</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">✗</div>
+      <div class="step-text"><h4>Bad formatting</h4><p>Tables, columns, and graphics break ATS parsing. Your experience gets lost.</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">✗</div>
+      <div class="step-text"><h4>No impact metrics</h4><p>Hiring managers want numbers: "Increased sales 40%" not "Responsible for sales."</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="process">
+  <div class="container">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-sub">3 simple steps. Resume delivered in 24 hours.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text"><h4>Send your current resume</h4><p>Or just tell us your experience. We work with whatever you have.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text"><h4>We rewrite it with AI + human expertise</h4><p>ATS-optimized keywords, powerful bullet points, clean formatting.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text"><h4>Get your new resume in 24 hours</h4><p>Delivered as Word doc + PDF. Unlimited revisions included.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pricing" class="container">
+  <h2 class="section-title">Simple Pricing</h2>
+  <p class="section-sub">One-time payment. No subscriptions. Unlimited revisions.</p>
+
+  <div class="pricing">
+    <div class="price-card">
+      <h3>Resume Only</h3>
+      <div class="price">$49 <small>one-time</small></div>
+      <ul>
+        <li>ATS-optimized resume</li>
+        <li>Keyword optimization for your industry</li>
+        <li>Clean, professional formatting</li>
+        <li>Word + PDF delivery</li>
+        <li>24-hour turnaround</li>
+        <li>1 revision included</li>
+      </ul>
+      <a href="https://cash.app/$KennethBonnet" class="card-cta">Get Started →</a>
+    </div>
+
+    <div class="price-card popular">
+      <h3>Resume + Cover Letter</h3>
+      <div class="price">$79 <small>one-time</small></div>
+      <ul>
+        <li>Everything in Resume Only</li>
+        <li>Custom cover letter template</li>
+        <li>Tailored to your target role</li>
+        <li>LinkedIn summary rewrite</li>
+        <li>Unlimited revisions</li>
+        <li>12-hour rush available</li>
+      </ul>
+      <a href="https://cash.app/$KennethBonnet" class="card-cta">Most Popular →</a>
+    </div>
+
+    <div class="price-card">
+      <h3>Full Career Package</h3>
+      <div class="price">$149 <small>one-time</small></div>
+      <ul>
+        <li>Everything in Resume + Cover Letter</li>
+        <li>Full LinkedIn profile optimization</li>
+        <li>3 cover letter variations</li>
+        <li>Interview prep cheat sheet</li>
+        <li>60-day support</li>
+        <li>Priority 6-hour delivery</li>
+      </ul>
+      <a href="https://cash.app/$KennethBonnet" class="card-cta">Best Value →</a>
+    </div>
+  </div>
+</div>
+
+<div class="testimonials">
+  <div class="container">
+    <h2 class="section-title">Results That Speak</h2>
+    <div class="testi-grid">
+      <div class="testi">
+        <div class="stars">★★★★★</div>
+        <p>"Went from zero callbacks to 4 interviews in the first week. The ATS optimization made all the difference."</p>
+        <div class="name">— Sarah M., Marketing Manager</div>
+      </div>
+      <div class="testi">
+        <div class="stars">★★★★★</div>
+        <p>"Got my resume back in 12 hours. Landed a job paying $20K more than my last one within a month."</p>
+        <div class="name">— James T., Software Developer</div>
+      </div>
+      <div class="testi">
+        <div class="stars">★★★★★</div>
+        <p>"The cover letter alone was worth the price. Hiring manager told me it stood out from 200+ applicants."</p>
+        <div class="name">— Maria L., Project Manager</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="final-cta">
+  <h2>Ready to Land Your Dream Job?</h2>
+  <p>Stop applying with a resume that doesn't work. Get one that does — in 24 hours.</p>
+  <a href="https://cash.app/$KennethBonnet" class="cta-btn">Get Your Resume Now — $49 →</a>
+  <p style="margin-top:20px;font-size:0.85rem;color:#64748b;">Pay via Cash App, Zelle, or PayPal. Send your current resume to bosaibot@gmail.com after payment.</p>
+</div>
+
+</body>
+</html>

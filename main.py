@@ -460,6 +460,12 @@ async def services_page(request: Request):
     return templates.TemplateResponse("services.html", ctx)
 
 
+@app.get("/resume", response_class=HTMLResponse)
+async def resume_service_page(request: Request):
+    """Free resume review landing page — leads into $49 rewrite service."""
+    return HTMLResponse(open("static/resume-landing.html").read())
+
+
 # ── API Endpoints ─────────────────────────────────────────────────────────────
 
 class SubscribeRequest(BaseModel):
