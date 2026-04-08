@@ -32,6 +32,7 @@ from bots.master_controller import run_health_check
 from bots.affiliate_gmail_monitor import run_affiliate_gmail_monitor
 from bots.youtube_shorts_bot import run_youtube_shorts_bot
 from bots.fiverr_responder import run_fiverr_responder
+from bots.linkedin_monitor import run_linkedin_monitor
 
 # Configure logging
 logging.basicConfig(
@@ -108,6 +109,9 @@ def job_youtube_shorts():
 
 def job_fiverr_responder():
     _safe_run(run_fiverr_responder, "fiverr_responder")
+
+def job_linkedin_monitor():
+    _safe_run(run_linkedin_monitor, "linkedin_monitor")
 
 
 def on_job_error(event):
@@ -387,6 +391,18 @@ if __name__ == "__main__":
         minute=15,
         id="fiverr_responder_hourly",
         name="Fiverr Responder (Hourly)",
+        max_instances=1,
+        misfire_grace_time=1800,
+    )
+
+    # Every hour 8AM-11PM ET: LinkedIn Message Monitor
+    scheduler.add_job(
+        job_linkedin_monitor,
+        "cron",
+        hour="8-23",
+        minute=30,
+        id="linkedin_monitor_hourly",
+        name="LinkedIn Monitor (Hourly)",
         max_instances=1,
         misfire_grace_time=1800,
     )
