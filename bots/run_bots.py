@@ -33,6 +33,7 @@ from bots.affiliate_gmail_monitor import run_affiliate_gmail_monitor
 from bots.youtube_shorts_bot import run_youtube_shorts_bot
 from bots.fiverr_responder import run_fiverr_responder
 from bots.linkedin_monitor import run_linkedin_monitor
+from bots.wholesale_monitor import run_wholesale_monitor
 
 # Configure logging
 logging.basicConfig(
@@ -112,6 +113,9 @@ def job_fiverr_responder():
 
 def job_linkedin_monitor():
     _safe_run(run_linkedin_monitor, "linkedin_monitor")
+
+def job_wholesale_monitor():
+    _safe_run(run_wholesale_monitor, "wholesale_monitor")
 
 
 def on_job_error(event):
@@ -391,6 +395,18 @@ if __name__ == "__main__":
         minute=15,
         id="fiverr_responder_hourly",
         name="Fiverr Responder (Hourly)",
+        max_instances=1,
+        misfire_grace_time=1800,
+    )
+
+    # Every 4 hours: Wholesale Deal Monitor + 48h Follow-ups
+    scheduler.add_job(
+        job_wholesale_monitor,
+        "cron",
+        hour="8,12,16,20",
+        minute=45,
+        id="wholesale_monitor",
+        name="Wholesale RE Monitor",
         max_instances=1,
         misfire_grace_time=1800,
     )
