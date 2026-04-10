@@ -1,9 +1,15 @@
 """
-Wholesale Real Estate Email Monitor
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Wholesale Real Estate Email Monitor — UPGRADED (Master Bot Directive Phase 4)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Monitors Gmail for wholesale deal responses from sellers and buyers.
 Sends Telegram alerts on positive responses.
 Auto-sends 48-hour follow-up reminders.
+Logs all responses to CRM at localhost:5050.
+
+Bot category: outreach / response handler
+Inputs: Gmail IMAP inbox
+Outputs: Telegram alerts, CRM activity log, follow-up tasks
+Stop conditions: critical data missing, CRM down >5min
 """
 
 import os
@@ -12,7 +18,6 @@ import json
 import time
 import imaplib
 import email
-import logging
 from datetime import datetime, timedelta
 from email.header import decode_header
 
@@ -20,54 +25,43 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config import config
+from bots.shared.standards import (
+    Status, BotResult, get_logger, tg, safe_run, load_state, save_state, STATE_DIR
+)
+from bots.shared.crm_client import crm
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-log = logging.getLogger("wholesale_monitor")
+log = get_logger("wholesale_monitor")
 
 SMTP_USER = config.SMTP_USER or ""
 SMTP_PASSWORD = config.SMTP_PASSWORD or ""
-BOT_TOKEN = os.getenv("CLAUDE_BOT_TOKEN", "8620859605:AAFyqpnfFNj-Usgx0J1ZmxLyzQxw8T2s5Pk")
-CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "6194068092")
 IMAP_HOST = "imap.gmail.com"
 
-_DIR = os.path.dirname(os.path.abspath(__file__))
-STATE_FILE = os.path.join(_DIR, "wholesale_monitor_state.json")
+STATE_FILE = os.path.join(STATE_DIR, "wholesale_monitor.json")
 DEALS_DIR = os.path.expanduser("~/Desktop/wholesale-re/deals")
 OUTREACH_DIR = os.path.expanduser("~/Desktop/wholesale-re/outreach")
 
 
-def load_state() -> dict:
-    if os.path.exists(STATE_FILE):
-        try:
-            with open(STATE_FILE) as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return {
-        "last_check": "",
-        "seen_ids": [],
-        "sent_followups": [],
-        "outreach_log": [],
-    }
+def _load_state() -> dict:
+    state = load_state(STATE_FILE)
+    if not state:
+        state = {
+            "last_check": "",
+            "seen_ids": [],
+            "sent_followups": [],
+            "outreach_log": [],
+        }
+    return state
 
 
-def save_state(state: dict):
-    state["seen_ids"] = state["seen_ids"][-300:]
-    state["sent_followups"] = state["sent_followups"][-100:]
-    with open(STATE_FILE, "w") as f:
-        json.dump(state, f, indent=2, default=str)
+def _save_state(state: dict) -> None:
+    state["seen_ids"] = state.get("seen_ids", [])[-300:]
+    state["sent_followups"] = state.get("sent_followups", [])[-100:]
+    save_state(STATE_FILE, state)
 
 
-def tg_send(text: str):
-    import requests
-    try:
-        requests.post(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML"},
-            timeout=10,
-        )
-    except Exception as e:
-        log.warning(f"Telegram failed: {e}")
+def tg_send(text: str) -> bool:
+    """Legacy alias — routes through unified tg() in standards."""
+    return tg(text, level="info")
 
 
 def decode_mime(val: str) -> str:
@@ -110,7 +104,7 @@ def check_wholesale_emails() -> list:
         return []
 
     responses = []
-    state = load_state()
+    state = _load_state()
     seen = set(state.get("seen_ids", []))
 
     try:
@@ -209,10 +203,23 @@ def send_followup_reminders(state: dict):
             log.warning(f"Follow-up error for {deal_id}: {e}")
 
 
-def run_wholesale_monitor():
-    """Main function — check for wholesale responses + send follow-ups."""
-    log.info("Checking wholesale email responses...")
-    state = load_state()
+@safe_run("wholesale_monitor")
+def run_wholesale_monitor() -> BotResult:
+    """
+    Main function — check for wholesale responses + send follow-ups.
+
+    Phase 4 upgrades:
+      • Wrapped in @safe_run for error isolation
+      • Returns BotResult for clean handoff to wholesale_agent skill
+      • Uses unified tg() for Telegram
+      • Logs all responses to CRM via crm.log_activity()
+      • Creates CRM tasks for INTERESTED responses
+      • Falls back gracefully if CRM is down
+    """
+    state = _load_state()
+
+    # Drain any pending CRM writes from previous failed attempts
+    crm.flush_pending()
 
     # Record initial outreach if not already done
     if not state.get("outreach_log"):
@@ -227,21 +234,37 @@ def run_wholesale_monitor():
     # Check for responses
     responses = check_wholesale_emails()
     seen = state.get("seen_ids", [])
+    interested_count = 0
 
     for r in responses:
         cls = r["classification"]
         icon = {"INTERESTED": "🟢", "MAYBE": "🟡", "NOT_INTERESTED": "🔴", "UNKNOWN": "⚪"}.get(cls, "⚪")
 
         if cls in ("INTERESTED", "MAYBE"):
-            tg_send(
+            interested_count += 1
+            tg(
                 f"{icon} <b>WHOLESALE RESPONSE — {cls}</b>\n"
                 f"━━━━━━━━━━━━━━━━━━━━━━━━\n"
                 f"<b>From:</b> {r['from'][:60]}\n"
                 f"<b>Subject:</b> {r['subject'][:60]}\n"
                 f"<b>Preview:</b> {r['body_preview'][:200]}\n\n"
                 f"⚡ Reply APPROVE on Telegram to send contract\n"
-                f"👉 Check full email: mail.google.com"
+                f"👉 Check full email: mail.google.com",
+                level="deal" if cls == "INTERESTED" else "info",
             )
+
+            # Phase 7: Log to CRM and create follow-up task
+            crm.log_activity(
+                activity_type="wholesale_response",
+                summary=f"{cls} response from {r['from'][:60]}",
+                details={"subject": r['subject'], "preview": r['body_preview'][:300]},
+            )
+            if cls == "INTERESTED":
+                crm.create_task(
+                    task_type="send_contract",
+                    description=f"Buyer interested: {r['from'][:60]} re: {r['subject'][:60]}",
+                    priority="high",
+                )
 
         seen.append(r["message_id"])
         log.info(f"Wholesale response: {cls} from {r['from'][:40]}")
@@ -251,13 +274,16 @@ def run_wholesale_monitor():
 
     state["seen_ids"] = seen
     state["last_check"] = datetime.now().isoformat()
-    save_state(state)
+    _save_state(state)
 
-    return {
-        "checked": True,
-        "responses": len(responses),
-        "interested": len([r for r in responses if r["classification"] == "INTERESTED"]),
-    }
+    return BotResult(
+        bot_name="wholesale_monitor",
+        success=True,
+        received={"emails_checked": len(responses)},
+        produced={"interested": interested_count, "total_responses": len(responses)},
+        next_bot="wholesale_agent" if interested_count > 0 else None,
+        next_action="send_contract" if interested_count > 0 else "wait_for_responses",
+    )
 
 
 if __name__ == "__main__":

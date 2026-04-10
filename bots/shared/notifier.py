@@ -1,16 +1,26 @@
 """
 Notification hub — Telegram + email alerts for all bots.
+
+LEGACY MODULE: This now wraps bots.shared.standards.tg() so all
+notifications flow through a single source. Existing bots that import
+notify() from here will keep working without changes.
+
+For new code, prefer:
+    from bots.shared.standards import tg
+    tg("message", level="info")
 """
 import os
 import logging
 import requests
 from config import config
 from bots.shared.email_sender import send_email
+from bots.shared.standards import tg as _tg_unified, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID as _CHAT_ID
 
 logger = logging.getLogger(__name__)
 
-TELEGRAM_TOKEN = os.getenv("DOMINIC_TELEGRAM_TOKEN", "")
-TELEGRAM_CHAT_ID = os.getenv("DOMINIC_TELEGRAM_CHAT_ID", "")
+# Backwards-compat — these point at the single source of truth
+TELEGRAM_TOKEN = os.getenv("DOMINIC_TELEGRAM_TOKEN", TELEGRAM_BOT_TOKEN)
+TELEGRAM_CHAT_ID = os.getenv("DOMINIC_TELEGRAM_CHAT_ID", _CHAT_ID)
 
 LEVEL_EMOJI = {
     "info": "ℹ️",
@@ -21,28 +31,11 @@ LEVEL_EMOJI = {
 
 
 def _send_telegram(message: str) -> bool:
-    """Send a message via Telegram Bot API. Returns True on success."""
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        logger.debug("Telegram not configured — skipping Telegram notification")
-        return False
-
-    try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        payload = {
-            "chat_id": TELEGRAM_CHAT_ID,
-            "text": message,
-            "parse_mode": "HTML",
-        }
-        response = requests.post(url, json=payload, timeout=10)
-        if response.status_code == 200:
-            logger.debug("Telegram notification sent")
-            return True
-        else:
-            logger.warning(f"Telegram API returned {response.status_code}: {response.text[:200]}")
-            return False
-    except requests.RequestException as e:
-        logger.error(f"Telegram notification error: {e}")
-        return False
+    """
+    Legacy wrapper — routes through unified tg() in standards.
+    Kept for backwards compatibility with existing bots.
+    """
+    return _tg_unified(message, level="info")
 
 
 def notify(

@@ -21,7 +21,6 @@ import json
 import time
 import imaplib
 import email
-import logging
 from datetime import datetime, timedelta
 from email.header import decode_header
 
@@ -30,19 +29,18 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config import config
+from bots.shared.standards import (
+    BotResult, get_logger, tg, safe_run, load_state, save_state, STATE_DIR
+)
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-log = logging.getLogger("fiverr_responder")
+log = get_logger("fiverr_responder")
 
 # ── Config ────────────────────────────────────────────────────────────────────
 SMTP_USER = config.SMTP_USER or os.getenv("SMTP_USER", "")
 SMTP_PASSWORD = config.SMTP_PASSWORD or os.getenv("SMTP_PASSWORD", "")
-BOT_TOKEN = os.getenv("CLAUDE_BOT_TOKEN", "8620859605:AAFyqpnfFNj-Usgx0J1ZmxLyzQxw8T2s5Pk")
-CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "6194068092")
 IMAP_HOST = "imap.gmail.com"
 
-_DIR = os.path.dirname(os.path.abspath(__file__))
-STATE_FILE = os.path.join(_DIR, "fiverr_responder_state.json")
+STATE_FILE = os.path.join(STATE_DIR, "fiverr_responder.json")
 
 # Templates for different message types
 TEMPLATES = {
@@ -81,32 +79,20 @@ TEMPLATES = {
 }
 
 
-def load_state() -> dict:
-    if os.path.exists(STATE_FILE):
-        try:
-            with open(STATE_FILE) as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return {"last_check": "", "replied_message_ids": []}
+def _load_state() -> dict:
+    state = load_state(STATE_FILE)
+    if not state:
+        state = {"last_check": "", "replied_message_ids": []}
+    return state
 
 
-def save_state(state: dict):
-    with open(STATE_FILE, "w") as f:
-        json.dump(state, f, indent=2, default=str)
+def _save_state(state: dict) -> None:
+    save_state(STATE_FILE, state)
 
 
-def tg_send(text: str):
-    """Send message to Telegram."""
-    import requests
-    try:
-        requests.post(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML"},
-            timeout=10,
-        )
-    except Exception as e:
-        log.warning(f"Telegram send failed: {e}")
+def tg_send(text: str) -> bool:
+    """Legacy alias — routes through unified tg() in standards."""
+    return tg(text, level="info")
 
 
 def decode_mime_header(header_value: str) -> str:
@@ -166,7 +152,7 @@ def check_fiverr_messages() -> list:
         return []
 
     messages = []
-    state = load_state()
+    state = _load_state()
     replied_ids = set(state.get("replied_message_ids", []))
 
     try:
@@ -246,7 +232,7 @@ def draft_response(msg_info: dict) -> str:
 def run_fiverr_responder():
     """Main bot function — check for new Fiverr messages and draft responses."""
     log.info("Checking for new Fiverr messages...")
-    state = load_state()
+    state = _load_state()
 
     messages = check_fiverr_messages()
 
@@ -285,7 +271,7 @@ def run_fiverr_responder():
     # Keep last 100 IDs
     state["replied_message_ids"] = replied_ids[-100:]
     state["last_check"] = datetime.now().isoformat()
-    save_state(state)
+    _save_state(state)
 
     return {"checked": True, "new_messages": len(messages)}
 

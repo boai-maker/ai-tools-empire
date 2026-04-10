@@ -12,12 +12,12 @@ from bs4 import BeautifulSoup
 
 # Category → best affiliate tool mapping
 CATEGORY_TOOL_MAP = {
-    "writing":      ["jasper", "copyai", "writesonic", "grammarly", "quillbot"],
+    "writing":      ["grammarly", "writesonic", "quillbot"],
     "seo":          ["semrush", "surfer"],
     "video":        ["pictory", "invideo", "synthesia", "runway", "descript"],
     "audio":        ["elevenlabs", "murf", "speechify"],
-    "productivity": ["getresponse", "hubspot", "kit", "fireflies", "canva", "webflow"],
-    "image":        ["canva", "jasper"],  # fallback
+    "productivity": ["getresponse", "hubspot", "kit", "fireflies", "webflow"],
+    "image":        ["semrush", "grammarly"],  # fallback — canva/jasper programs gone
 }
 
 # Tool display info for CTA boxes
@@ -47,11 +47,11 @@ TOOL_INFO = {
 
 # Featured tool overrides for specific article IDs (articles without featured_tool)
 ARTICLE_FEATURED_TOOL_OVERRIDES = {
-    24: "jasper",
+    24: "grammarly",
     28: "getresponse",
-    33: "jasper",
-    36: "jasper",
-    38: "jasper",
+    33: "grammarly",
+    36: "getresponse",
+    38: "grammarly",
     48: "getresponse",
     49: "getresponse",
     50: "getresponse",

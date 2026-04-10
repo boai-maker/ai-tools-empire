@@ -17,7 +17,6 @@ import json
 import time
 import imaplib
 import email
-import logging
 from datetime import datetime, timedelta
 from email.header import decode_header
 
@@ -25,46 +24,34 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config import config
+from bots.shared.standards import (
+    BotResult, get_logger, tg, safe_run, load_state, save_state, STATE_DIR
+)
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-log = logging.getLogger("linkedin_monitor")
+log = get_logger("linkedin_monitor")
 
 SMTP_USER = config.SMTP_USER or os.getenv("SMTP_USER", "")
 SMTP_PASSWORD = config.SMTP_PASSWORD or os.getenv("SMTP_PASSWORD", "")
-BOT_TOKEN = os.getenv("CLAUDE_BOT_TOKEN", "8620859605:AAFyqpnfFNj-Usgx0J1ZmxLyzQxw8T2s5Pk")
-CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "6194068092")
 IMAP_HOST = "imap.gmail.com"
 
-_DIR = os.path.dirname(os.path.abspath(__file__))
-STATE_FILE = os.path.join(_DIR, "linkedin_monitor_state.json")
+STATE_FILE = os.path.join(STATE_DIR, "linkedin_monitor.json")
 
 
-def load_state() -> dict:
-    if os.path.exists(STATE_FILE):
-        try:
-            with open(STATE_FILE) as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return {"last_check": "", "seen_ids": []}
+def _load_state() -> dict:
+    state = load_state(STATE_FILE)
+    if not state:
+        state = {"last_check": "", "seen_ids": []}
+    return state
 
 
-def save_state(state: dict):
-    state["seen_ids"] = state["seen_ids"][-200:]
-    with open(STATE_FILE, "w") as f:
-        json.dump(state, f, indent=2, default=str)
+def _save_state(state: dict) -> None:
+    state["seen_ids"] = state.get("seen_ids", [])[-200:]
+    save_state(STATE_FILE, state)
 
 
-def tg_send(text: str):
-    import requests
-    try:
-        requests.post(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML"},
-            timeout=10,
-        )
-    except Exception as e:
-        log.warning(f"Telegram send failed: {e}")
+def tg_send(text: str) -> bool:
+    """Legacy alias — routes through unified tg() in standards."""
+    return tg(text, level="info")
 
 
 def decode_mime(header_value: str) -> str:
@@ -188,7 +175,7 @@ def check_linkedin_emails() -> list:
         return []
 
     notifications = []
-    state = load_state()
+    state = _load_state()
     seen_ids = set(state.get("seen_ids", []))
 
     try:
@@ -261,7 +248,7 @@ def check_linkedin_emails() -> list:
 def run_linkedin_monitor():
     """Main function — check for LinkedIn notifications and alert on Telegram."""
     log.info("Checking LinkedIn notifications...")
-    state = load_state()
+    state = _load_state()
 
     notifications = check_linkedin_emails()
 
@@ -323,7 +310,7 @@ def run_linkedin_monitor():
 
     state["seen_ids"] = seen_ids
     state["last_check"] = datetime.now().isoformat()
-    save_state(state)
+    _save_state(state)
 
     total = len(notifications)
     log.info(f"Processed {total} LinkedIn notifications ({len(messages)} messages, {len(connections)} connections)")

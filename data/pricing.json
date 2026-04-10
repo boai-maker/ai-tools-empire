@@ -1,0 +1,377 @@
+{
+  "grammarly": {
+    "name": "Grammarly",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Free",
+        "price_usd": 0,
+        "billing": "forever",
+        "key_limits": "Basic grammar and spelling checks, limited suggestions"
+      },
+      {
+        "name": "Premium",
+        "price_usd": 12.0,
+        "billing": "monthly (billed annually)",
+        "key_limits": "Full grammar, clarity, tone, style, and plagiarism checks"
+      },
+      {
+        "name": "Business",
+        "price_usd": 15,
+        "billing": "per member/month (billed annually)",
+        "key_limits": "All Premium features plus team analytics, style guides, SAML SSO"
+      }
+    ],
+    "pricing_page_url": "https://www.grammarly.com/plans",
+    "affiliate_url": "https://www.grammarly.com/referrals/",
+    "notes": "Premium monthly (not annual) rate is ~$30/mo. Business requires 3+ seats minimum."
+  },
+  "writesonic": {
+    "name": "Writesonic",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Free",
+        "price_usd": 0,
+        "billing": "forever",
+        "key_limits": "10,000 words/month, limited Chatsonic access, 1 user"
+      },
+      {
+        "name": "Chatsonic",
+        "price_usd": 13,
+        "billing": "monthly",
+        "key_limits": "Unlimited Chatsonic, GPT-4 & Claude access, 1 user"
+      },
+      {
+        "name": "Individual",
+        "price_usd": 16,
+        "billing": "monthly",
+        "key_limits": "Unlimited words, all AI models, SEO checker, 1 user"
+      },
+      {
+        "name": "Teams",
+        "price_usd": 500,
+        "billing": "monthly (starting price)",
+        "key_limits": "Unlimited words, API access, custom workflows, team collaboration, 5+ users"
+      }
+    ],
+    "pricing_page_url": "https://writesonic.com/pricing",
+    "affiliate_url": "https://writesonic.com/?via=",
+    "notes": "Teams plan starts at $500/mo and scales with seat count. Annual billing available for discounts."
+  },
+  "surfer": {
+    "name": "Surfer SEO",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Essential",
+        "price_usd": 89,
+        "billing": "monthly",
+        "key_limits": "30 articles/month, content editor, keyword research, 1 user"
+      },
+      {
+        "name": "Advanced",
+        "price_usd": 129,
+        "billing": "monthly",
+        "key_limits": "100 articles/month, SERP analyzer, NLP, 5 users"
+      },
+      {
+        "name": "Max",
+        "price_usd": 219,
+        "billing": "monthly",
+        "key_limits": "Unlimited articles, white-label, API access, 10 users"
+      }
+    ],
+    "pricing_page_url": "https://surferseo.com/pricing/",
+    "affiliate_url": "https://surferseo.com/?via=",
+    "notes": "7-day free trial available on all paid plans. Annual billing saves ~17%."
+  },
+  "semrush": {
+    "name": "Semrush",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Pro",
+        "price_usd": 130,
+        "billing": "monthly",
+        "key_limits": "5 projects, 500 keywords tracked, 10,000 results per report, 1 user"
+      },
+      {
+        "name": "Guru",
+        "price_usd": 250,
+        "billing": "monthly",
+        "key_limits": "15 projects, 1,500 keywords tracked, content marketing platform, 1 user"
+      },
+      {
+        "name": "Business",
+        "price_usd": 500,
+        "billing": "monthly",
+        "key_limits": "40 projects, 5,000 keywords tracked, API access, white-label, 1 user"
+      }
+    ],
+    "pricing_page_url": "https://www.semrush.com/prices/",
+    "affiliate_url": "https://www.semrush.com/partner/?affcode=",
+    "notes": "Free trial available (limited features). Extra users billed separately. Annual billing saves ~17%."
+  },
+  "elevenlabs": {
+    "name": "ElevenLabs",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Free",
+        "price_usd": 0,
+        "billing": "forever",
+        "key_limits": "10,000 characters/month, 3 custom voices, watermarked audio"
+      },
+      {
+        "name": "Starter",
+        "price_usd": 5,
+        "billing": "monthly",
+        "key_limits": "30,000 characters/month, 10 custom voices, commercial license"
+      },
+      {
+        "name": "Creator",
+        "price_usd": 22,
+        "billing": "monthly",
+        "key_limits": "100,000 characters/month, 30 custom voices, voice cloning"
+      },
+      {
+        "name": "Pro",
+        "price_usd": 99,
+        "billing": "monthly",
+        "key_limits": "500,000 characters/month, 160 custom voices, high-priority rendering"
+      }
+    ],
+    "pricing_page_url": "https://elevenlabs.io/pricing",
+    "affiliate_url": "https://elevenlabs.io/?from=",
+    "notes": "Enterprise plan available with custom pricing. Characters roll over on paid plans."
+  },
+  "murf": {
+    "name": "Murf AI",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Free",
+        "price_usd": 0,
+        "billing": "forever",
+        "key_limits": "10 minutes voice generation, 10 voices, no downloads"
+      },
+      {
+        "name": "Creator",
+        "price_usd": 29,
+        "billing": "monthly",
+        "key_limits": "2 hours voice generation/month, 120+ voices, HD downloads, 1 user"
+      },
+      {
+        "name": "Business",
+        "price_usd": 99,
+        "billing": "monthly",
+        "key_limits": "8 hours voice generation/month, all voices, API access, 3 users"
+      }
+    ],
+    "pricing_page_url": "https://murf.ai/pricing",
+    "affiliate_url": "https://murf.ai/?ref=",
+    "notes": "Annual billing saves up to 33%. Enterprise plan available with custom pricing."
+  },
+  "jasper": {
+    "name": "Jasper AI",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Creator",
+        "price_usd": 49,
+        "billing": "monthly",
+        "key_limits": "Unlimited AI-generated words, 50+ templates, 1 user, 1 brand voice"
+      },
+      {
+        "name": "Pro",
+        "price_usd": 69,
+        "billing": "monthly",
+        "key_limits": "Unlimited words, 3 brand voices, collaboration features, AI image generation, up to 5 users"
+      },
+      {
+        "name": "Business",
+        "price_usd": 0,
+        "billing": "custom",
+        "key_limits": "Custom word limits, SSO, API access, dedicated support, unlimited users"
+      }
+    ],
+    "pricing_page_url": "https://www.jasper.ai/pricing",
+    "affiliate_url": "https://www.jasper.ai/?fpr=",
+    "notes": "Business plan requires contacting sales. Annual billing saves ~20%. 7-day free trial on Creator and Pro."
+  },
+  "copyai": {
+    "name": "Copy.ai",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Free",
+        "price_usd": 0,
+        "billing": "forever",
+        "key_limits": "2,000 words/month, 90+ templates, 1 user, 1 workspace"
+      },
+      {
+        "name": "Pro",
+        "price_usd": 49,
+        "billing": "monthly",
+        "key_limits": "Unlimited words, all templates, 5 users, priority support, workflow automation"
+      },
+      {
+        "name": "Team",
+        "price_usd": 249,
+        "billing": "monthly",
+        "key_limits": "Unlimited words, 20 users, advanced workflows, API access, custom templates"
+      }
+    ],
+    "pricing_page_url": "https://www.copy.ai/pricing",
+    "affiliate_url": "https://www.copy.ai/?via=",
+    "notes": "Annual billing available. Enterprise plan with custom pricing for large teams."
+  },
+  "getresponse": {
+    "name": "GetResponse",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Free",
+        "price_usd": 0,
+        "billing": "forever",
+        "key_limits": "500 contacts, 1 landing page, basic email sending, no automation"
+      },
+      {
+        "name": "Email Marketing",
+        "price_usd": 19,
+        "billing": "monthly",
+        "key_limits": "1,000 contacts, unlimited emails, autoresponders, basic segmentation"
+      },
+      {
+        "name": "Marketing Automation",
+        "price_usd": 59,
+        "billing": "monthly",
+        "key_limits": "1,000 contacts, full automation workflows, webinars (up to 100 attendees), lead scoring"
+      }
+    ],
+    "pricing_page_url": "https://www.getresponse.com/pricing",
+    "affiliate_url": "https://www.getresponse.com/?a=",
+    "notes": "Prices scale with contact list size. Ecommerce Marketing plan available at $119/mo. Annual billing saves 18%."
+  },
+  "fireflies": {
+    "name": "Fireflies AI",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Free",
+        "price_usd": 0,
+        "billing": "forever",
+        "key_limits": "800 minutes storage, AI summaries, limited transcription credits"
+      },
+      {
+        "name": "Pro",
+        "price_usd": 10,
+        "billing": "per user/month",
+        "key_limits": "Unlimited transcription, 8,000 minutes storage, advanced search, integrations"
+      },
+      {
+        "name": "Business",
+        "price_usd": 19,
+        "billing": "per user/month",
+        "key_limits": "Unlimited storage, video recording, custom vocabulary, team analytics"
+      },
+      {
+        "name": "Enterprise",
+        "price_usd": 0,
+        "billing": "custom",
+        "key_limits": "Custom storage, SSO, dedicated support, private cloud option"
+      }
+    ],
+    "pricing_page_url": "https://fireflies.ai/pricing",
+    "affiliate_url": "https://fireflies.ai/?fpr=",
+    "notes": "Pro and Business billed annually by default. Monthly billing available at slightly higher rates."
+  },
+  "pictory": {
+    "name": "Pictory AI",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Starter",
+        "price_usd": 19,
+        "billing": "monthly",
+        "key_limits": "30 videos/month, 10 mins max video length, 2M+ stock media, watermark-free"
+      },
+      {
+        "name": "Professional",
+        "price_usd": 39,
+        "billing": "monthly",
+        "key_limits": "60 videos/month, 20 mins max video length, text-to-video, 1080p export"
+      },
+      {
+        "name": "Teams",
+        "price_usd": 99,
+        "billing": "monthly",
+        "key_limits": "3 users included, 90 videos/month, team collaboration, shared brand assets"
+      }
+    ],
+    "pricing_page_url": "https://pictory.ai/pricing",
+    "affiliate_url": "https://pictory.ai/?ref=",
+    "notes": "Annual billing saves ~30%. Enterprise plan available. Free trial offered."
+  },
+  "descript": {
+    "name": "Descript",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Free",
+        "price_usd": 0,
+        "billing": "forever",
+        "key_limits": "1 hour transcription/month, 1 watermarked export/month, basic editing"
+      },
+      {
+        "name": "Creator",
+        "price_usd": 12,
+        "billing": "per user/month (billed annually)",
+        "key_limits": "10 hours transcription/month, unlimited exports, AI tools, screen recording"
+      },
+      {
+        "name": "Pro",
+        "price_usd": 24,
+        "billing": "per user/month (billed annually)",
+        "key_limits": "30 hours transcription/month, overdub voice cloning, advanced AI editing, 4K export"
+      },
+      {
+        "name": "Enterprise",
+        "price_usd": 0,
+        "billing": "custom",
+        "key_limits": "Unlimited transcription, SSO, advanced permissions, dedicated support"
+      }
+    ],
+    "pricing_page_url": "https://www.descript.com/pricing",
+    "affiliate_url": "https://www.descript.com/affiliates?ref=",
+    "notes": "Monthly billing available at higher rates (~$24 Creator, ~$40 Pro). Enterprise requires contacting sales."
+  },
+  "quillbot": {
+    "name": "QuillBot",
+    "last_verified": "2026-04-05",
+    "plans": [
+      {
+        "name": "Free",
+        "price_usd": 0,
+        "billing": "forever",
+        "key_limits": "125 words per paraphrase, 3 paraphrase modes, basic grammar checker"
+      },
+      {
+        "name": "Premium (Monthly)",
+        "price_usd": 9.95,
+        "billing": "monthly",
+        "key_limits": "Unlimited paraphrasing, all 8 modes, advanced grammar, plagiarism checker (20 pages/mo)"
+      },
+      {
+        "name": "Premium (Annual)",
+        "price_usd": 4.17,
+        "billing": "monthly (billed annually at $49.95/yr)",
+        "key_limits": "Unlimited paraphrasing, all 8 modes, advanced grammar, plagiarism checker (20 pages/mo)"
+      }
+    ],
+    "pricing_page_url": "https://quillbot.com/pricing",
+    "affiliate_url": "https://quillbot.com/?ref=",
+    "notes": "Semi-annual plan also available at ~$6.65/mo. Plagiarism checker limited on free tier."
+  }
+}

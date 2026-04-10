@@ -74,6 +74,43 @@ def run_promo_tweet():
     except Exception as e:
         log.error(f"Promo tweet error: {e}")
 
+def run_sequence_emails():
+    log.info("=== SCHEDULED: Welcome sequence emails ===")
+    try:
+        from database.db import get_due_sequence_emails, mark_sequence_sent
+        from automation.sequences.runner import send_sequence_email
+        due = get_due_sequence_emails()
+        sent = 0
+        for item in due:
+            ok = send_sequence_email(item["email"], item["name"] or "there", item["seq_num"])
+            if ok:
+                mark_sequence_sent(item["id"])
+                sent += 1
+                log.info(f"Sequence email {item['seq_num']} sent to {item['email']}")
+            else:
+                log.warning(f"Sequence email {item['seq_num']} failed for {item['email']}")
+        log.info(f"Sequence emails sent: {sent}/{len(due)}")
+    except Exception as e:
+        log.error(f"Sequence email error: {e}")
+
+def run_reddit_posting():
+    log.info("=== SCHEDULED: Reddit posting ===")
+    try:
+        from automation.reddit_poster import run_reddit_posting as _post
+        sent = _post(count=1)
+        log.info(f"Reddit posts sent: {sent}")
+    except Exception as e:
+        log.error(f"Reddit posting error: {e}")
+
+def run_youtube_community():
+    log.info("=== SCHEDULED: YouTube community post ===")
+    try:
+        from automation.youtube_community import run_youtube_community_post
+        sent = run_youtube_community_post()
+        log.info(f"YouTube community posts sent: {sent}")
+    except Exception as e:
+        log.error(f"YouTube community error: {e}")
+
 def run_cold_outreach():
     log.info("=== SCHEDULED: Cold outreach sequences ===")
     try:
@@ -100,17 +137,25 @@ def setup_schedule():
     # Welcome emails — 9 AM daily
     schedule.every().day.at("09:00").do(run_welcome_emails)
 
-    # Social media — 4x/day
-    schedule.every().day.at("08:00").do(run_article_tweet)
-    schedule.every().day.at("12:00").do(run_promo_tweet)
-    schedule.every().day.at("16:00").do(run_article_tweet)
+    # Twitter/X — 2x/day (9 AM + 6 PM)
+    schedule.every().day.at("09:00").do(run_article_tweet)
     schedule.every().day.at("18:00").do(run_promo_tweet)
+
+    # Reddit — 2x/day (10 AM + 7 PM)
+    schedule.every().day.at("10:00").do(run_reddit_posting)
+    schedule.every().day.at("19:00").do(run_reddit_posting)
+
+    # YouTube community — 1x/day (noon)
+    schedule.every().day.at("12:00").do(run_youtube_community)
 
     # Weekly newsletter — Monday 9 AM
     schedule.every().monday.at("09:30").do(run_newsletter)
 
     # Cold outreach sequences — daily 10 AM
     schedule.every().day.at("10:00").do(run_cold_outreach)
+
+    # Welcome sequence drip emails — every hour
+    schedule.every().hour.do(run_sequence_emails)
 
     # Health monitoring — every hour
     schedule.every().hour.do(run_health_monitor)

@@ -7,6 +7,8 @@ Launch once and keep it running: nohup python3 scheduler.py &
 
 import time
 import logging
+import urllib.request
+import urllib.parse
 from datetime import datetime
 
 logging.basicConfig(
@@ -25,6 +27,25 @@ GENERATION_HOURS = [7, 12, 17]  # 7 AM, 12 PM, 5 PM
 _ran_this_hour = set()  # track which hours we've already fired today
 
 
+SITE_URL = "https://aitoolsempire.co"
+SITEMAP_URL = f"{SITE_URL}/sitemap.xml"
+
+PING_ENDPOINTS = [
+    f"https://www.google.com/ping?sitemap={urllib.parse.quote(SITEMAP_URL)}",
+    f"https://www.bing.com/ping?sitemap={urllib.parse.quote(SITEMAP_URL)}",
+]
+
+
+def ping_search_engines():
+    """Notify Google and Bing of updated sitemap."""
+    for url in PING_ENDPOINTS:
+        try:
+            urllib.request.urlopen(url, timeout=10)
+            log.info(f"Sitemap ping OK: {url[:60]}")
+        except Exception as e:
+            log.warning(f"Sitemap ping failed: {e}")
+
+
 def run_generation():
     """Run one batch of article generation."""
     try:
@@ -33,6 +54,8 @@ def run_generation():
         init_db()
         result = run_content_generation(count=3)
         log.info(f"Content generation complete: {result}")
+        if result.get("generated", 0) > 0:
+            ping_search_engines()
         return result
     except Exception as e:
         log.error(f"Content generation error: {e}")

@@ -1,0 +1,32 @@
+{
+  "last_check": "2026-04-10T06:59:02.811787",
+  "seen_ids": [],
+  "sent_followups": [],
+  "outreach_log": [
+    {
+      "deal_id": "ATL-001",
+      "address": "1314 Camelot Dr, Atlanta, GA 30349",
+      "sent_at": "2026-04-10T06:59:02.280814"
+    },
+    {
+      "deal_id": "ATL-002",
+      "address": "615 Camelot Dr, Atlanta, GA 30349",
+      "sent_at": "2026-04-10T06:59:02.280817"
+    },
+    {
+      "deal_id": "ATL-003",
+      "address": "3598 Ingledale Dr SW, Atlanta, GA 30331",
+      "sent_at": "2026-04-10T06:59:02.280818"
+    },
+    {
+      "deal_id": "ATL-004",
+      "address": "3159 Lakewood Ave SW, Atlanta, GA 30310",
+      "sent_at": "2026-04-10T06:59:02.280819"
+    },
+    {
+      "deal_id": "ATL-005",
+      "address": "257 Peyton Pl SW, Atlanta, GA 30311",
+      "sent_at": "2026-04-10T06:59:02.280819"
+    }
+  ]
+}
