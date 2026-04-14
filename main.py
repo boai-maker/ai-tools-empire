@@ -542,7 +542,7 @@ async def affiliate_redirect(tool_key: str, request: Request):
         "semrush":    f"https://www.semrush.com/partner/?affcode={os.getenv('SEMRUSH_AFFILIATE_ID', '')}",
         "pictory":    f"https://pictory.ai/?ref={os.getenv('PICTORY_AFFILIATE_ID', '')}",
         "invideo":    f"https://invideo.io/?ref={os.getenv('INVIDEO_AFFILIATE_ID', '')}",
-        "murf":       f"https://murf.ai/?ref={os.getenv('MURF_AFFILIATE_ID', '')}",
+        "murf":       os.getenv("MURF_AFFILIATE_URL", f"https://get.murf.ai/{os.getenv('MURF_AFFILIATE_ID', '')}"),
         "elevenlabs": f"https://elevenlabs.io/?from={os.getenv('ELEVENLABS_AFFILIATE_ID', '')}",
         "descript":   f"https://www.descript.com/affiliates?ref={os.getenv('DESCRIPT_AFFILIATE_ID', '')}",
         "fireflies":   f"https://fireflies.ai/?fpr={os.getenv('FIREFLIES_AFFILIATE_ID', '')}",
