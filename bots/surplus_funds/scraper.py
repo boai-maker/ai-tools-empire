@@ -63,6 +63,28 @@ COUNTY_SOURCES = [
     {"county": "Summit", "state": "OH", "url": "https://fiscaloffice.summitoh.net/index.php/tax-lien-sale", "type": "html"},
     {"county": "Montgomery", "state": "OH", "url": "https://www.mcohio.org/government/elected_officials/treasurer/tax_sales.php", "type": "html"},
     {"county": "Lucas", "state": "OH", "url": "https://co.lucas.oh.us/2476/Tax-Foreclosure-Sale-Listing", "type": "html"},
+    # Florida batch 2
+    {"county": "Sarasota", "state": "FL", "url": "https://www.sarasotaclerk.com/court-services/tax-deed-sales", "type": "html"},
+    {"county": "Manatee", "state": "FL", "url": "https://www.manateeclerk.com/services/court-services/tax-deed-sales/", "type": "html"},
+    {"county": "Collier", "state": "FL", "url": "https://www.collierclerk.com/court-divisions/tax-deed-sales", "type": "html"},
+    {"county": "St. Lucie", "state": "FL", "url": "https://www.stlucieclerk.com/tax-deed-sales", "type": "html"},
+    {"county": "Alachua", "state": "FL", "url": "https://www.alachuaclerk.org/court_records/index.cfm?section=tax_deed", "type": "html"},
+    {"county": "Escambia", "state": "FL", "url": "https://www.escambiaclerk.com/Departments/Tax-Deeds", "type": "html"},
+    {"county": "Lake", "state": "FL", "url": "https://www.lakecountyclerk.org/tax-deed-sales/", "type": "html"},
+    {"county": "Okaloosa", "state": "FL", "url": "https://www.okaloosaclerk.com/departments/tax-deeds/", "type": "html"},
+    # Georgia batch 2
+    {"county": "Chatham", "state": "GA", "url": "https://tax.chathamcountyga.gov/ExcessFunds", "type": "html"},
+    {"county": "Richmond", "state": "GA", "url": "https://www.augustaga.gov/1277/Tax-Sale", "type": "html"},
+    {"county": "Houston", "state": "GA", "url": "https://www.houstoncountyga.org/government/tax-commissioner/tax-sales", "type": "html"},
+    {"county": "Columbia", "state": "GA", "url": "https://www.columbiacountyga.gov/government/tax-commissioner/tax-sale-information", "type": "html"},
+    # New Jersey — 10-year claim window, no fee cap
+    {"county": "Essex", "state": "NJ", "url": "https://www.essexcountyclerk.com/departments/office-of-the-county-counsel/tax-sale-surplus/", "type": "html"},
+    {"county": "Bergen", "state": "NJ", "url": "https://www.co.bergen.nj.us/finance-division/finance", "type": "html"},
+    {"county": "Hudson", "state": "NJ", "url": "https://www.hudsoncountyclerk.org/", "type": "html"},
+    # Colorado — no fee cap
+    {"county": "Denver", "state": "CO", "url": "https://www.denvergov.org/Government/Agencies-Departments-Offices/Agencies-Departments-Offices-Directory/Department-of-Finance/Treasury-Division/Tax-Lien-Sales", "type": "html"},
+    {"county": "El Paso", "state": "CO", "url": "https://treasurer.elpasoco.com/tax-lien-sale/", "type": "html"},
+    {"county": "Arapahoe", "state": "CO", "url": "https://www.arapahoegov.com/149/Tax-Lien-Sale", "type": "html"},
 ]
 
 
