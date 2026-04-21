@@ -122,3 +122,15 @@ launchctl load ~/Library/LaunchAgents/com.aitoolsempire.bots.plist
 - $100/day combined across: affiliate, Kalshi, Fiverr, wholesale RE
 - Track in CRM dashboard at http://localhost:5050
 - Weekly review every Monday via `/site-health` skill
+
+## Wholesale Email Rules (HARD RULES)
+- **NEVER send more than 1 email per property per 48 hours**
+- **NEVER send duplicate emails in the same day — to anyone, for any reason**
+- **Wait 48 hours minimum before re-sending or following up on ANY email**
+- **If an email address is wrong/bounced, wait 48 hours before trying a corrected address**
+- **Max 5 FOLLOW-UP emails per day. Initial first-contact emails have no daily cap.**
+- **Always contact OWNER directly, not agent (exception: active MLS listings)**
+- **Do NOT mention Proof of Funds in emails. If requested by seller/agent, Kenneth will handle manually.**
+- **All offers must be 5-10K below asking price**
+- **Track every email sent in CRM with timestamp — check before sending**
+- **Follow-up cadence: Day 1 → Day 3 (48hr) → Day 7 → Day 14 → Day 30**
