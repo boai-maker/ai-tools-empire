@@ -16,3 +16,9 @@ pillow==10.3.0
 requests==2.32.3
 beautifulsoup4==4.12.3
 markdown==3.6
+# Video engine deps (Dominic / video_engine.py)
+moviepy>=2.2.0
+numpy>=1.26.0
+google-api-python-client>=2.190.0
+google-auth>=2.30.0
+google-auth-oauthlib>=1.2.0
