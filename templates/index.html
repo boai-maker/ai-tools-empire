@@ -289,7 +289,12 @@
 
       <div class="hero-ctas">
         <a href="https://bosaibot.gumroad.com/l/draya" class="btn btn-primary btn-xl" target="_blank">🔥 Get the 50-Tool Cheat Sheet — $9</a>
-        <a href="/tools" class="btn btn-ghost-white btn-lg">Browse All Tools →</a>
+        {% set hero_variant = ab('hero-cta-v1', 'control', 'money_savings') %}
+        {% if hero_variant == 'money_savings' %}
+        <a href="/stack-audit?utm_exp=hero-cta-v1&utm_var=money_savings" class="btn btn-ghost-white btn-lg">💸 Cut $50/mo From Your AI Bill →</a>
+        {% else %}
+        <a href="/stack-audit?utm_exp=hero-cta-v1&utm_var=control" class="btn btn-ghost-white btn-lg">🔍 Free Stack Audit →</a>
+        {% endif %}
       </div>
 
       <div class="hero-social-proof">
@@ -301,7 +306,7 @@
             <div class="avatar" style="background:linear-gradient(135deg,#ec4899,#8b5cf6);">S</div>
           </div>
           <div class="avatar-stack-text">
-            Join <strong>12,000+</strong> weekly subscribers
+            Join <strong>6,000+</strong> weekly subscribers
           </div>
         </div>
 
@@ -361,7 +366,7 @@
       <div class="stat-label">Words Written</div>
     </div>
     <div class="stat-item">
-      <div class="stat-number" data-count="12000" data-suffix="+">12K+</div>
+      <div class="stat-number" data-count="6000" data-suffix="+">6K+</div>
       <div class="stat-label">Subscribers</div>
     </div>
     <div class="stat-item">
@@ -570,7 +575,7 @@
             {% if subscriber_count > 100 %}
             <strong style="color:#94a3b8;">{{ subscriber_count }}+ subscribers</strong> trust us.
             {% else %}
-            <strong style="color:#94a3b8;">12,847 subscribers</strong> trust us.
+            <strong style="color:#94a3b8;">6,000+ subscribers</strong> trust us.
             {% endif %}
           </p>
         </div>
@@ -585,7 +590,7 @@
             </button>
           </form>
           <p style="font-size:var(--font-size-xs);color:rgba(165,180,252,0.6);margin-top:var(--spacing-3);">
-            Get instant access to the <a href="/static/ai-tools-cheatsheet.html" target="_blank" style="color:#a5b4fc;">Top 10 AI Tools Cheat Sheet</a> when you subscribe.
+            Or skip the form — <a href="/stack-audit" style="color:#10b981;font-weight:600;">get a free audit of your AI stack</a>. Tell me what you're paying for, I'll tell you what to drop.
           </p>
         </div>
 

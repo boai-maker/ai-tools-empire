@@ -90,6 +90,17 @@ app = FastAPI(title=config.SITE_NAME, lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+# Register A/B helper globals on the Jinja env.
+# `ab()` in templates reads the visitor_id cookie set by the middleware and
+# deterministically returns a variant for the given experiment.
+import contextvars
+_current_request_var: contextvars.ContextVar = contextvars.ContextVar("current_request", default=None)
+try:
+    from ab_testing import register_jinja as _register_ab_jinja
+    _register_ab_jinja(templates, lambda: _current_request_var.get())
+except ImportError:
+    pass
+
 # ── Custom exception handlers ─────────────────────────────────────────────────
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
@@ -123,7 +134,12 @@ def ip_hash(request: Request) -> str:
 # ── Middleware: pageview tracking ─────────────────────────────────────────────
 @app.middleware("http")
 async def track_pageviews(request: Request, call_next):
-    response = await call_next(request)
+    # Make current request visible to the Jinja `ab()` global (cookie read)
+    _tok = _current_request_var.set(request)
+    try:
+        response = await call_next(request)
+    finally:
+        _current_request_var.reset(_tok)
     path = request.url.path
     if not path.startswith(("/static", "/track", "/admin", "/favicon")):
         try:
@@ -140,6 +156,15 @@ async def track_pageviews(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+
+    # A/B testing — ensure every non-static request carries a visitor_id cookie
+    if not path.startswith(("/static", "/track", "/favicon")):
+        try:
+            from ab_testing import ensure_visitor_id
+            ensure_visitor_id(request, response)
+        except Exception:
+            pass
+
     return response
 
 # ── Pages ─────────────────────────────────────────────────────────────────────
@@ -147,10 +172,20 @@ async def track_pageviews(request: Request, call_next):
 @app.get("/", response_class=HTMLResponse)
 async def homepage(request: Request):
     articles = get_articles(limit=6)
+
+    # Prioritize active-earning affiliates above the fold. Fill remaining slots
+    # with the rest in original order. Added 2026-04-21 — was previously just
+    # the first 6 entries, which put most traffic on $0-earning programs.
+    all_tools     = list(AFFILIATE_PROGRAMS.items())
+    active_tools  = [(k, v) for k, v in all_tools if v.get("is_active")]
+    other_tools   = [(k, v) for k, v in all_tools if not v.get("is_active")]
+    featured      = active_tools + other_tools
+    featured_dict = dict(featured[:6])
+
     ctx = base_ctx(request)
     ctx.update({
         "articles": articles,
-        "featured_tools": dict(list(AFFILIATE_PROGRAMS.items())[:6]),
+        "featured_tools": featured_dict,
         "subscriber_count": get_subscriber_count_cached(),
         "article_count": len(get_articles(limit=999)),  # Real count — no floor
     })
@@ -300,6 +335,127 @@ async def article_page(request: Request, slug: str):
 async def free_ai_kit(request: Request):
     """Standalone lead magnet page — printable / saveable as PDF."""
     return templates.TemplateResponse("lead_magnet.html", {"request": request})
+
+
+@app.get("/newsletter")
+async def newsletter_redirect():
+    """Orphan-link catch — ~30/day were hitting /newsletter and getting 404s.
+    Redirect to the stack-audit lead magnet (better offer than a bare signup form)."""
+    return RedirectResponse(url="/stack-audit", status_code=301)
+
+
+@app.get("/stack-audit", response_class=HTMLResponse)
+async def stack_audit_page(request: Request):
+    """Free AI stack audit lead magnet — user pastes tools, gets 3-line audit back."""
+    # Record a click event for the hero CTA experiment if the user arrived via it
+    try:
+        exp = request.query_params.get("utm_exp")
+        var = request.query_params.get("utm_var")
+        if exp and var:
+            from ab_testing import record_event, COOKIE_NAME
+            vid = request.cookies.get(COOKIE_NAME, "")
+            if vid:
+                record_event(vid, exp, var, "click")
+    except Exception:
+        pass
+    ctx = {"request": request, "site_name": config.SITE_NAME}
+    return templates.TemplateResponse("stack-audit.html", ctx)
+
+
+class StackAuditRequest(BaseModel):
+    email:      str
+    stack:      str
+    surface:    str = "stack_audit_page"
+    h1_variant: str = "control"
+
+
+@app.post("/stack-audit/submit")
+async def stack_audit_submit(request: Request, body: StackAuditRequest):
+    """Receive a stack-audit submission. Stores to DB + alerts Telegram so Kenneth can reply."""
+    if _rate_limited(ip_hash(request), "stack_audit", 5, 60):
+        return JSONResponse({"success": False, "message": "Too many requests. Try again in a minute."}, status_code=429)
+
+    email = body.email.lower().strip()
+    stack = body.stack.strip()
+    if not email or "@" not in email or "." not in email.split("@")[-1]:
+        return JSONResponse({"success": False, "message": "Invalid email"})
+    if not stack or len(stack) < 10:
+        return JSONResponse({"success": False, "message": "Please paste your actual stack"})
+
+    try:
+        import sqlite3
+        conn = sqlite3.connect("data.db")
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS stack_audits (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                stack TEXT NOT NULL,
+                surface TEXT,
+                ip_hash TEXT,
+                status TEXT DEFAULT 'pending',
+                submitted_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                audited_at TEXT
+            )
+        """)
+        conn.execute(
+            "INSERT INTO stack_audits (email, stack, surface, ip_hash) VALUES (?, ?, ?, ?)",
+            (email, stack, body.surface, ip_hash(request)),
+        )
+        # Also record in subscribers so they join the newsletter
+        conn.execute(
+            "INSERT OR IGNORE INTO subscribers (email, source) VALUES (?, ?)",
+            (email, "stack_audit"),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        return JSONResponse({"success": False, "message": "Could not save. Please email directly."}, status_code=500)
+
+    # Push to beehiiv with a stack-audit custom field so Kenneth can filter there.
+    try:
+        from integrations.beehiiv import subscribe as bh_subscribe
+        bh_subscribe(
+            email,
+            utm_source="stack_audit",
+            utm_medium="lead_magnet",
+            referring_site="aitoolsempire.co",
+            send_welcome_email=True,
+            reactivate_existing=True,
+            custom_fields={"stack_snapshot": stack[:1000]},  # first 1000 chars
+        )
+    except Exception as e:
+        pass
+
+    # Record signup events for active experiments this visitor is in
+    try:
+        from ab_testing import record_event, get_variant, COOKIE_NAME
+        vid = request.cookies.get(COOKIE_NAME, "")
+        if vid:
+            # hero-cta-v1 (homepage CTA copy)
+            hero_variant = get_variant(vid, "hero-cta-v1", ["control", "money_savings"], record_assignment=False)
+            record_event(vid, "hero-cta-v1", hero_variant, "signup")
+            # stack-audit-h1-v1 (headline variant rendered on this page)
+            if body.h1_variant in ("control", "audit_framing", "worth_it_q"):
+                record_event(vid, "stack-audit-h1-v1", body.h1_variant, "signup")
+    except Exception:
+        pass
+
+    # Telegram heads-up (non-blocking — best-effort)
+    try:
+        import requests as _rq
+        tok  = os.getenv("DOMINIC_TELEGRAM_TOKEN", "")
+        chat = os.getenv("DOMINIC_TELEGRAM_CHAT_ID", "")
+        if tok and chat:
+            msg = f"🔍 New stack audit from {email}\n\nStack:\n{stack[:500]}"
+            _rq.post(
+                f"https://api.telegram.org/bot{tok}/sendMessage",
+                json={"chat_id": chat, "text": msg},
+                timeout=4,
+            )
+    except Exception:
+        pass
+
+    return JSONResponse({"success": True, "message": "Audit request received."})
 
 
 @app.get("/about", response_class=HTMLResponse)
@@ -494,17 +650,33 @@ async def subscribe(request: Request, body: SubscribeRequest):
         return JSONResponse({"success": False, "message": "Please use a real email address."})
 
     added = add_subscriber(email, body.name, source=body.source or "website")
+
+    # Push to beehiiv so the welcome + drip fires from there (single source of truth).
+    # Fire-and-forget — we still track signup locally even if beehiiv is down.
+    try:
+        from integrations.beehiiv import subscribe as bh_subscribe
+        bh_subscribe(
+            email,
+            utm_source=body.source or "website",
+            utm_medium="organic",
+            referring_site="aitoolsempire.co",
+            send_welcome_email=True,
+            reactivate_existing=True,
+        )
+    except Exception as e:
+        log.warning(f"beehiiv push failed for {email}: {e}")
+
     if not added:
         return JSONResponse({"success": True, "message": "Already subscribed!"})
 
-    # Send Email 1 immediately (welcome + kit delivery)
+    # Legacy local sequence (will be retired once beehiiv welcome is dialed in;
+    # running both briefly ensures no signup gets silence).
     try:
         from automation.sequences.runner import send_sequence_email
         send_sequence_email(email, body.name or "there", seq_num=1)
     except Exception as e:
         log.warning(f"Sequence email 1 failed: {e}")
 
-    # Queue emails 2-5 for delivery over the next 10 days
     try:
         from database.db import enqueue_sequence
         enqueue_sequence(email, body.name or "")
@@ -800,6 +972,61 @@ async def admin_dashboard(request: Request):
     session_hash = hashlib.sha256(config.ADMIN_PASSWORD.encode()).hexdigest()
     response.set_cookie("admin_session", session_hash, httponly=True, samesite="lax", max_age=86400)
     return response
+
+
+@app.get("/admin/experiments/{experiment_id}", response_class=HTMLResponse)
+async def admin_experiment_report(request: Request, experiment_id: str):
+    """Per-variant stats with Wilson 95% CIs for one experiment."""
+    if not _admin_authed(request):
+        raise HTTPException(401)
+    try:
+        from ab_testing import summarize
+    except ImportError:
+        raise HTTPException(500, "A/B testing module unavailable")
+
+    s = summarize(experiment_id)
+    rows = []
+    for v in s["variants"]:
+        c_rate, c_lo, c_hi = v["click_rate"]
+        s_rate, s_lo, s_hi = v["signup_rate"]
+        rows.append(f"""
+        <tr>
+          <td><strong>{v['variant']}</strong></td>
+          <td>{v['assignments']:,}</td>
+          <td>{v['views']:,}</td>
+          <td>{v['clicks']:,}</td>
+          <td>{v['signups']:,}</td>
+          <td>{c_rate*100:.2f}% <span style='color:#64748b;'>({c_lo*100:.1f}–{c_hi*100:.1f})</span></td>
+          <td>{s_rate*100:.2f}% <span style='color:#64748b;'>({s_lo*100:.1f}–{s_hi*100:.1f})</span></td>
+        </tr>""")
+
+    html = f"""<!DOCTYPE html><html><head>
+      <meta charset="UTF-8"><title>Experiment: {experiment_id}</title>
+      <link rel="stylesheet" href="/static/css/design-system.css">
+      <style>
+        body {{ font-family: var(--font-family); background: var(--color-bg-base); color: var(--color-text); padding: 40px; }}
+        h1 {{ font-size: 28px; margin-bottom: 8px; }}
+        .sub {{ color: var(--color-text-muted); margin-bottom: 24px; }}
+        table {{ width: 100%; max-width: 1100px; border-collapse: collapse; background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: 12px; overflow: hidden; }}
+        th, td {{ padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--color-border); font-size: 14px; }}
+        th {{ background: rgba(255,255,255,0.04); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted); }}
+        tr:last-child td {{ border-bottom: none; }}
+        a {{ color: #10b981; }}
+      </style>
+    </head><body>
+      <a href="/admin">← back to admin</a>
+      <h1>Experiment: <code>{experiment_id}</code></h1>
+      <p class="sub">Variants with 95% Wilson confidence intervals. Rates computed as events / views.</p>
+      <table>
+        <thead><tr>
+          <th>Variant</th><th>Assignments</th><th>Views</th><th>Clicks</th><th>Signups</th>
+          <th>Click rate (95% CI)</th><th>Signup rate (95% CI)</th>
+        </tr></thead>
+        <tbody>{''.join(rows) if rows else '<tr><td colspan=7 style="text-align:center;padding:32px;color:var(--color-text-muted);">No data yet for this experiment.</td></tr>'}</tbody>
+      </table>
+      <p style="margin-top:16px;font-size:12px;color:var(--color-text-muted);">Non-overlapping CIs = statistically meaningful difference.</p>
+    </body></html>"""
+    return HTMLResponse(html)
 
 
 @app.post("/admin/login")

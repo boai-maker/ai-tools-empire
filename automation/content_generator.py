@@ -90,6 +90,27 @@ SEED_TOPICS = [
     {"topic": "Surfer SEO Pricing 2026: Is It Worth the Cost?", "keywords": "surfer seo pricing 2026, surfer seo cost, surfer seo plans", "tool_focus": "surfer", "priority": 8},
     {"topic": "Pictory AI Pricing 2026: Free vs Paid Plans Compared", "keywords": "pictory ai pricing, pictory plans, pictory ai cost", "tool_focus": "pictory", "priority": 7},
     {"topic": "Writesonic Pricing 2026: Best Plan for Your Budget?", "keywords": "writesonic pricing 2026, writesonic plans, writesonic cost", "tool_focus": "writesonic", "priority": 7},
+    # Fresh Q2-2026 topics (added 2026-04-21 after SEED pool exhaustion)
+    {"topic": "GPT-5 vs Claude 4.7: Which AI Model Wins in Late 2026?", "keywords": "gpt-5 vs claude 4.7, best ai model 2026, claude vs chatgpt late 2026", "tool_focus": None, "priority": 9},
+    {"topic": "Best AI Coding Assistants in 2026 (Cursor, Copilot, Claude Code)", "keywords": "best ai coding assistant 2026, cursor vs copilot, claude code review", "tool_focus": None, "priority": 9},
+    {"topic": "Best AI Agents You Can Use Today (No Code Required) 2026", "keywords": "best ai agents 2026, no-code ai agents, autonomous ai tools", "tool_focus": None, "priority": 9},
+    {"topic": "How to Use AI to Write a Book in 30 Days (2026 Method)", "keywords": "write book with ai 2026, ai book writing, how to write book ai", "tool_focus": "jasper", "priority": 8},
+    {"topic": "Best AI Tools for Podcasters in 2026 (Edit, Host, Grow)", "keywords": "best ai tools for podcasters 2026, ai podcast editing, podcast ai tools", "tool_focus": "fireflies", "priority": 8},
+    {"topic": "Best AI Resume Builders 2026: Land More Interviews", "keywords": "best ai resume builder 2026, ai cv generator, resume ai tools", "tool_focus": None, "priority": 8},
+    {"topic": "Best AI Email Writing Tools for Cold Outreach in 2026", "keywords": "best ai email writer 2026, ai cold email tools, sales email ai", "tool_focus": "jasper", "priority": 8},
+    {"topic": "How to Build an AI Newsletter Business in 2026 (Step-by-Step)", "keywords": "ai newsletter business 2026, how to start newsletter ai, ai content newsletter", "tool_focus": "kit", "priority": 8},
+    {"topic": "Best AI Tools for E-commerce Sellers in 2026", "keywords": "best ai tools for ecommerce 2026, ai ecommerce tools, shopify ai tools", "tool_focus": None, "priority": 8},
+    {"topic": "Cursor vs GitHub Copilot 2026: Which AI Code Editor Wins?", "keywords": "cursor vs github copilot 2026, best ai code editor, cursor review 2026", "tool_focus": None, "priority": 9},
+    {"topic": "Best AI Photo Editors in 2026 (Background, Retouch, Generate)", "keywords": "best ai photo editor 2026, ai image editing tools, photo ai generator", "tool_focus": None, "priority": 7},
+    {"topic": "How to Automate Your Business with AI in 2026 (No Engineers)", "keywords": "automate business with ai 2026, business automation ai tools, no-code ai automation", "tool_focus": None, "priority": 9},
+    {"topic": "Best AI Scheduling Tools for Small Teams 2026", "keywords": "best ai scheduling tools 2026, ai meeting scheduler, calendar ai tools", "tool_focus": None, "priority": 7},
+    {"topic": "Runway Gen-3 vs Sora vs Veo: Best AI Video Model in 2026?", "keywords": "runway vs sora vs veo 2026, best ai video model, text to video ai comparison", "tool_focus": "pictory", "priority": 9},
+    {"topic": "How to Start a Faceless YouTube Channel with AI in 2026", "keywords": "faceless youtube channel 2026, ai youtube automation, make money youtube ai", "tool_focus": "pictory", "priority": 9},
+    {"topic": "Best AI Logo Generators 2026 (Free & Paid, Tested)", "keywords": "best ai logo generator 2026, ai logo maker, free logo ai", "tool_focus": None, "priority": 7},
+    {"topic": "AI Agent Builders Compared: n8n, Make, Zapier, Claude Projects", "keywords": "ai agent builder comparison 2026, n8n vs make vs zapier, best ai workflow tool", "tool_focus": None, "priority": 8},
+    {"topic": "How to Use AI to 10x Your Freelance Writing Income in 2026", "keywords": "ai freelance writing 2026, make money writing with ai, ai writer income", "tool_focus": "jasper", "priority": 8},
+    {"topic": "Best AI Tools for Realtors & Real Estate Investors 2026", "keywords": "ai tools for realtors 2026, real estate ai software, ai real estate investing", "tool_focus": None, "priority": 8},
+    {"topic": "Best AI Data Analysis Tools 2026 (For Non-Technical Users)", "keywords": "best ai data analysis 2026, ai analytics tools, no-code data ai", "tool_focus": None, "priority": 7},
 ]
 
 def build_article_prompt(topic: str, keywords: str, tool_focus: str = None) -> str:
