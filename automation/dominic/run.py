@@ -50,7 +50,14 @@ def _get_scheduler():
     cfg = get_config()
     tz = cfg.timezone
 
-    scheduler = BlockingScheduler(timezone=tz)
+    scheduler = BlockingScheduler(
+        timezone=tz,
+        job_defaults={
+            "misfire_grace_time": 3600,
+            "coalesce": True,
+            "max_instances": 1,
+        },
+    )
 
     # --- Daily 8:00 AM: Morning routine ---
     scheduler.add_job(

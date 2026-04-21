@@ -35,12 +35,12 @@ COUNTY_SOURCES = [
     {"county": "DeKalb", "state": "GA", "url": "https://publicaccess.dekalbtax.org/forms/htmlframe.aspx?mode=content/search/tax_sale_listing.html", "type": "html"},
     {"county": "Gwinnett", "state": "GA", "url": "https://www.gwinnettcounty.com/web/gwinnett/departments/taxcommissioner/propertytaxes/taxsales", "type": "html"},
     {"county": "Chatham", "state": "GA", "url": "https://tax.chathamcountyga.gov/ExcessFunds", "type": "html"},
-    # Florida — high volume
-    {"county": "Lee", "state": "FL", "url": "https://www.leeclerk.org/recordings/tax-deed-surplus", "type": "html"},
-    {"county": "Hillsborough", "state": "FL", "url": "https://www.hillsclerk.com/Court-Proceedings/Tax-Deeds/Surplus-Funds", "type": "html"},
-    {"county": "Duval", "state": "FL", "url": "https://www.duvalclerk.com/courts/tax-deeds/surplus", "type": "html"},
-    {"county": "Orange", "state": "FL", "url": "https://www.occompt.com/tax-collector/services/tax-deed-surplus/", "type": "html"},
-    {"county": "Pinellas", "state": "FL", "url": "https://www.pinellasclerk.org/aspInclude2/ASPInclude.asp?pageName=taxSurplus.htm", "type": "html"},
+    # Florida — high volume (most URLs dead/JS-rendered, disabled pending rewrite)
+    {"county": "Lee", "state": "FL", "url": "https://www.leeclerk.org/recordings/tax-deed-surplus", "type": "html", "disabled": True, "reason": "HTTP 404 — URL moved"},
+    {"county": "Hillsborough", "state": "FL", "url": "https://www.hillsclerk.com/Court-Proceedings/Tax-Deeds/Surplus-Funds", "type": "html", "disabled": True, "reason": "HTTP 404 — URL moved"},
+    {"county": "Duval", "state": "FL", "url": "https://www.duvalclerk.com/courts/tax-deeds/surplus", "type": "html", "disabled": True, "reason": "JS-rendered, 0 tables"},
+    {"county": "Orange", "state": "FL", "url": "https://www.occompt.com/tax-collector/services/tax-deed-surplus/", "type": "html", "disabled": True, "reason": "HTTP 404 — URL moved"},
+    {"county": "Pinellas", "state": "FL", "url": "https://www.pinellasclerk.org/aspInclude2/ASPInclude.asp?pageName=taxSurplus.htm", "type": "html", "disabled": True, "reason": "HTTP 403 — blocks bots"},
     # Ohio — no fee cap
     {"county": "Cuyahoga", "state": "OH", "url": "https://fiscalofficer.cuyahogacounty.us/en-US/surplus-funds.aspx", "type": "html"},
     {"county": "Franklin", "state": "OH", "url": "https://sheriff.franklincountyohio.gov/services/real-estate/surplus-funds", "type": "html"},
@@ -141,7 +141,11 @@ def scrape_county(source: Dict) -> List[Dict]:
     """
     Scrape a single county's surplus funds page.
     Returns list of lead dicts.
+    Skips sources marked as disabled (URL known to be 404/403/JS-only).
     """
+    if source.get("disabled"):
+        return []
+
     county = source["county"]
     state = source["state"]
     url = source["url"]
@@ -150,11 +154,13 @@ def scrape_county(source: Dict) -> List[Dict]:
 
     try:
         headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
         }
-        r = requests.get(url, headers=headers, timeout=30)
+        r = requests.get(url, headers=headers, timeout=30, allow_redirects=True)
         if r.status_code != 200:
-            log.warning(f"{county} {state}: HTTP {r.status_code}")
+            log.warning(f"{county} {state}: HTTP {r.status_code} — marking disabled for this run")
             return []
 
         soup = BeautifulSoup(r.text, "html.parser")

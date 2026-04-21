@@ -23,7 +23,7 @@ from bots.lead_capture_bot import run_lead_capture_bot, send_welcome_if_needed
 from bots.email_marketing_bot import run_email_marketing_bot
 from bots.affiliate_revenue_bot import run_affiliate_revenue_bot
 from bots.support_bot import run_support_bot
-from bots.analytics_bot import run_analytics_bot
+from bots.analytics_bot import run_analytics_bot, run_daily_revenue_report
 from bots.competitor_bot import run_competitor_bot
 from bots.offer_optimizer_bot import run_offer_optimizer_bot
 from bots.reputation_bot import run_reputation_bot
@@ -34,6 +34,12 @@ from bots.youtube_shorts_bot import run_youtube_shorts_bot
 from bots.fiverr_responder import run_fiverr_responder
 from bots.linkedin_monitor import run_linkedin_monitor
 from bots.wholesale_monitor import run_wholesale_monitor
+from bots.wholesale_lead_hunter import run_wholesale_lead_hunter
+from bots.owner_outreach_bot import run_outreach as run_owner_outreach
+from bots.tracerfy_lead_bot import run as run_tracerfy_leads
+from bots.surplus_funds.runner import run_surplus_funds
+from bots.self_check import run as run_self_check
+from bots.gmail_telegram_forwarder import run as run_gmail_forwarder
 
 # Configure logging
 logging.basicConfig(
@@ -78,6 +84,9 @@ def job_admin_morning_briefing():
 def job_analytics_bot():
     _safe_run(run_analytics_bot, "analytics_bot")
 
+def job_daily_revenue_report():
+    _safe_run(run_daily_revenue_report, "daily_revenue_report")
+
 def job_affiliate_revenue_bot():
     _safe_run(run_affiliate_revenue_bot, "affiliate_revenue_bot")
 
@@ -106,7 +115,14 @@ def job_affiliate_gmail_monitor():
     _safe_run(run_affiliate_gmail_monitor, "affiliate_gmail_monitor")
 
 def job_youtube_shorts():
-    _safe_run(run_youtube_shorts_bot, "youtube_shorts_bot")
+    # PAUSED — videos need visual overhaul before resuming auto-post
+    logger.info("YouTube Shorts PAUSED — waiting for visual upgrade")
+    return
+
+def job_youtube_long():
+    # PAUSED — videos need visual overhaul before resuming auto-post
+    logger.info("YouTube Long-Form PAUSED — waiting for visual upgrade")
+    return
 
 def job_fiverr_responder():
     _safe_run(run_fiverr_responder, "fiverr_responder")
@@ -116,6 +132,18 @@ def job_linkedin_monitor():
 
 def job_wholesale_monitor():
     _safe_run(run_wholesale_monitor, "wholesale_monitor")
+
+def job_wholesale_lead_hunter():
+    _safe_run(run_wholesale_lead_hunter, "wholesale_lead_hunter")
+
+def job_owner_outreach():
+    _safe_run(lambda: run_owner_outreach(batch_size=25), "owner_outreach")
+
+def job_tracerfy_leads():
+    _safe_run(run_tracerfy_leads, "tracerfy_lead_bot")
+
+def job_surplus_funds():
+    _safe_run(run_surplus_funds, "surplus_funds")
 
 
 def on_job_error(event):
@@ -270,8 +298,20 @@ if __name__ == "__main__":
         "cron",
         hour=8,
         minute=0,
-        id="analytics_bot",
+        id="analytics_bot_daily",
         name="Analytics Bot",
+        max_instances=1,
+        misfire_grace_time=1800,
+    )
+
+    # Daily at 9:00 AM ET: revenue report → Telegram (uses fresh attribution data)
+    scheduler.add_job(
+        job_daily_revenue_report,
+        "cron",
+        hour=9,
+        minute=0,
+        id="daily_revenue_report",
+        name="Daily Revenue Report (Telegram)",
         max_instances=1,
         misfire_grace_time=1800,
     )
@@ -375,14 +415,14 @@ if __name__ == "__main__":
         misfire_grace_time=600,
     )
 
-    # Daily 10:00 AM ET: YouTube Short #1
+    # Daily 12:00 PM ET: YouTube Short #1 (algorithm-optimal noon slot)
     scheduler.add_job(
         job_youtube_shorts,
         "cron",
-        hour=10,
+        hour=12,
         minute=0,
-        id="youtube_shorts_am",
-        name="YouTube Shorts AM",
+        id="youtube_shorts_noon",
+        name="YouTube Shorts Noon",
         max_instances=1,
         misfire_grace_time=1800,
     )
@@ -411,6 +451,55 @@ if __name__ == "__main__":
         misfire_grace_time=1800,
     )
 
+    # Every 2 hours 7AM-11PM ET: Wholesale Lead Hunter (ACTIVELY finds new properties)
+    scheduler.add_job(
+        job_wholesale_lead_hunter,
+        "cron",
+        hour="7,9,11,13,15,17,19,21,23",
+        minute=15,
+        id="wholesale_lead_hunter",
+        name="Wholesale Lead Hunter",
+        max_instances=1,
+        misfire_grace_time=1800,
+    )
+
+    # 4x/day: Owner Outreach (batch 25 → up to 100 emails/day capacity, targets 20+ sent)
+    scheduler.add_job(
+        job_owner_outreach,
+        "cron",
+        hour="8,12,16,20",
+        minute=0,
+        id="owner_outreach",
+        name="Owner Outreach (batch=25)",
+        max_instances=1,
+        misfire_grace_time=1800,
+    )
+
+    # 2x/day: Tracerfy Lead Builder (feeds pre-traced wholesale leads into CRM)
+    # Runs BEFORE owner_outreach so outreach has fresh contacts to email
+    scheduler.add_job(
+        job_tracerfy_leads,
+        "cron",
+        hour="7,15",
+        minute=30,
+        id="tracerfy_lead_bot",
+        name="Tracerfy Lead Builder (25 leads/run)",
+        max_instances=1,
+        misfire_grace_time=1800,
+    )
+
+    # Every 4 hours: Surplus Funds (scrape counties + skip trace + outreach)
+    scheduler.add_job(
+        job_surplus_funds,
+        "cron",
+        hour="6,10,14,18,22",
+        minute=30,
+        id="surplus_funds",
+        name="Surplus Funds Pipeline",
+        max_instances=1,
+        misfire_grace_time=3600,
+    )
+
     # Every hour 8AM-11PM ET: LinkedIn Message Monitor
     scheduler.add_job(
         job_linkedin_monitor,
@@ -423,16 +512,52 @@ if __name__ == "__main__":
         misfire_grace_time=1800,
     )
 
-    # Daily 4:00 PM ET: YouTube Short #2
+    # Sunday 10:00 AM ET: Weekly Long-Form Video (4-min Education category)
+    scheduler.add_job(
+        job_youtube_long,
+        "cron",
+        day_of_week="sun",
+        hour=10,
+        minute=0,
+        id="youtube_long_weekly",
+        name="YouTube Long-Form (Weekly)",
+        max_instances=1,
+        misfire_grace_time=3600,
+    )
+
+    # Daily 7:00 PM ET: YouTube Short #2 (algorithm-optimal evening slot)
     scheduler.add_job(
         job_youtube_shorts,
         "cron",
-        hour=16,
+        hour=19,
         minute=0,
-        id="youtube_shorts_pm",
-        name="YouTube Shorts PM",
+        id="youtube_shorts_evening",
+        name="YouTube Shorts Evening",
         max_instances=1,
         misfire_grace_time=1800,
+    )
+
+    # Twice daily 7:05 AM + 7:05 PM ET: Self-check audit (Kenny's 5-day autonomous mission)
+    scheduler.add_job(
+        lambda: _safe_run(run_self_check, "self_check"),
+        "cron",
+        hour="7,19",
+        minute=5,
+        id="self_check_twice_daily",
+        name="Self-Check (twice daily audit)",
+        max_instances=1,
+        misfire_grace_time=1800,
+    )
+
+    # Every 10 min: Gmail → Telegram forwarder (Kenny can't access bosaibot@gmail.com)
+    scheduler.add_job(
+        lambda: _safe_run(run_gmail_forwarder, "gmail_telegram_forwarder"),
+        "cron",
+        minute="*/10",
+        id="gmail_telegram_forwarder",
+        name="Gmail → Telegram Forwarder",
+        max_instances=1,
+        misfire_grace_time=300,
     )
 
     print("\n  Scheduled jobs:")

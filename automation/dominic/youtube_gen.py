@@ -332,6 +332,18 @@ def generate_video_concept(idea_dict: Dict) -> Dict:
     }
 
     log_action("video_concept", "youtube_gen", "ok", title[:60])
+
+    # Auto-enqueue for the video engine so it actually gets rendered
+    try:
+        enqueue_for_video_engine({
+            "headline": title,
+            "body": idea_dict.get("body", ""),
+            "url": idea_dict.get("url", ""),
+            "id": idea_dict.get("id"),
+        }, format_type="long")
+    except Exception as e:
+        log_error("youtube_gen", f"enqueue failed: {e}", "generate_video_concept")
+
     return concept
 
 
@@ -352,6 +364,37 @@ def generate_full_package(idea_dict: Dict) -> Dict:
 
     log_action("full_package", "youtube_gen", "ok", concept["title"][:60])
     return package
+
+
+def enqueue_for_video_engine(idea_dict: Dict, format_type: str = "long") -> bool:
+    """
+    Convert a Dominic idea into a VideoSpec and append it to the unified
+    video engine's queue. The engine's scheduled run will pick it up
+    automatically. Dedup'd by topic inside the queue helper.
+    """
+    try:
+        from bots.video_engine import enqueue
+    except Exception as e:
+        log_error("youtube_gen", f"video_engine import failed: {e}", "enqueue")
+        return False
+
+    headline = idea_dict.get("headline") or ""
+    body = idea_dict.get("body") or ""
+    spec = {
+        "format_type": format_type,
+        "topic": headline,
+        "tool": idea_dict.get("tool", ""),
+        "angle": (body[:200] or headline)[:200],
+        "pain": idea_dict.get("pain", ""),
+        "url": idea_dict.get("url", ""),
+        "emoji": idea_dict.get("emoji", "🎬"),
+        "category": idea_dict.get("category", "AI Tools"),
+        "source": "dominic",
+        "dominic_id": idea_dict.get("id"),
+    }
+    ok = enqueue(spec)
+    log_action("enqueue_video_spec", "youtube_gen", "ok" if ok else "skip", headline[:60])
+    return ok
 
 
 def save_video_draft(package: Dict) -> Optional[int]:

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "claude-vs-chatgpt-coding",
+    "topic": "Claude vs ChatGPT for coding — which wins in 2026",
+    "persona": "A",
+    "platform": "tiktok"
+  },
+  {
+    "id": "elevenlabs-voice-clone-workflow",
+    "topic": "How I clone my voice with ElevenLabs in 90 seconds",
+    "persona": "B",
+    "platform": "tiktok"
+  },
+  {
+    "id": "ai-seo-stack-replace-semrush",
+    "topic": "3 AI SEO tools that replace Semrush for under $30/mo",
+    "persona": "C",
+    "platform": "shorts"
+  },
+  {
+    "id": "claude-one-prompt-10x",
+    "topic": "The one-sentence prompt that makes Claude 10x better at writing",
+    "persona": "A",
+    "platform": "tiktok"
+  },
+  {
+    "id": "pictory-invideo-compare",
+    "topic": "Pictory vs InVideo: which AI video tool actually makes money",
+    "persona": "B",
+    "platform": "shorts"
+  },
+  {
+    "id": "fireflies-meeting-automation",
+    "topic": "Fireflies AI replaced my assistant and it costs $18/mo",
+    "persona": "A",
+    "platform": "tiktok"
+  },
+  {
+    "id": "ai-affiliate-blog-stack",
+    "topic": "The 4-tool AI stack that built my $2k/mo affiliate blog",
+    "persona": "C",
+    "platform": "shorts"
+  },
+  {
+    "id": "chatgpt-plus-alternatives",
+    "topic": "Stop paying for ChatGPT Plus — 3 free alternatives that are better",
+    "persona": "A",
+    "platform": "tiktok"
+  },
+  {
+    "id": "perplexity-deep-research",
+    "topic": "Perplexity's deep research feature is insane — here's one workflow",
+    "persona": "B",
+    "platform": "reels"
+  },
+  {
+    "id": "murf-voiceover-hack",
+    "topic": "Murf AI voiceover hack that beats paying a human $200",
+    "persona": "B",
+    "platform": "tiktok"
+  }
+]

@@ -57,25 +57,41 @@ def skip_trace_lead(lead: Dict) -> Dict:
     if not TRACERFY_KEY:
         return {}
 
-    name = lead.get("former_owner", "")
-    parts = name.split()
-    first = parts[0] if parts else ""
-    last = parts[-1] if len(parts) > 1 else ""
+    name = lead.get("former_owner", "").strip()
+    # Skip companies/LLCs — can't skip trace those
+    if any(kw in name.upper() for kw in ["LLC", "INC", "CORP", "COMPANY", "PROPERTIES", "GROUP", "HOLDINGS", "EST"]):
+        log.info(f"Skip trace skipped — corporate/estate: {name}")
+        return {}
+
+    parts = [p for p in name.split() if p not in ("JR", "SR", "II", "III", "IV", "ETAL")]
+    if len(parts) < 2:
+        log.info(f"Skip trace skipped — insufficient name: {name}")
+        return {}
+
+    # County records usually format as "LAST FIRST MIDDLE"
+    # Detect: if first part is all caps and looks like a last name
+    last = parts[0]
+    first = parts[1] if len(parts) > 1 else ""
+    # If there's a middle initial/name, skip it
+    log.info(f"Name parsed: '{name}' → first='{first}' last='{last}'")
 
     if not first or not last:
-        log.info(f"Skip trace skipped — no name for case {lead.get('case_number')}")
         return {}
+
+    county = lead.get("county", "")
+    state = lead.get("state", "")
+    address = lead.get("property_address", "")
 
     data = [{
         "first_name": first,
         "last_name": last,
-        "street": lead.get("property_address", "") or lead.get("county", ""),
-        "city": "",
-        "state": lead.get("state", ""),
-        "mail_address": lead.get("property_address", "") or lead.get("county", ""),
-        "mail_city": "",
-        "mail_state": lead.get("state", ""),
-        "mail_zip": "",
+        "street": address or county,
+        "city": county,
+        "state": state,
+        "mail_address": address or county,
+        "mail_city": county,
+        "mail_state": state,
+        "mail_zip": "30000" if state == "GA" else "",
     }]
 
     try:

@@ -113,14 +113,16 @@ def check_wholesale_emails() -> list:
         mail.select("inbox")
 
         since = (datetime.now() - timedelta(days=3)).strftime("%d-%b-%Y")
-        # Search for replies to wholesale emails
-        _, data = mail.search(None, f'(SINCE "{since}" SUBJECT "wholesale" OR SUBJECT "cash offer" OR SUBJECT "Camelot" OR SUBJECT "Lakewood" OR SUBJECT "Ingledale" OR SUBJECT "Peyton")')
+        # IMAP OR is binary — using SINCE-only and filtering subjects in Python
+        _, data = mail.search(None, f'(SINCE "{since}")')
 
         if not data[0]:
             mail.logout()
             return []
 
-        for eid in data[0].split()[-20:]:
+        subject_keywords = ("wholesale", "cash offer", "camelot", "lakewood", "ingledale", "peyton")
+
+        for eid in data[0].split()[-50:]:
             _, msg_data = mail.fetch(eid, "(RFC822)")
             msg = email.message_from_bytes(msg_data[0][1])
             mid = msg.get("Message-ID", eid.decode())
@@ -129,6 +131,10 @@ def check_wholesale_emails() -> list:
 
             subject = decode_mime(msg.get("Subject", ""))
             from_addr = decode_mime(msg.get("From", ""))
+
+            subj_lower = subject.lower()
+            if not any(kw in subj_lower for kw in subject_keywords):
+                continue
 
             # Skip our own sent emails
             if "bosaibot" in from_addr.lower():
@@ -173,16 +179,23 @@ def send_followup_reminders(state: dict):
     for entry in outreach_log:
         deal_id = entry.get("deal_id", "")
         sent_at = entry.get("sent_at", "")
+        to_email = entry.get("to", "") or entry.get("to_email", "")
         if not sent_at or deal_id in sent_followups:
+            continue
+
+        # HARD RULE: never self-send. If outreach_log entry didn't record a
+        # recipient, skip — don't ship a follow-up to bosaibot.
+        if not to_email or to_email.lower().strip() in ("", SMTP_USER.lower()):
+            log.info(f"Skipping follow-up for {deal_id} — no external recipient recorded")
+            state["sent_followups"].append(deal_id)
             continue
 
         try:
             sent_dt = datetime.fromisoformat(sent_at)
             if (now - sent_dt).total_seconds() > 48 * 3600:
-                # Send follow-up
                 address = entry.get("address", "the property")
                 followup_html = f"""
-                <div style="font-family:sans-serif;padding:20px;">
+                <div style=\"font-family:sans-serif;padding:20px;\">
                   <p>Hi,</p>
                   <p>Just following up on my cash offer inquiry for <strong>{address}</strong> from a couple days ago.</p>
                   <p>I'm still interested and ready to move quickly. Is the seller open to discussing a cash offer?</p>
@@ -191,14 +204,14 @@ def send_followup_reminders(state: dict):
                 </div>
                 """
                 sent = _send_via_smtp(
-                    [SMTP_USER],
+                    [to_email],
                     f"[FOLLOWUP] Cash Offer: {address}",
                     followup_html,
                 )
                 if sent:
                     state["sent_followups"].append(deal_id)
-                    log.info(f"48h follow-up sent for {deal_id}")
-                    tg_send(f"📬 48-hour follow-up sent for deal {deal_id}: {address}")
+                    log.info(f"48h follow-up sent for {deal_id} → {to_email}")
+                    tg_send(f"📬 48-hour follow-up sent for {deal_id}: {address} → {to_email}")
         except Exception as e:
             log.warning(f"Follow-up error for {deal_id}: {e}")
 
