@@ -344,6 +344,13 @@ async def newsletter_redirect():
     return RedirectResponse(url="/stack-audit", status_code=301)
 
 
+@app.get("/ai-stack-calculator", response_class=HTMLResponse)
+async def ai_stack_calculator(request: Request):
+    """Interactive calculator — shareable tool that routes users to active-earner affiliates."""
+    ctx = {"request": request, "site_name": config.SITE_NAME}
+    return templates.TemplateResponse("ai-stack-calculator.html", ctx)
+
+
 @app.get("/stack-audit", response_class=HTMLResponse)
 async def stack_audit_page(request: Request):
     """Free AI stack audit lead magnet — user pastes tools, gets 3-line audit back."""
@@ -1255,6 +1262,9 @@ async def sitemap():
         f"<url><loc>{config.SITE_URL}/best-ai-video-tools</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
         f"<url><loc>{config.SITE_URL}/best-ai-voice-tools</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
         f"<url><loc>{config.SITE_URL}/best-ai-productivity-tools</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
+        # Interactive tools + lead magnets
+        f"<url><loc>{config.SITE_URL}/ai-stack-calculator</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>",
+        f"<url><loc>{config.SITE_URL}/stack-audit</loc><lastmod>{today}</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>",
         # Static pages
         f"<url><loc>{config.SITE_URL}/about</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>",
         f"<url><loc>{config.SITE_URL}/how-we-test</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>",
