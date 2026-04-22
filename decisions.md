@@ -36,6 +36,26 @@ B. Owner emails PartnerStack support asking for expedited review with the active
 
 ---
 
+## 2026-04-22 — PartnerStack denied AGAIN on retry. Re-apply 2026-05-05.
+
+**Context:** Owner re-applied 2026-04-22 — denied a second time. Network window reopens 2026-05-05.
+
+**Options to pursue in the 13-day gap (don't wait on PartnerStack):**
+A. Apply direct to Kit (convertkit.com/affiliates) — 24% recurring, 16 clicks/14d landing on $0 today.
+B. Apply direct to Webflow Partner Program (webflow.com/partners) — 50% year-1 commission.
+C. Apply to GetResponse direct program — 33% recurring.
+D. Apply via Impact.com for Descript/QuillBot/Surfer SEO (bulk).
+E. Do nothing; retry PartnerStack May 5.
+
+**Recommended:** A+B+C (direct programs). Impact.com applications (D) still blocked by owner's Cloudflare captcha issue per SITE_CONTEXT. PartnerStack retry (E) is insurance — do it on May 5, but don't wait for it.
+
+**I chose:** logged for owner. All require login to owner's accounts → out of scope for autonomous mission.
+**If wrong:** 71 clicks/14d × ~2% conversion × ~$15 commission = ~$21/14d = ~$45/month left on the table indefinitely if never actioned. Tier-1 priority on owner's next decision pass.
+
+**Reminder set:** `/Users/kennethbonnet/ai-tools-empire/reports/reminder-2026-05-05-partnerstack-retry.md` with the re-application link + account creds location.
+
+---
+
 ## 2026-04-21 15:00 — Beehiiv trial expiring 2026-04-27 (6 days)
 
 **Context:** Max trial gives Scale-plan features for 14 days. After trial, site auto-downgrades to free tier. Free tier KEEPS welcome emails but loses automations/advanced features. The welcome email automation we built may or may not survive downgrade.
