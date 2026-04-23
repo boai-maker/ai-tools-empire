@@ -146,48 +146,60 @@
     <p style="font-size:13px;color:var(--color-text-secondary);margin:0 0 16px;">Add your affiliate IDs below. These are saved to your <code style="background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;">.env</code> file and take effect on next page load.</p>
     <div id="aff-status" style="margin-bottom:12px;font-size:13px;font-weight:600;"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="aff-form">
+      <!-- ACTIVE (IDs set) -->
       <div>
-        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">Grammarly ID <a href="https://www.grammarly.com/affiliates" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
-        <input id="aff-grammarly" type="text" placeholder="your-grammarly-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
-      </div>
-      <div>
-        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">GetResponse ID <a href="https://www.getresponse.com/affiliate" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
-        <input id="aff-getresponse" type="text" placeholder="your-getresponse-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
-      </div>
-      <div>
-        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">Surfer SEO ID <a href="https://surferseo.com/?via=" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
-        <input id="aff-surfer" type="text" placeholder="your-surfer-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
-      </div>
-      <div>
-        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">Semrush ID <a href="https://www.semrush.com/partner/" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
-        <input id="aff-semrush" type="text" placeholder="your-semrush-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
-      </div>
-      <div>
-        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">ElevenLabs ID <a href="https://elevenlabs.io/?from=" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
-        <input id="aff-elevenlabs" type="text" placeholder="your-elevenlabs-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
-      </div>
-      <div>
-        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">Pictory ID <a href="https://pictory.ai/?ref=" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <label style="font-size:12px;font-weight:700;color:#10b981;display:block;margin-bottom:4px;">✅ Pictory ID</label>
         <input id="aff-pictory" type="text" placeholder="your-pictory-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
       </div>
       <div>
-        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">InVideo AI ID <a href="https://invideo.io/affiliates/" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <label style="font-size:12px;font-weight:700;color:#10b981;display:block;margin-bottom:4px;">✅ ElevenLabs ID</label>
+        <input id="aff-elevenlabs" type="text" placeholder="your-elevenlabs-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#10b981;display:block;margin-bottom:4px;">✅ Fireflies ID</label>
+        <input id="aff-fireflies" type="text" placeholder="your-fireflies-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#10b981;display:block;margin-bottom:4px;">✅ Murf ID</label>
+        <input id="aff-murf" type="text" placeholder="your-murf-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
+      </div>
+      <!-- PENDING (applied, awaiting approval) -->
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">⏳ Speechify ID <span style="font-weight:400;font-size:11px;">(applied)</span></label>
+        <input id="aff-speechify" type="text" placeholder="your-speechify-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">⏳ InVideo AI ID <span style="font-weight:400;font-size:11px;">(Impact.com)</span></label>
         <input id="aff-invideo" type="text" placeholder="your-invideo-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
       </div>
       <div>
-        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">Writesonic ID <a href="https://writesonic.com/affiliates" target="_blank" style="font-weight:400;font-size:11px;">(get ID)</a></label>
+        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">⏳ Writesonic ID <span style="font-weight:400;font-size:11px;">(pending)</span></label>
         <input id="aff-writesonic" type="text" placeholder="your-writesonic-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">⏳ Grammarly ID <span style="font-weight:400;font-size:11px;">(Impact.com)</span></label>
+        <input id="aff-grammarly" type="text" placeholder="your-grammarly-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">⏳ HubSpot ID <span style="font-weight:400;font-size:11px;">(Impact.com)</span></label>
+        <input id="aff-hubspot" type="text" placeholder="your-hubspot-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--color-accent-amber);display:block;margin-bottom:4px;">⏳ Synthesia ID <span style="font-weight:400;font-size:11px;">(Rewardful)</span></label>
+        <input id="aff-synthesia" type="text" placeholder="your-synthesia-id" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);font-size:13px;box-sizing:border-box;background:var(--color-bg-elevated);color:var(--color-text-primary);">
       </div>
     </div>
     <div style="margin-top:16px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:12px;font-size:12px;color:var(--color-text-secondary);">
-      <strong>📋 Quick signup order (highest commissions first):</strong>
-      <a href="https://www.semrush.com/partner/" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">Semrush ($200/sale)</a> →
-      <a href="https://www.grammarly.com/affiliates" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">Grammarly ($20/upgrade)</a> →
-      <a href="https://invideo.io/affiliates/" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">InVideo (50%)</a> →
-      <a href="https://pictory.ai/affiliate" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">Pictory (50%)</a> →
-      <a href="https://elevenlabs.io/referral" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">ElevenLabs (22%)</a> →
-      <a href="https://surferseo.com/affiliate/" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">Surfer SEO (25%)</a>
-      <br><em style="margin-top:4px;display:block;color:var(--color-text-muted);">All accept iCloud email. Use your Apple ID — no business account needed.</em>
+      <strong>🚀 Apply now — direct programs (no PartnerStack/Impact, best approval odds):</strong><br>
+      <a href="https://friends.koala.sh/signup" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">Koala (30%)</a> ·
+      <a href="https://affiliates.fliki.ai/signup" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">Fliki (30%)</a> ·
+      <a href="https://affiliates.rytr.me/signup" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">Rytr (30%)</a> ·
+      <a href="https://www.hostinger.com/affiliates" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">Hostinger (40–60%)</a> ·
+      <a href="https://www.heygen.com/affiliate-program" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">HeyGen (35%)</a> ·
+      <a href="https://seranking.com/affiliate.html" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">SE Ranking (30%)</a> ·
+      <a href="https://anyword.com/affiliates/" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">Anyword (40%)</a> ·
+      <a href="https://mangools.com/affiliate-program" target="_blank" style="color:var(--color-accent-amber);margin:0 6px;">Mangools (35%)</a>
+      <br><em style="margin-top:4px;display:block;color:var(--color-text-muted);">Removed 2026-04-23 (denied/dead): Copy.ai, Surfer, Descript, GetResponse, QuillBot, Kit, Webflow, Runway, Semrush, Jasper.</em>
     </div>
     <button onclick="saveAffiliateIds()" style="margin-top:14px;background:#f59e0b;color:white;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">💾 Save Affiliate IDs (activates instantly — no restart needed)</button>
   </div>
@@ -321,14 +333,16 @@ async function fetchGuide(endpoint) {
 
 async function saveAffiliateIds() {
   const ids = {
-    grammarly:   document.getElementById('aff-grammarly').value.trim(),
-    getresponse: document.getElementById('aff-getresponse').value.trim(),
-    surfer:      document.getElementById('aff-surfer').value.trim(),
-    semrush:     document.getElementById('aff-semrush').value.trim(),
-    elevenlabs:  document.getElementById('aff-elevenlabs').value.trim(),
-    pictory:     document.getElementById('aff-pictory').value.trim(),
-    invideo:     document.getElementById('aff-invideo').value.trim(),
-    writesonic:  document.getElementById('aff-writesonic').value.trim(),
+    pictory:    document.getElementById('aff-pictory').value.trim(),
+    elevenlabs: document.getElementById('aff-elevenlabs').value.trim(),
+    fireflies:  document.getElementById('aff-fireflies').value.trim(),
+    murf:       document.getElementById('aff-murf').value.trim(),
+    speechify:  document.getElementById('aff-speechify').value.trim(),
+    invideo:    document.getElementById('aff-invideo').value.trim(),
+    writesonic: document.getElementById('aff-writesonic').value.trim(),
+    grammarly:  document.getElementById('aff-grammarly').value.trim(),
+    hubspot:    document.getElementById('aff-hubspot').value.trim(),
+    synthesia:  document.getElementById('aff-synthesia').value.trim(),
   };
   const filled = Object.values(ids).filter(v => v.length > 0);
   if (filled.length === 0) {

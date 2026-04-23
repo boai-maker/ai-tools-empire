@@ -39,6 +39,7 @@ KALSHI_HISTORY = Path.home() / ".kalshi" / "kalshi_auto_history.json"
 WHOLESALE_DB = Path.home() / "Desktop" / "wholesale-re" / "crm" / "crm.db"
 GUMROAD_OVERRIDE = Path(__file__).parent / "state" / "gumroad_manual.json"
 FIVERR_OVERRIDE = Path(__file__).parent / "state" / "fiverr_manual.json"
+PAYPAL_DEPOSITS = Path(__file__).parent / "state" / "paypal_deposits.json"
 
 
 # ───────────────────────── Affiliate ─────────────────────────
@@ -177,6 +178,45 @@ def wholesale_re_stream() -> dict:
     }
 
 
+# ───────────────────────── PayPal ────────────────────────────
+
+
+def paypal_stream() -> dict:
+    """Actual realized cash from PayPal deposit notification emails (ground truth)."""
+    today_str = datetime.utcnow().strftime("%Y-%m-%d")
+    mtd_prefix = datetime.utcnow().strftime("%Y-%m")
+    ytd_prefix = datetime.utcnow().strftime("%Y")
+    today_sum = mtd_sum = ytd_sum = 0.0
+    today_count = mtd_count = ytd_count = 0
+    last_deposit = None
+    try:
+        if PAYPAL_DEPOSITS.exists():
+            deposits = json.loads(PAYPAL_DEPOSITS.read_text())
+            for d in deposits:
+                amt = float(d.get("amount") or 0)
+                when = d.get("received_at", "")[:10]
+                if when.startswith(ytd_prefix):
+                    ytd_sum += amt
+                    ytd_count += 1
+                if when.startswith(mtd_prefix):
+                    mtd_sum += amt
+                    mtd_count += 1
+                if when == today_str:
+                    today_sum += amt
+                    today_count += 1
+            if deposits:
+                last_deposit = deposits[-1]
+    except Exception as e:
+        logger.warning(f"paypal deposit read: {e}")
+    return {
+        "source": "paypal",
+        "today": {"amount": round(today_sum, 2), "count": today_count},
+        "mtd": {"amount": round(mtd_sum, 2), "count": mtd_count},
+        "ytd": {"amount": round(ytd_sum, 2), "count": ytd_count},
+        "last": last_deposit,
+    }
+
+
 # ────────────────── Manual overrides (future streams) ───────
 
 
@@ -200,28 +240,33 @@ def compute_snapshot() -> dict:
     affiliate = affiliate_stream()
     kalshi = kalshi_stream()
     wholesale = wholesale_re_stream()
+    paypal = paypal_stream()
     gumroad = _manual_override(GUMROAD_OVERRIDE, "gumroad")
     fiverr = _manual_override(FIVERR_OVERRIDE, "fiverr")
 
+    # PayPal is the ground-truth cash stream. Affiliate/Gumroad/Fiverr are
+    # estimates that will later settle INTO PayPal — so we show them separately
+    # but use PayPal's realized total as the "real money today" figure.
     today_total = (
-        affiliate["today"]["est_revenue"]
+        paypal["today"]["amount"]
         + kalshi["today"]["pnl"]
-        + float(gumroad.get("today") or 0)
-        + float(fiverr.get("today") or 0)
     )
-    ytd_total = (
-        affiliate["ytd"]["est_revenue"]
-        + float(gumroad.get("ytd") or 0)
-        + float(fiverr.get("ytd") or 0)
-        # Kalshi YTD $ isn't in history.json (only win/loss) — treat separately
-    )
+    ytd_total = paypal["ytd"]["amount"]
 
     return {
         "generated_at": datetime.utcnow().isoformat() + "Z",
-        "today_total_est": round(today_total, 2),
-        "ytd_total_est": round(ytd_total, 2),
+        "today_total_realized": round(today_total, 2),
+        "today_total_estimated": round(
+            affiliate["today"]["est_revenue"]
+            + kalshi["today"]["pnl"]
+            + float(gumroad.get("today") or 0)
+            + float(fiverr.get("today") or 0),
+            2,
+        ),
+        "ytd_total_realized": round(ytd_total, 2),
         "goal_daily": 100.0,
         "streams": {
+            "paypal": paypal,
             "affiliate": affiliate,
             "kalshi": kalshi,
             "wholesale_re": wholesale,
@@ -235,33 +280,40 @@ def compute_snapshot() -> dict:
 
 
 def format_telegram(snap: dict) -> str:
+    pp = snap["streams"]["paypal"]
     aff = snap["streams"]["affiliate"]
     kal = snap["streams"]["kalshi"]
     who = snap["streams"]["wholesale_re"]
     gum = snap["streams"]["gumroad"]
     fiv = snap["streams"]["fiverr"]
 
-    total = snap["today_total_est"]
+    realized = snap["today_total_realized"]
+    estimated = snap["today_total_estimated"]
     goal = snap["goal_daily"]
-    pct = int(100 * total / goal) if goal else 0
+    pct = int(100 * realized / goal) if goal else 0
 
     lines = [
         f"💰 <b>Revenue Snapshot — {datetime.utcnow().strftime('%a %b %d')}</b>",
-        f"Today: <b>${total:,.2f}</b> / ${goal:,.0f} goal  ({pct}%)",
+        f"Today realized: <b>${realized:,.2f}</b> / ${goal:,.0f}  ({pct}%)",
+        f"Today estimated (incl. est. affiliate): ${estimated:,.2f}",
         "",
-        "<b>Affiliate</b>",
+        "<b>💵 PayPal (actual cash)</b>",
+        f"  today: ${pp['today']['amount']:,.2f}  ({pp['today']['count']} deposits)",
+        f"  MTD: ${pp['mtd']['amount']:,.2f}   YTD: ${pp['ytd']['amount']:,.2f}",
+        "",
+        "<b>Affiliate (estimated, not yet paid)</b>",
         f"  today: ${aff['today']['est_revenue']:,.2f} "
         f"(paid {aff['today']['monetized_clicks']} / leak {aff['today']['unattributed_clicks']})",
-        f"  MTD est: ${aff['mtd']['est_revenue']:,.2f}   YTD est: ${aff['ytd']['est_revenue']:,.2f}",
         f"  leaked today: ${aff['today']['lost_potential']:,.2f}",
+        f"  MTD est: ${aff['mtd']['est_revenue']:,.2f}   YTD est: ${aff['ytd']['est_revenue']:,.2f}",
         "",
         "<b>Kalshi</b>",
         f"  today PnL: ${kal['today']['pnl']:+,.2f}   trades: {kal['today']['trades']}"
         f"{'  [STOP]' if kal['today']['stop'] else ''}",
         f"  YTD: {kal['ytd']['wins']}/{kal['ytd']['trades']} wins ({int(kal['ytd']['win_rate']*100)}%)",
         "",
-        "<b>Wholesale RE</b>",
-        f"  pipeline: low ${who['pipeline_projection_low']:,} / high ${who['pipeline_projection_high']:,}",
+        "<b>Wholesale RE (pipeline, not cash)</b>",
+        f"  projection: low ${who['pipeline_projection_low']:,} / high ${who['pipeline_projection_high']:,}",
         f"  leads w/ email: {who['leads_with_email']}   by status: "
         + ", ".join(f"{k}:{v}" for k, v in sorted(who['by_status'].items())),
         "",
@@ -282,7 +334,7 @@ def run_revenue_monitor(notify: bool = True) -> dict:
     STATE_PATH.write_text(json.dumps(snap, indent=2))
     if notify:
         msg = format_telegram(snap)
-        notify_admin(f"💰 Revenue Snapshot — ${snap['today_total_est']:,.2f} today", msg)
+        notify_admin(f"💰 Revenue — ${snap['today_total_realized']:,.2f} realized / ${snap['today_total_estimated']:,.2f} est", msg)
     return snap
 
 

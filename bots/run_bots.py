@@ -94,6 +94,10 @@ def job_revenue_monitor():
     from bots.revenue_monitor import run_revenue_monitor
     _safe_run(run_revenue_monitor, "revenue_monitor")
 
+def job_paypal_deposit_monitor():
+    from bots.paypal_deposit_monitor import run_paypal_deposit_monitor
+    _safe_run(run_paypal_deposit_monitor, "paypal_deposit_monitor")
+
 def job_youtube_bot():
     _safe_run(run_youtube_bot, "youtube_bot")
 
@@ -342,6 +346,17 @@ if __name__ == "__main__":
         name="Revenue Monitor (aggregated)",
         max_instances=1,
         misfire_grace_time=1800,
+    )
+
+    # Every 15 minutes: poll Gmail for PayPal deposit notifications
+    scheduler.add_job(
+        job_paypal_deposit_monitor,
+        "cron",
+        minute="*/15",
+        id="paypal_deposit_monitor",
+        name="PayPal Deposit Monitor",
+        max_instances=1,
+        misfire_grace_time=600,
     )
 
     # Daily at 12:00 PM ET: YouTube bot
