@@ -90,6 +90,10 @@ def job_daily_revenue_report():
 def job_affiliate_revenue_bot():
     _safe_run(run_affiliate_revenue_bot, "affiliate_revenue_bot")
 
+def job_revenue_monitor():
+    from bots.revenue_monitor import run_revenue_monitor
+    _safe_run(run_revenue_monitor, "revenue_monitor")
+
 def job_youtube_bot():
     _safe_run(run_youtube_bot, "youtube_bot")
 
@@ -324,6 +328,18 @@ if __name__ == "__main__":
         minute=0,
         id="affiliate_revenue_bot",
         name="Affiliate Revenue Bot",
+        max_instances=1,
+        misfire_grace_time=1800,
+    )
+
+    # Daily at 6:00 PM ET + 8:00 AM ET: aggregated revenue snapshot (all streams)
+    scheduler.add_job(
+        job_revenue_monitor,
+        "cron",
+        hour="8,18",
+        minute=0,
+        id="revenue_monitor",
+        name="Revenue Monitor (aggregated)",
         max_instances=1,
         misfire_grace_time=1800,
     )
