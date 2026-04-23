@@ -98,6 +98,10 @@ def job_paypal_deposit_monitor():
     from bots.paypal_deposit_monitor import run_paypal_deposit_monitor
     _safe_run(run_paypal_deposit_monitor, "paypal_deposit_monitor")
 
+def job_bounce_reaper():
+    from bots.bounce_reaper import run_bounce_reaper
+    _safe_run(run_bounce_reaper, "bounce_reaper")
+
 def job_youtube_bot():
     _safe_run(run_youtube_bot, "youtube_bot")
 
@@ -357,6 +361,18 @@ if __name__ == "__main__":
         name="PayPal Deposit Monitor",
         max_instances=1,
         misfire_grace_time=600,
+    )
+
+    # Every 6 hours: scan Gmail Trash for bounces and reap dead leads
+    scheduler.add_job(
+        job_bounce_reaper,
+        "cron",
+        hour="*/6",
+        minute=5,
+        id="bounce_reaper",
+        name="Bounce Reaper (Gmail Trash → wholesale CRM)",
+        max_instances=1,
+        misfire_grace_time=1800,
     )
 
     # Daily at 12:00 PM ET: YouTube bot
