@@ -23,6 +23,70 @@ logger = logging.getLogger(__name__)
 BOT_NAME = "admin_notification_bot"
 
 
+def compute_affiliate_payout_breakdown() -> dict:
+    """
+    Breaks today's affiliate clicks into monetized vs unattributed buckets,
+    multiplies monetized clicks by a realistic per-tool EPC, and surfaces the
+    revenue leaking through unmonetized clicks. Per-tool EPC is derived from
+    AFFILIATE_PROGRAMS (commission_pct or commission_flat) times a conservative
+    2% click-to-sale conversion assumption.
+    """
+    from affiliate.links import AFFILIATE_PROGRAMS
+
+    CONVERSION = 0.02  # conservative industry baseline
+
+    def tool_epc(meta: dict) -> float:
+        if meta.get("commission_flat"):
+            return float(meta["commission_flat"]) * CONVERSION
+        pct = meta.get("commission_pct") or 0
+        return (float(meta.get("avg_sale", 0)) * pct / 100.0) * CONVERSION
+
+    # Source of truth = is_active flag in AFFILIATE_PROGRAMS (set only when an
+    # affiliate ID has actually been issued and verified).
+    active_keys = {k for k, v in AFFILIATE_PROGRAMS.items() if v.get("is_active") is True}
+
+    breakdown = {
+        "clicks_total": 0,
+        "clicks_monetized": 0,
+        "clicks_unattributed": 0,
+        "est_revenue": 0.0,
+        "lost_potential": 0.0,
+        "top_earners": [],
+        "top_leaks": [],
+    }
+
+    try:
+        today = datetime.utcnow().strftime("%Y-%m-%d")
+        conn = get_conn()
+        rows = conn.execute(
+            "SELECT tool_key, COUNT(*) AS clicks FROM affiliate_clicks WHERE DATE(clicked_at)=? GROUP BY tool_key",
+            (today,),
+        ).fetchall()
+        conn.close()
+
+        earners, leaks = [], []
+        for row in rows:
+            tool_key, clicks = row["tool_key"], row["clicks"]
+            breakdown["clicks_total"] += clicks
+            meta = AFFILIATE_PROGRAMS.get(tool_key, {})
+            epc = tool_epc(meta)
+            est = clicks * epc
+            if tool_key in active_keys:
+                breakdown["clicks_monetized"] += clicks
+                breakdown["est_revenue"] += est
+                earners.append((tool_key, clicks, est))
+            else:
+                breakdown["clicks_unattributed"] += clicks
+                breakdown["lost_potential"] += est
+                leaks.append((tool_key, clicks, est))
+
+        breakdown["top_earners"] = sorted(earners, key=lambda r: r[2], reverse=True)[:3]
+        breakdown["top_leaks"] = sorted(leaks, key=lambda r: r[2], reverse=True)[:3]
+    except Exception as e:
+        logger.warning(f"affiliate payout breakdown failed: {e}")
+    return breakdown
+
+
 def generate_daily_summary() -> str:
     """
     Compiles a summary from bot_events, analytics, and affiliate data.
@@ -74,22 +138,30 @@ def generate_daily_summary() -> str:
         top_tools = sorted(click_totals.items(), key=lambda x: x[1], reverse=True)[:3]
         top_tools_text = ", ".join([f"{k} ({v})" for k, v in top_tools]) if top_tools else "none"
 
+        # Affiliate payout reality check (monetized vs leaked)
+        payout = compute_affiliate_payout_breakdown()
+        earners_text = ", ".join(f"{k} {c}c ≈ ${e:.2f}" for k, c, e in payout["top_earners"]) or "none"
+        leaks_text = ", ".join(f"{k} {c}c ≈ ${e:.2f} lost" for k, c, e in payout["top_leaks"]) or "none"
+
         prompt = f"""Write a brief executive summary for the AI Tools Empire bot system daily report.
 
 Data from the past 24 hours:
 - New page views today: {today_views}
-- Affiliate clicks today: {total_clicks_today}
+- Affiliate clicks today: {total_clicks_today} ({payout['clicks_monetized']} monetized, {payout['clicks_unattributed']} unattributed)
+- Estimated revenue today (monetized clicks × per-tool EPC @ 2% conv): ${payout['est_revenue']:.2f}
+- Lost potential today (unattributed clicks × est EPC): ${payout['lost_potential']:.2f}
+- Top earners: {earners_text}
+- Top leaks: {leaks_text}
 - New subscribers today: {new_subs_today}
 - Total active subscribers: {subscriber_count}
 - Total published articles: {article_count}
-- Estimated revenue today: ${total_clicks_today * 2:.2f}
 - Top tools clicked: {top_tools_text}
 
 Bot activity:
 {events_text if events_text else "- No significant bot events"}
 
 Write a concise 3-4 paragraph executive summary covering:
-1. Key metrics and performance
+1. Key metrics and performance (call out the monetized-vs-leaked split — this is the #1 revenue lever)
 2. What the bots accomplished today
 3. Any notable trends or concerns
 4. Tomorrow's priorities
@@ -101,9 +173,12 @@ Keep it professional but conversational — like a status update from your autom
         if not summary:
             summary = (
                 f"Daily Summary — {datetime.utcnow().strftime('%Y-%m-%d')}\n\n"
-                f"Views: {today_views} | Clicks: {total_clicks_today} | "
-                f"New Subs: {new_subs_today} | Est. Revenue: ${total_clicks_today * 2:.2f}\n"
-                f"Total Articles: {article_count} | Total Subscribers: {subscriber_count}"
+                f"Views: {today_views} | Clicks: {total_clicks_today} "
+                f"({payout['clicks_monetized']} paid / {payout['clicks_unattributed']} leak)\n"
+                f"Est. revenue: ${payout['est_revenue']:.2f} | Lost potential: ${payout['lost_potential']:.2f}\n"
+                f"Top earner: {earners_text.split(',')[0] if earners_text != 'none' else '—'}\n"
+                f"Top leak: {leaks_text.split(',')[0] if leaks_text != 'none' else '—'}\n"
+                f"New Subs: {new_subs_today} | Total Subs: {subscriber_count}"
             )
 
         return summary
