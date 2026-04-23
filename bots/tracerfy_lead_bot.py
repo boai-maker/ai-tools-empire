@@ -230,7 +230,7 @@ def _row_to_crm_payload(row: Dict) -> Optional[Dict]:
         "contact_email":     contact["email"],
         "distress_signals":  ",".join(tags),
         "motivation_score":  motivation,
-        "status":            "hot" if motivation >= 40 else "new",
+        "status":            "hot" if motivation >= 40 else "new",  # NOTE: upsert will still PATCH existing rows — see _row_to_crm_payload caller. Mitigation: skip status on update. See upsert call.
         "notes":             f"Tracerfy import {motivation}/100 motivation. Tags: {', '.join(tags) or 'none'}. Mail: {_clean(row.get('mail_address',''))}, {_clean(row.get('mail_city',''))}, {_clean(row.get('mail_state',''))}",
     }
 
@@ -246,6 +246,10 @@ def ingest_into_crm(rows: List[Dict]) -> Dict:
         if not payload:
             skipped += 1
             continue
+        existing = crm.find_property(payload.get("address", ""))
+        if existing:
+            # Don't clobber status on re-import — only patch data fields
+            payload.pop("status", None)
         result = crm.upsert_property(payload)
         if not result:
             skipped += 1
