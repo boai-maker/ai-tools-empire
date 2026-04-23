@@ -24,23 +24,7 @@ AFFILIATE_PROGRAMS = {
         "monthly_est_commission": 120,
     },
     # surfer removed 2026-04-23 — PartnerStack DENIED. Impact.com route pending.
-    "semrush": {
-        "name": "Semrush",
-        "description": "All-in-one SEO, content, and competitor research platform",
-        "commission": "$200 per sale",
-        "commission_pct": None,
-        "commission_flat": 200,
-        "cookie_days": 120,
-        "avg_sale": 129,
-        "category": "seo",
-        "logo": "semrush.png",
-        "badge": "Highest Payout",
-        "rating": 4.9,
-        "reviews": 22000,
-        "signup_url": f"https://www.semrush.com/partner/?affcode={config.AFFILIATE_IDS['semrush']}",
-        "review_keywords": ["semrush review", "semrush vs ahrefs", "semrush pricing 2026"],
-        "monthly_est_commission": 400,
-    },
+    # semrush removed 2026-04-23 — DENIED (Impact.com route).
     "pictory": {
         "name": "Pictory AI",
         "description": "Turn scripts and articles into engaging videos with AI",
