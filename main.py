@@ -752,21 +752,70 @@ async def affiliate_redirect(tool_key: str, request: Request):
     }
     if tool_key not in aff_url_map:
         raise HTTPException(status_code=404, detail=f"Unknown tool: {tool_key}")
-    # Use affiliate URL if ID is set, else clean fallback
-    # If the stored ID is already a full URL (e.g. ElevenLabs referral link), use it directly
+    # Use affiliate URL if ID is set, else reroute to waitlist page (captures
+    # email + recommends a monetized alternative) instead of leaking the click
+    # to the merchant with no attribution.
     aff_id = os.getenv(f"{tool_key.upper()}_AFFILIATE_ID", "")
-    if aff_id and aff_id.startswith("http"):
-        redirect_url = aff_id
-    elif aff_id and not aff_id.startswith("YOUR"):
-        redirect_url = aff_url_map[tool_key]
-    else:
-        redirect_url = fallback_map[tool_key]
     try:
         source = request.headers.get("referer", "direct")
         log_click(tool_key, source, ip_hash(request))
     except Exception:
         pass
-    return RedirectResponse(url=redirect_url, status_code=302)
+    if aff_id and aff_id.startswith("http"):
+        return RedirectResponse(url=aff_id, status_code=302)
+    if aff_id and not aff_id.startswith("YOUR"):
+        return RedirectResponse(url=aff_url_map[tool_key], status_code=302)
+    return RedirectResponse(url=f"/waitlist/{tool_key}", status_code=302)
+
+
+# Category → best monetized alternative (for waitlist upsell).
+_WAITLIST_ALT_BY_CATEGORY = {
+    "video": "pictory",
+    "audio": "elevenlabs",
+    "productivity": "fireflies",
+    # writing/seo/etc. — no monetized alternative yet, just email capture
+}
+
+
+@app.get("/waitlist/{tool_key}", response_class=HTMLResponse)
+async def waitlist_page(tool_key: str, request: Request):
+    """Shown instead of redirecting to an unattributed merchant link. Captures
+    email and offers a monetized alternative in the same category."""
+    from affiliate.links import AFFILIATE_PROGRAMS
+    tool_meta = AFFILIATE_PROGRAMS.get(tool_key, {})
+    tool_name = tool_meta.get("name") or tool_key.replace("_", " ").title()
+    category = tool_meta.get("category", "")
+    alt = None
+    alt_key = _WAITLIST_ALT_BY_CATEGORY.get(category)
+    if alt_key and alt_key != tool_key:
+        alt_meta = AFFILIATE_PROGRAMS.get(alt_key, {})
+        if alt_meta.get("is_active") is True:
+            alt = {
+                "key": alt_key,
+                "name": alt_meta.get("name", alt_key),
+                "description": alt_meta.get("description", ""),
+            }
+    ctx = base_ctx(request)
+    ctx.update({
+        "tool_key": tool_key,
+        "tool_name": tool_name,
+        "alt_tool": alt,
+    })
+    return templates.TemplateResponse("waitlist.html", ctx)
+
+
+@app.post("/waitlist/{tool_key}/subscribe")
+async def waitlist_subscribe(tool_key: str, request: Request):
+    from fastapi.responses import JSONResponse
+    try:
+        payload = await request.json()
+        email_addr = (payload.get("email") or "").strip().lower()
+        if "@" not in email_addr or "." not in email_addr:
+            return JSONResponse({"ok": False, "error": "Invalid email"}, status_code=400)
+        add_subscriber(email_addr, name="", source=f"waitlist_{tool_key}")
+        return JSONResponse({"ok": True})
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)[:120]}, status_code=500)
 
 
 @app.get("/how-we-test", response_class=HTMLResponse)

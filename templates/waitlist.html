@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ tool_name }} — Join the waitlist | AI Tools Empire{% endblock %}
+{% block meta_description %}We're still evaluating {{ tool_name }}. Join the waitlist — we'll email you when our review and exclusive deal are live.{% endblock %}
+
+{% block content %}
+<section style="max-width:720px;margin:80px auto;padding:0 24px;">
+  <div style="background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:16px;padding:48px 40px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:8px;">🔬</div>
+    <h1 style="font-size:32px;font-weight:800;margin:0 0 12px;color:var(--color-text-primary);">
+      {{ tool_name }} — still in the lab
+    </h1>
+    <p style="font-size:16px;color:var(--color-text-secondary);margin:0 0 32px;line-height:1.6;">
+      We don't recommend tools until we've tested them against the others in the category.
+      Drop your email and we'll ping you once our {{ tool_name }} review and exclusive deal go live.
+    </p>
+
+    <form id="wl-form" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;">
+      <input id="wl-email" type="email" required placeholder="you@email.com"
+             style="flex:1;min-width:220px;max-width:320px;padding:12px 16px;font-size:15px;border-radius:8px;border:1px solid var(--color-border);background:var(--color-bg);color:var(--color-text-primary);">
+      <button type="submit"
+              style="padding:12px 24px;background:var(--color-accent-amber);color:#0f172a;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">
+        Notify me
+      </button>
+    </form>
+    <div id="wl-status" style="font-size:13px;font-weight:600;min-height:20px;margin-bottom:16px;"></div>
+
+    {% if alt_tool %}
+    <div style="background:var(--color-bg);border:1px solid var(--color-border);border-radius:12px;padding:20px;margin-top:24px;">
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-muted);font-weight:700;margin-bottom:8px;">
+        While you wait — our top pick in this category
+      </div>
+      <h3 style="margin:0 0 6px;font-size:20px;color:var(--color-text-primary);">{{ alt_tool.name }}</h3>
+      <p style="font-size:14px;color:var(--color-text-secondary);margin:0 0 16px;">{{ alt_tool.description }}</p>
+      <a href="/go/{{ alt_tool.key }}"
+         style="display:inline-block;padding:10px 20px;background:var(--color-accent-amber);color:#0f172a;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">
+        Try {{ alt_tool.name }} →
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+document.getElementById('wl-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const em = document.getElementById('wl-email').value.trim();
+  const statusEl = document.getElementById('wl-status');
+  if (!em) return;
+  statusEl.textContent = '⏳ Adding you…';
+  statusEl.style.color = '#94a3b8';
+  try {
+    const r = await fetch('/waitlist/{{ tool_key }}/subscribe', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email: em})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      statusEl.textContent = '✅ You\'re on the list. Watch your inbox.';
+      statusEl.style.color = '#10b981';
+      document.getElementById('wl-email').value = '';
+    } else {
+      statusEl.textContent = '⚠ ' + (d.error || 'Try again in a moment.');
+      statusEl.style.color = '#ef4444';
+    }
+  } catch (err) {
+    statusEl.textContent = '⚠ Network hiccup — try again.';
+    statusEl.style.color = '#ef4444';
+  }
+});
+</script>
+{% endblock %}
