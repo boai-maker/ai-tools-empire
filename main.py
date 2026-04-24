@@ -399,15 +399,20 @@ async def stack_audit_submit(request: Request, body: StackAuditRequest):
                 stack TEXT NOT NULL,
                 surface TEXT,
                 ip_hash TEXT,
-                status TEXT DEFAULT 'pending',
+                status TEXT DEFAULT 'awaiting_payment',
                 submitted_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                audited_at TEXT
+                audited_at TEXT,
+                paid_at TEXT,
+                gumroad_sale_id TEXT,
+                audit_json TEXT,
+                delivered_at TEXT
             )
         """)
-        conn.execute(
-            "INSERT INTO stack_audits (email, stack, surface, ip_hash) VALUES (?, ?, ?, ?)",
+        cur = conn.execute(
+            "INSERT INTO stack_audits (email, stack, surface, ip_hash, status) VALUES (?, ?, ?, ?, 'awaiting_payment')",
             (email, stack, body.surface, ip_hash(request)),
         )
+        audit_id = cur.lastrowid
         # Also record in subscribers so they join the newsletter
         conn.execute(
             "INSERT OR IGNORE INTO subscribers (email, source) VALUES (?, ?)",
@@ -462,7 +467,84 @@ async def stack_audit_submit(request: Request, body: StackAuditRequest):
     except Exception:
         pass
 
-    return JSONResponse({"success": True, "message": "Audit request received."})
+    payment_url = os.getenv("STACK_AUDIT_PAYMENT_URL", "")
+    return JSONResponse({
+        "success": True,
+        "audit_id": audit_id,
+        "payment_url": payment_url,
+        "price": 99,
+        "message": "Submission saved. Complete your payment to start the audit.",
+    })
+
+
+@app.post("/stack-audit/gumroad-webhook")
+async def stack_audit_gumroad_webhook(request: Request):
+    """
+    Gumroad "ping" webhook for the Stack Audit product. Gumroad POSTs
+    form-urlencoded on every sale. We match the buyer's email to the most
+    recent pending submission and flip status to 'paid'; the scheduled
+    stack_audit_engine then drafts the audit and emails it.
+
+    Gumroad docs: https://help.gumroad.com/article/40-webhooks
+    Configure the webhook URL on the product page inside Gumroad.
+    """
+    from fastapi.responses import JSONResponse
+    try:
+        form = await request.form()
+        data = dict(form)
+        email = (data.get("email") or "").lower().strip()
+        sale_id = data.get("sale_id") or ""
+        expected_secret = os.getenv("GUMROAD_WEBHOOK_SECRET", "")
+        got_secret = request.headers.get("X-Gumroad-Signature") or data.get("url_params[secret]") or data.get("secret") or ""
+        if expected_secret and got_secret != expected_secret:
+            return JSONResponse({"ok": False, "error": "signature mismatch"}, status_code=401)
+        if not email:
+            return JSONResponse({"ok": False, "error": "missing email"}, status_code=400)
+        from bots.stack_audit_engine import mark_paid_by_email
+        n = mark_paid_by_email(email, gumroad_sale_id=sale_id)
+        return JSONResponse({"ok": True, "marked_paid": n})
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)[:200]}, status_code=500)
+
+
+@app.post("/admin/stack-audit/{audit_id}/mark-paid")
+async def admin_mark_audit_paid(audit_id: int, request: Request):
+    from fastapi.responses import JSONResponse
+    pwd = request.query_params.get("pwd", "")
+    if pwd != os.getenv("ADMIN_PASSWORD", ""):
+        return JSONResponse({"ok": False, "error": "bad pwd"}, status_code=403)
+    from bots.stack_audit_engine import mark_paid
+    ok = mark_paid(audit_id, gumroad_sale_id="manual_admin")
+    return JSONResponse({"ok": ok, "audit_id": audit_id})
+
+
+@app.post("/admin/stack-audit/run-pending")
+async def admin_run_pending_audits(request: Request):
+    """Fire the audit engine immediately (for testing / manual kick)."""
+    from fastapi.responses import JSONResponse
+    pwd = request.query_params.get("pwd", "")
+    if pwd != os.getenv("ADMIN_PASSWORD", ""):
+        return JSONResponse({"ok": False, "error": "bad pwd"}, status_code=403)
+    from bots.stack_audit_engine import run_pending_audits
+    return JSONResponse({"ok": True, **run_pending_audits(limit=10)})
+
+
+@app.get("/admin/stack-audits")
+async def admin_list_audits(request: Request):
+    """Admin view: all stack audit submissions."""
+    from fastapi.responses import JSONResponse
+    pwd = request.query_params.get("pwd", "")
+    if pwd != os.getenv("ADMIN_PASSWORD", ""):
+        return JSONResponse({"ok": False, "error": "bad pwd"}, status_code=403)
+    import sqlite3
+    conn = sqlite3.connect("data.db")
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        "SELECT id, email, substr(stack, 1, 200) AS stack_preview, status, submitted_at, paid_at, delivered_at "
+        "FROM stack_audits ORDER BY id DESC LIMIT 50"
+    ).fetchall()
+    conn.close()
+    return JSONResponse({"ok": True, "audits": [dict(r) for r in rows]})
 
 
 @app.get("/about", response_class=HTMLResponse)

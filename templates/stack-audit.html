@@ -178,17 +178,10 @@
 <section class="audit-hero">
   <span class="audit-badge">★ FREE — 48 HOUR TURNAROUND</span>
   {% set h1_variant = ab('stack-audit-h1-v1', 'control', 'audit_framing', 'worth_it_q') %}
-  {% if h1_variant == 'audit_framing' %}
-  <h1>I'll audit your AI stack.<br><span class="em">Free. 48 hours. No pitch.</span></h1>
-  <p class="audit-sub">Paste what you're paying for. Get back a 3-line email: what to drop, what to keep, what to add.</p>
-  {% elif h1_variant == 'worth_it_q' %}
-  <h1>What AI tools are worth paying for in 2026?<br><span class="em">Show me yours, I'll tell you.</span></h1>
-  <p class="audit-sub">Paste your stack. Within 48 hours I send back a 3-line audit — drop, keep, add.</p>
-  {% else %}
+  <span class="audit-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;margin-left:8px;">$99 · DELIVERED IN 48H</span>
   <h1>Send me your AI stack.<br><span class="em">I'll tell you what to drop.</span></h1>
-  <p class="audit-sub">Paste the AI tools you're paying for right now. Within 48 hours you get a personal 3-line audit back: what to drop, what to keep, what to add.</p>
-  {% endif %}
-  <p class="audit-microproof">No upsell. No sales call. No "book a demo." Just a 3-line email.</p>
+  <p class="audit-sub">Paste the AI tools you're paying for right now. For $99 you get a personal 3-line audit back: what to drop, what to keep, what to add.</p>
+  <p class="audit-microproof">Average reader saves $50-$120/month after acting on one audit. You pay $99 once. Math checks.</p>
   <input type="hidden" id="h1-variant" value="{{ h1_variant }}">
 </section>
 
@@ -204,14 +197,16 @@
       <div class="hint">List every tool you're paying for. Be specific — include monthly costs if you know them.</div>
       <textarea id="sa-stack" name="stack" placeholder="ChatGPT Plus — $20&#10;Jasper — $49&#10;Descript — $24&#10;Zapier — $29&#10;..." required></textarea>
     </div>
-    <button type="submit">Send me the audit →</button>
-    <p class="small-print">Unsubscribe anytime. I'll never sell your email.</p>
+    <button type="submit">Continue to payment ($99) →</button>
+    <p class="small-print">One payment, one audit, 48-hour delivery. Refund on request within 7 days.</p>
   </form>
 </div>
 
 <div class="audit-success" id="audit-success-state">
-  <strong>✓ Got it.</strong>
-  <p style="margin-top:8px;color:#94a3b8;">Check your inbox in the next 48 hours. If it doesn't show up, check spam and add <strong style="color:#10b981;">bosaibot@gmail.com</strong> to your contacts.</p>
+  <strong>✓ Submission saved.</strong>
+  <p style="margin-top:8px;color:#94a3b8;">One last step — complete your $99 payment below, and your audit will land in your inbox within 48 hours.</p>
+  <a id="audit-pay-btn" href="#" target="_blank" style="display:inline-block;margin-top:16px;background:#f59e0b;color:#0f172a;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;">Pay $99 now →</a>
+  <p style="margin-top:12px;font-size:12px;color:#64748b;">Payment is processed by Gumroad. You'll be emailed from <strong style="color:#10b981;">bosaibot@gmail.com</strong> when your audit is ready.</p>
 </div>
 
 <section class="audit-how">
@@ -263,12 +258,19 @@ async function submitStackAudit(e) {
       body: JSON.stringify(data),
     });
     if (res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      const payBtn = document.getElementById('audit-pay-btn');
+      if (payload.payment_url && payBtn) {
+        payBtn.href = payload.payment_url;
+      } else if (payBtn) {
+        payBtn.style.display = 'none';
+      }
       form.style.display = 'none';
       document.getElementById('audit-success-state').style.display = 'block';
-      if (window.gtag) gtag('event', 'stack_audit_signup', { surface: 'stack_audit_page' });
+      if (window.gtag) gtag('event', 'stack_audit_signup', { surface: 'stack_audit_page', value: 99 });
     } else {
       btn.disabled = false;
-      btn.innerText = 'Send me the audit →';
+      btn.innerText = 'Continue to payment ($99) →';
       alert('Something broke. Refresh and try again, or email bosaibot@gmail.com directly.');
     }
   } catch (err) {

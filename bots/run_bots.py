@@ -102,6 +102,10 @@ def job_bounce_reaper():
     from bots.bounce_reaper import run_bounce_reaper
     _safe_run(run_bounce_reaper, "bounce_reaper")
 
+def job_stack_audit_engine():
+    from bots.stack_audit_engine import run_pending_audits
+    _safe_run(run_pending_audits, "stack_audit_engine")
+
 def job_youtube_bot():
     _safe_run(run_youtube_bot, "youtube_bot")
 
@@ -373,6 +377,18 @@ if __name__ == "__main__":
         name="Bounce Reaper (Gmail Trash → wholesale CRM)",
         max_instances=1,
         misfire_grace_time=1800,
+    )
+
+    # Every 10 minutes: fulfill any paid Stack Audit submissions (Claude
+    # drafts the 3-line audit + emails the customer).
+    scheduler.add_job(
+        job_stack_audit_engine,
+        "cron",
+        minute="*/10",
+        id="stack_audit_engine",
+        name="Stack Audit Engine ($99 product fulfilment)",
+        max_instances=1,
+        misfire_grace_time=600,
     )
 
     # Daily at 12:00 PM ET: YouTube bot
