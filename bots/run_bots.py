@@ -498,17 +498,19 @@ if __name__ == "__main__":
         misfire_grace_time=1800,
     )
 
-    # Every 2 hours 7AM-11PM ET: Wholesale Lead Hunter (ACTIVELY finds new properties)
-    scheduler.add_job(
-        job_wholesale_lead_hunter,
-        "cron",
-        hour="7,9,11,13,15,17,19,21,23",
-        minute=15,
-        id="wholesale_lead_hunter",
-        name="Wholesale Lead Hunter",
-        max_instances=1,
-        misfire_grace_time=1800,
-    )
+    # PAUSED 2026-04-24 by Kenneth — do not add new leads until balance reloaded.
+    # (Was: every 2h 7AM-11PM, searched Redfin/Zillow/MLS for new properties.)
+    # Re-enable by uncommenting this block when ready.
+    # scheduler.add_job(
+    #     job_wholesale_lead_hunter,
+    #     "cron",
+    #     hour="7,9,11,13,15,17,19,21,23",
+    #     minute=15,
+    #     id="wholesale_lead_hunter",
+    #     name="Wholesale Lead Hunter",
+    #     max_instances=1,
+    #     misfire_grace_time=1800,
+    # )
 
     # 4x/day: Owner Outreach (batch 25 → up to 100 emails/day capacity, targets 20+ sent)
     scheduler.add_job(
