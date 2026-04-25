@@ -220,17 +220,85 @@ def paypal_stream() -> dict:
 # ────────────────── Manual overrides (future streams) ───────
 
 
-def _manual_override(path: Path, label: str) -> dict:
-    """Any JSON written to bots/state/{label}_manual.json gets included as-is.
-    Use this to record Gumroad/Fiverr payouts until we wire their APIs.
-    Expected shape: {"today": 0, "mtd": 0, "ytd": 0, "note": "..."}"""
-    if path.exists():
+_PAYPAL_SOURCE_MARKERS = {
+    "gumroad": [
+        "gumroad",
+        "you received a payment from gumroad",
+        "paid you via gumroad",
+        "from gumroad",
+        "@gumroad",
+    ],
+    "fiverr": [
+        "fiverr",
+        "fiverr international",
+        "from fiverr",
+        "@fiverr",
+        "fiverr earnings",
+    ],
+}
+
+
+def _stream_from_paypal(label: str) -> dict:
+    """
+    Wire Gumroad/Fiverr through the actual PayPal deposit feed (their
+    payouts land there). We tag each PayPal deposit by scanning subject +
+    sender for known markers and aggregate today/MTD/YTD.
+
+    Override file (bots/state/{label}_manual.json) still wins if present —
+    handy for back-filling pre-monitor sales.
+    """
+    today_str = datetime.utcnow().strftime("%Y-%m-%d")
+    mtd_prefix = datetime.utcnow().strftime("%Y-%m")
+    ytd_prefix = datetime.utcnow().strftime("%Y")
+    today_sum = mtd_sum = ytd_sum = 0.0
+    today_count = mtd_count = ytd_count = 0
+    last_match = None
+    markers = _PAYPAL_SOURCE_MARKERS.get(label, [])
+    try:
+        if PAYPAL_DEPOSITS.exists():
+            deposits = json.loads(PAYPAL_DEPOSITS.read_text())
+            for d in deposits:
+                hay = (d.get("subject", "") + " " + d.get("from", "")).lower()
+                if not any(m in hay for m in markers):
+                    continue
+                amt = float(d.get("amount") or 0)
+                when = d.get("received_at", "")[:10]
+                if when.startswith(ytd_prefix):
+                    ytd_sum += amt
+                    ytd_count += 1
+                if when.startswith(mtd_prefix):
+                    mtd_sum += amt
+                    mtd_count += 1
+                if when == today_str:
+                    today_sum += amt
+                    today_count += 1
+                last_match = d
+    except Exception as e:
+        logger.warning(f"{label} paypal aggregate: {e}")
+
+    # Manual override still respected — sums into the totals.
+    override_path = Path(__file__).parent / "state" / f"{label}_manual.json"
+    note = "wired via PayPal deposit matching"
+    if override_path.exists():
         try:
-            data = json.loads(path.read_text())
-            return {"source": label, **data}
+            ov = json.loads(override_path.read_text())
+            today_sum += float(ov.get("today") or 0)
+            mtd_sum += float(ov.get("mtd") or 0)
+            ytd_sum += float(ov.get("ytd") or 0)
+            note = "wired via PayPal + manual override"
         except Exception as e:
             logger.warning(f"{label} override read: {e}")
-    return {"source": label, "today": 0, "mtd": 0, "ytd": 0, "note": "not wired"}
+
+    return {
+        "source": label,
+        "today": round(today_sum, 2),
+        "mtd": round(mtd_sum, 2),
+        "ytd": round(ytd_sum, 2),
+        "today_count": today_count,
+        "ytd_count": ytd_count,
+        "last_match_subject": (last_match or {}).get("subject", "")[:120] if last_match else None,
+        "note": note,
+    }
 
 
 # ─────────────────────────── Roll-up ─────────────────────────
@@ -241,8 +309,8 @@ def compute_snapshot() -> dict:
     kalshi = kalshi_stream()
     wholesale = wholesale_re_stream()
     paypal = paypal_stream()
-    gumroad = _manual_override(GUMROAD_OVERRIDE, "gumroad")
-    fiverr = _manual_override(FIVERR_OVERRIDE, "fiverr")
+    gumroad = _stream_from_paypal("gumroad")
+    fiverr = _stream_from_paypal("fiverr")
 
     # PayPal is the ground-truth cash stream. Affiliate/Gumroad/Fiverr are
     # estimates that will later settle INTO PayPal — so we show them separately

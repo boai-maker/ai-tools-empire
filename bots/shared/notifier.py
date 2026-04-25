@@ -78,22 +78,11 @@ def notify(
 
 def notify_admin(subject: str, body: str) -> None:
     """
-    Send an admin notification via both Telegram and email.
+    Send an admin notification.
+
+    2026-04-25 (Kenneth): EMAIL DISABLED. Inbox was getting jammed by daily
+    morning briefings + revenue snapshots. Telegram is now the single channel
+    for all admin notifications. To re-enable email per-call, callers should
+    use notify(... use_email=True) explicitly.
     """
     _send_telegram(f"📬 <b>{subject}</b>\n\n{body}")
-
-    if config.SMTP_USER:
-        body_html = f"""
-        <html><body style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px;">
-        <h2 style="color: #1a1a2e;">{subject}</h2>
-        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 10px 0;">
-        <pre style="white-space: pre-wrap; font-family: Arial, sans-serif; color: #333;">{body}</pre>
-        </div>
-        <hr>
-        <p style="color: #999; font-size: 12px;">
-        AI Tools Empire — Autonomous Bot System<br>
-        <a href="{config.SITE_URL}">{config.SITE_URL}</a>
-        </p>
-        </body></html>
-        """
-        send_email(config.SMTP_USER, subject, body_html, body_text=body)

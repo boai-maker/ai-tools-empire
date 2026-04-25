@@ -43,7 +43,12 @@ DEFAULT_GEOGRAPHY = {
     "cities": ["Atlanta"],
     "states": ["GA"],
 }
-REQUESTED_COUNT        = 25    # leads per run
+REQUESTED_COUNT        = 20    # leads per run. 2026-04-25 lowered 25 → 20:
+                               # Tracerfy's /analytics/ endpoint reports
+                               # balance=116 while Kenneth's dashboard shows
+                               # 616. 20×5=100 fits inside the conservative
+                               # API number so runs aren't blocked. Likely a
+                               # bug on Tracerfy's side worth reporting.
 POLL_INTERVAL_SECONDS  = 25    # Tracerfy rate-limits at 20s — pad to 25
 MAX_POLL_ATTEMPTS      = 12    # up to 5 minutes total
 
