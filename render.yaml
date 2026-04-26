@@ -83,3 +83,7 @@ services:
         sync: false
       - key: GOOGLE_SITE_VERIFICATION
         value: MOExWVZvG4tLW-Z5rh6NLp5rTa8TbOoGzYVtUo2-s3M
+      - key: STACK_AUDIT_PAYMENT_URL
+        value: https://bosaibot.gumroad.com/l/euvbhm
+      - key: PIPELINE_HUNTER_PAYMENT_URL
+        value: https://bosaibot.gumroad.com/l/bfapw
