@@ -477,16 +477,117 @@ async def stack_audit_submit(request: Request, body: StackAuditRequest):
     })
 
 
+# ─────────── UNIFIED GUMROAD DISPATCHER ──────────────────────────
+#
+# Gumroad has ONE global ping URL per account, so as we add products
+# (Stack Audit $99, Affiliate Service $29, Pipeline Hunter $47, future...)
+# we route by `product_permalink` from the form payload. The legacy
+# per-product endpoints below stay as backwards-compatible aliases.
+
+# product slug → (handler-name, marker function path)
+GUMROAD_PRODUCT_HANDLERS = {
+    "euvbhm": "stack_audit",        # $99 Stack Audit
+    "jpsrxd": "affiliate_service",  # $29 AI Affiliate Application Service
+    "bfapw":  "pipeline_hunter",    # $47 Pipeline Hunter (no auto-fulfilment yet)
+}
+
+
+@app.post("/gumroad-webhook")
+async def gumroad_unified_webhook(request: Request):
+    """Single Gumroad ping URL for ALL products. Routes by
+    `product_permalink` (or `permalink`/`product_id`) so adding a new
+    Gumroad product never requires updating the ping URL again.
+
+    Configure ONCE at gumroad.com/settings/advanced → Ping endpoint:
+        https://aitoolsempire.co/gumroad-webhook
+    """
+    from fastapi.responses import JSONResponse
+    try:
+        form = await request.form()
+        data = dict(form)
+        email = (data.get("email") or "").lower().strip()
+        sale_id = data.get("sale_id") or ""
+        permalink = (data.get("product_permalink") or data.get("permalink") or "").strip()
+        product_id = (data.get("product_id") or "").strip()
+
+        # Optional shared-secret check (set GUMROAD_WEBHOOK_SECRET in env
+        # AND configure the same value on Gumroad's per-product webhook).
+        expected_secret = os.getenv("GUMROAD_WEBHOOK_SECRET", "")
+        got_secret = (
+            request.headers.get("X-Gumroad-Signature")
+            or data.get("url_params[secret]")
+            or data.get("secret") or ""
+        )
+        if expected_secret and got_secret != expected_secret:
+            return JSONResponse({"ok": False, "error": "signature mismatch"}, status_code=401)
+
+        if not email:
+            return JSONResponse({"ok": False, "error": "missing email"}, status_code=400)
+
+        # Extract slug from permalink. Gumroad sends a URL like
+        # https://bosaibot.gumroad.com/l/jpsrxd OR just the slug "jpsrxd".
+        slug = permalink.rstrip("/").rsplit("/", 1)[-1]
+        handler = GUMROAD_PRODUCT_HANDLERS.get(slug)
+
+        log.info(f"gumroad ping email={email} slug={slug!r} sale_id={sale_id} handler={handler!r}")
+
+        if handler == "stack_audit":
+            from bots.stack_audit_engine import mark_paid_by_email
+            n = mark_paid_by_email(email, gumroad_sale_id=sale_id)
+            _telegram(f"💰 PAID Stack Audit ($99): {email} (sale {sale_id})")
+            return JSONResponse({"ok": True, "product": "stack_audit", "marked_paid": n})
+
+        if handler == "affiliate_service":
+            import sqlite3
+            conn = sqlite3.connect("data.db")
+            cur = conn.execute(
+                """UPDATE affiliate_service_orders
+                   SET status='paid', paid_at=CURRENT_TIMESTAMP, gumroad_sale_id=?
+                   WHERE email=? AND status='awaiting_payment'""",
+                (sale_id, email),
+            )
+            n = cur.rowcount
+            conn.commit()
+            conn.close()
+            _telegram(f"💰 PAID Affiliate Service ($29): {email} (sale {sale_id})")
+            return JSONResponse({"ok": True, "product": "affiliate_service", "marked_paid": n})
+
+        if handler == "pipeline_hunter":
+            # No DB table yet — just log + Telegram so Kenneth knows to ship the file.
+            _telegram(f"💰 PAID Pipeline Hunter ($47): {email} (sale {sale_id})")
+            return JSONResponse({"ok": True, "product": "pipeline_hunter", "marked_paid": 0})
+
+        # Unknown product — alert Kenneth so he can wire a handler.
+        _telegram(f"⚠️ Unrouted Gumroad sale: slug={slug!r} email={email} sale={sale_id}")
+        return JSONResponse({"ok": True, "product": "unknown", "slug": slug, "marked_paid": 0})
+
+    except Exception as e:
+        log.exception("gumroad_unified_webhook failed")
+        return JSONResponse({"ok": False, "error": str(e)[:200]}, status_code=500)
+
+
+def _telegram(msg: str) -> None:
+    """Best-effort Telegram ping — never raises."""
+    try:
+        import requests as _rq
+        tok  = os.getenv("DOMINIC_TELEGRAM_TOKEN", "")
+        chat = os.getenv("DOMINIC_TELEGRAM_CHAT_ID", "")
+        if tok and chat:
+            _rq.post(
+                f"https://api.telegram.org/bot{tok}/sendMessage",
+                json={"chat_id": chat, "text": msg},
+                timeout=4,
+            )
+    except Exception:
+        pass
+
+
 @app.post("/stack-audit/gumroad-webhook")
 async def stack_audit_gumroad_webhook(request: Request):
     """
-    Gumroad "ping" webhook for the Stack Audit product. Gumroad POSTs
-    form-urlencoded on every sale. We match the buyer's email to the most
-    recent pending submission and flip status to 'paid'; the scheduled
-    stack_audit_engine then drafts the audit and emails it.
-
-    Gumroad docs: https://help.gumroad.com/article/40-webhooks
-    Configure the webhook URL on the product page inside Gumroad.
+    LEGACY alias. Gumroad ping URL should now point to /gumroad-webhook
+    which dispatches across all products. This endpoint is kept for
+    backwards compatibility with the original $99 Stack Audit setup.
     """
     from fastapi.responses import JSONResponse
     try:
