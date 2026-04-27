@@ -817,6 +817,8 @@ async def affiliate_redirect(tool_key: str, request: Request):
         "canva":       f"https://partner.canva.com/{os.getenv('CANVA_AFFILIATE_ID', '')}",
         "synthesia":   f"https://www.synthesia.io/?via={os.getenv('SYNTHESIA_AFFILIATE_ID', '')}",
         "runway":      f"https://runwayml.com/?ref={os.getenv('RUNWAY_AFFILIATE_ID', '')}",
+        "fliki":       f"https://fliki.ai/?via={os.getenv('FLIKI_AFFILIATE_ID', '')}",
+        "rytr":        f"https://rytr.me/?via={os.getenv('RYTR_AFFILIATE_ID', '')}",
     }
     # Fallback: clean product URL without affiliate ID if ID not set
     fallback_map = {
@@ -830,7 +832,8 @@ async def affiliate_redirect(tool_key: str, request: Request):
         "quillbot": "https://quillbot.com/", "kit": "https://kit.com/",
         "webflow": "https://webflow.com/", "grammarly": "https://www.grammarly.com/",
         "canva": "https://www.canva.com/", "synthesia": "https://www.synthesia.io/",
-        "runway": "https://runwayml.com/",
+        "runway": "https://runwayml.com/", "fliki": "https://fliki.ai/",
+        "rytr": "https://rytr.me/",
     }
     if tool_key not in aff_url_map:
         raise HTTPException(status_code=404, detail=f"Unknown tool: {tool_key}")
