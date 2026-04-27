@@ -486,9 +486,12 @@ async def stack_audit_submit(request: Request, body: StackAuditRequest):
 
 # product slug → (handler-name, marker function path)
 GUMROAD_PRODUCT_HANDLERS = {
-    "euvbhm": "stack_audit",        # $99 Stack Audit
-    "jpsrxd": "affiliate_service",  # $29 AI Affiliate Application Service
-    "bfapw":  "pipeline_hunter",    # $47 Pipeline Hunter (no auto-fulfilment yet)
+    "euvbhm": "stack_audit",          # $99 Stack Audit
+    "jpsrxd": "affiliate_service",    # $29 AI Affiliate Application Service
+    "bfapw":  "pipeline_hunter",      # $47 Pipeline Hunter (no auto-fulfilment yet)
+    # $19 Stack Audit Template Pack — slug TBD when Kenneth creates the
+    # Gumroad product. Until then, dispatcher Telegrams "unknown slug" and
+    # we manually add the slug → "stack_audit_templates" entry here.
 }
 
 
@@ -556,6 +559,12 @@ async def gumroad_unified_webhook(request: Request):
             # No DB table yet — just log + Telegram so Kenneth knows to ship the file.
             _telegram(f"💰 PAID Pipeline Hunter ($47): {email} (sale {sale_id})")
             return JSONResponse({"ok": True, "product": "pipeline_hunter", "marked_paid": 0})
+
+        if handler == "stack_audit_templates":
+            # $19 self-serve template pack — Gumroad delivers the markdown
+            # file natively, we just log + ping Kenneth so he can see sales.
+            _telegram(f"💰 PAID Stack Audit Template Pack ($19): {email} (sale {sale_id})")
+            return JSONResponse({"ok": True, "product": "stack_audit_templates", "marked_paid": 0})
 
         # Unknown product — alert Kenneth so he can wire a handler.
         _telegram(f"⚠️ Unrouted Gumroad sale: slug={slug!r} email={email} sale={sale_id}")
@@ -815,6 +824,64 @@ async def affiliate_service_gumroad_webhook(request: Request):
         return JSONResponse({"ok": True, "marked_paid": marked})
     except Exception as e:
         return JSONResponse({"ok": False, "error": str(e)[:200]}, status_code=500)
+
+
+# ─────────── $19 STACK AUDIT TEMPLATE PACK ──────────────────────
+#
+# Pure self-serve digital product. Gumroad delivers the markdown file.
+# We just host the landing page + slot in the dispatcher.
+
+
+@app.get("/stack-audit-templates", response_class=HTMLResponse)
+async def stack_audit_templates_page(request: Request):
+    payment_url = os.getenv("STACK_AUDIT_TEMPLATES_PAYMENT_URL", "")
+    return templates.TemplateResponse("stack-audit-templates.html", {
+        "request": request,
+        "payment_url": payment_url,
+        "price": 19,
+    })
+
+
+# ─────────── ADMIN: cleanup test rows ──────────────────────────────
+
+
+@app.post("/admin/affiliate-service/delete")
+async def admin_delete_affiliate_service_orders(request: Request):
+    """Delete affiliate_service_orders rows by email pattern. Kenneth-only.
+    Used to clean up test rows like 'deploycheck1@aitoolsempire.co' that
+    accumulate during deploy probes. Body: {"email_like": "deploycheck%"}"""
+    pwd = request.query_params.get("pwd", "")
+    if pwd != os.getenv("ADMIN_PASSWORD", ""):
+        return JSONResponse({"ok": False, "error": "bad pwd"}, status_code=403)
+    body = await request.json()
+    pattern = (body.get("email_like") or "").strip()
+    if not pattern or "%" not in pattern:
+        return JSONResponse(
+            {"ok": False, "error": "email_like required and must contain % wildcard"},
+            status_code=400,
+        )
+    import sqlite3
+    conn = sqlite3.connect("data.db")
+    try:
+        cur = conn.execute(
+            "DELETE FROM affiliate_service_orders WHERE email LIKE ?",
+            (pattern,),
+        )
+        affiliate_n = cur.rowcount
+        cur2 = conn.execute(
+            "DELETE FROM subscribers WHERE email LIKE ? AND source LIKE 'affiliate_service%'",
+            (pattern,),
+        )
+        sub_n = cur2.rowcount
+        conn.commit()
+        return JSONResponse({
+            "ok": True,
+            "pattern": pattern,
+            "affiliate_service_orders_deleted": affiliate_n,
+            "subscribers_deleted": sub_n,
+        })
+    finally:
+        conn.close()
 
 
 @app.get("/admin/affiliate-service")

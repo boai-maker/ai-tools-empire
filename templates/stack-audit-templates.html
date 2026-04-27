@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Stack Audit Template Pack — $19 | AI Tools Empire</title>
+<meta name="description" content="The same prompts, scoring rubric, substitution map, and email templates AI Tools Empire uses to deliver $99 stack audits. Run it yourself in 20 minutes — $19 one-time.">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       background: #f7f9fc; color: #1a2438; line-height: 1.6; }
+.container { max-width: 720px; margin: 0 auto; padding: 48px 24px; }
+.hero h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 800; line-height: 1.15;
+           margin-bottom: 16px; letter-spacing: -0.02em; }
+.hero .price { display: inline-block; background: #c9a227; color: white;
+               padding: 6px 14px; border-radius: 999px; font-weight: 700;
+               font-size: 13px; letter-spacing: 0.08em; margin-bottom: 16px; }
+.hero p.lead { font-size: 18px; color: #4a5874; margin-bottom: 24px; }
+.points { background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+          padding: 24px 28px; margin: 32px 0; }
+.points h2 { font-size: 13px; letter-spacing: 0.15em; color: #6c84ad;
+             text-transform: uppercase; margin-bottom: 14px; }
+.points ul { list-style: none; }
+.points li { padding: 6px 0; font-size: 15px; }
+.points li::before { content: '✓'; color: #c9a227; font-weight: 700; margin-right: 10px; }
+
+.compare {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 24px 28px; margin: 32px 0;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+}
+.compare h3 { font-size: 14px; margin-bottom: 8px; color: #1a2438; }
+.compare p { font-size: 13px; color: #4a5874; margin-bottom: 4px; }
+.compare .price-line { font-size: 24px; font-weight: 800; margin: 8px 0; }
+.compare .col-self { border-right: 1px solid #e2e8f0; padding-right: 24px; }
+.compare .col-self .price-line { color: #c9a227; }
+.compare .col-done .price-line { color: #4a5874; }
+
+a.cta { display: block; width: 100%; text-align: center;
+        background: #c9a227; color: white; text-decoration: none;
+        padding: 16px 24px; border-radius: 8px; font-weight: 800;
+        font-size: 17px; margin: 24px 0; transition: background 0.2s;
+        letter-spacing: 0.02em; }
+a.cta:hover { background: #b08c1d; }
+a.cta.disabled { background: #cbd5e0; cursor: not-allowed; pointer-events: none; }
+
+footer { font-size: 13px; color: #6c84ad; margin-top: 48px; text-align: center; }
+footer a { color: #c9a227; text-decoration: none; }
+
+@media (max-width: 560px) {
+    .compare { grid-template-columns: 1fr; }
+    .compare .col-self { border-right: none; padding-right: 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 24px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="hero">
+        <span class="price">${{ price }} ONE-TIME · INSTANT DOWNLOAD</span>
+        <h1>The Stack Audit Template Pack.</h1>
+        <p class="lead">The exact prompts, scoring rubric, 30-tool substitution
+        map, and customer email templates we use to deliver $99 stack audits.
+        Run it on your own stack (or your clients) in 20 minutes.</p>
+    </div>
+
+    <div class="points">
+        <h2>What's in the pack</h2>
+        <ul>
+            <li>The audit prompt — paste into Claude or ChatGPT, get a structured 250-word audit back</li>
+            <li>The 3-axis scoring rubric — score each tool on time saved / revenue tied / switching cost</li>
+            <li>30+ tool substitution map (Jasper → Claude API, Grammarly → LanguageTool, Surfer → Frase, …)</li>
+            <li>Customer email template — what to send after the audit so the audit itself converts to a follow-up sale</li>
+            <li>7-day follow-up sequence — day 1, day 3, day 7 scripts</li>
+        </ul>
+    </div>
+
+    <div class="compare">
+        <div class="col-self">
+            <h3>Buy this pack ($19)</h3>
+            <p class="price-line">$19</p>
+            <p>Run audits yourself or sell them to clients. Markdown file, instant download.</p>
+        </div>
+        <div class="col-done">
+            <h3>Done-for-you audit ($99)</h3>
+            <p class="price-line">$99</p>
+            <p>Send us your stack, we deliver a custom audit within 24 hours.
+            <a href="/stack-audit" style="color:#10b981;">→ Stack Audit form</a></p>
+        </div>
+    </div>
+
+    {% if payment_url %}
+    <a href="{{ payment_url }}" target="_blank" rel="noopener" class="cta">Buy the Template Pack — $19 →</a>
+    {% else %}
+    <a href="#" class="cta disabled">Coming this week — set AFFILIATE_SERVICE wait, this template pack pmt URL not configured</a>
+    <p style="text-align:center;font-size:13px;color:#6c84ad;">Email kenneth@aitoolsempire.co for early access.</p>
+    {% endif %}
+
+    <footer>
+        Run by Kenneth at <a href="/">AI Tools Empire</a> ·
+        Not satisfied? <a href="mailto:kenneth@aitoolsempire.co">Email me</a> within 24h for a refund.
+    </footer>
+</div>
+</body>
+</html>
