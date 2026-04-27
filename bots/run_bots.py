@@ -17,22 +17,26 @@ from database.db import init_db
 # Import all bot run functions
 from bots.website_monitor import run_website_monitor
 from bots.content_extractor import run_content_extractor
-from bots.youtube_bot import run_youtube_bot
 from bots.blog_seo_bot import run_blog_seo_bot
 from bots.lead_capture_bot import run_lead_capture_bot, send_welcome_if_needed
 from bots.email_marketing_bot import run_email_marketing_bot
 from bots.affiliate_revenue_bot import run_affiliate_revenue_bot
 from bots.support_bot import run_support_bot
 from bots.analytics_bot import run_analytics_bot, run_daily_revenue_report
-from bots.competitor_bot import run_competitor_bot
+# KILL LIST 2026-04-27 — audit found these bots produced 0 revenue / 0 events.
+# Imports removed to free the scheduler. Files retained on disk for reference;
+# can be re-enabled if a use case emerges. Re-add the import + job + scheduler
+# entry to revive any one of them.
+#   - bots.competitor_bot       (no events, no revenue tied)
+#   - bots.reputation_bot       (no audience >100 subs, no signal)
+#   - bots.youtube_bot          (channel never crossed 500 subs, refresh token expired)
+#   - bots.youtube_shorts_bot   (sibling of above, never produced output)
+#   - bots.linkedin_monitor     (state stale 18+ days)
 from bots.offer_optimizer_bot import run_offer_optimizer_bot
-from bots.reputation_bot import run_reputation_bot
 from bots.admin_notification_bot import run_admin_notification_bot
 from bots.master_controller import run_health_check
 from bots.affiliate_gmail_monitor import run_affiliate_gmail_monitor
-from bots.youtube_shorts_bot import run_youtube_shorts_bot
 from bots.fiverr_responder import run_fiverr_responder
-from bots.linkedin_monitor import run_linkedin_monitor
 from bots.wholesale_monitor import run_wholesale_monitor
 from bots.wholesale_lead_hunter import run_wholesale_lead_hunter
 from bots.owner_outreach_bot import run_outreach as run_owner_outreach
@@ -115,8 +119,13 @@ def job_stack_audit_nudge():
     from bots.stack_audit_engine import nudge_awaiting_payment
     _safe_run(nudge_awaiting_payment, "stack_audit_nudge")
 
-def job_youtube_bot():
-    _safe_run(run_youtube_bot, "youtube_bot")
+
+def job_affiliate_service_nudge():
+    """Sister job — daily abandoned-cart reminder for $29 Affiliate Service."""
+    from bots.affiliate_service_nudge import nudge_awaiting_payment as aff_nudge
+    _safe_run(aff_nudge, "affiliate_service_nudge")
+
+# KILL LIST 2026-04-27 — job_youtube_bot removed (token expired, no audience)
 
 def job_email_sequence_only():
     """Runs only the sequence queue (not full newsletter)."""
@@ -127,33 +136,18 @@ def job_email_marketing_full():
     """Monday full newsletter run."""
     _safe_run(run_email_marketing_bot, "email_marketing_bot_full")
 
-def job_competitor_bot():
-    _safe_run(run_competitor_bot, "competitor_bot")
+# KILL LIST 2026-04-27 — job_competitor_bot, job_reputation_bot removed.
 
 def job_offer_optimizer_bot():
     _safe_run(run_offer_optimizer_bot, "offer_optimizer_bot")
 
-def job_reputation_bot():
-    _safe_run(run_reputation_bot, "reputation_bot")
-
 def job_affiliate_gmail_monitor():
     _safe_run(run_affiliate_gmail_monitor, "affiliate_gmail_monitor")
 
-def job_youtube_shorts():
-    # PAUSED — videos need visual overhaul before resuming auto-post
-    logger.info("YouTube Shorts PAUSED — waiting for visual upgrade")
-    return
-
-def job_youtube_long():
-    # PAUSED — videos need visual overhaul before resuming auto-post
-    logger.info("YouTube Long-Form PAUSED — waiting for visual upgrade")
-    return
+# KILL LIST 2026-04-27 — job_youtube_shorts, job_youtube_long, job_linkedin_monitor removed.
 
 def job_fiverr_responder():
     _safe_run(run_fiverr_responder, "fiverr_responder")
-
-def job_linkedin_monitor():
-    _safe_run(run_linkedin_monitor, "linkedin_monitor")
 
 def job_wholesale_monitor():
     _safe_run(run_wholesale_monitor, "wholesale_monitor")
@@ -198,11 +192,9 @@ def run_all_now():
         (run_lead_capture_bot, "lead_capture_bot"),
         (run_affiliate_revenue_bot, "affiliate_revenue_bot"),
         (run_analytics_bot, "analytics_bot"),
-        (run_youtube_bot, "youtube_bot"),
+        # KILL LIST 2026-04-27 — youtube_bot, competitor_bot, reputation_bot removed
         (run_support_bot, "support_bot"),
-        (run_competitor_bot, "competitor_bot"),
         (run_offer_optimizer_bot, "offer_optimizer_bot"),
-        (run_reputation_bot, "reputation_bot"),
         (run_email_marketing_bot, "email_marketing_bot"),
         (run_admin_notification_bot, "admin_notification_bot"),
     ]
@@ -413,17 +405,19 @@ if __name__ == "__main__":
         misfire_grace_time=1800,
     )
 
-    # Daily at 12:00 PM ET: YouTube bot
+    # Daily at 11:15 AM ET: same pattern for $29 Affiliate Service orders.
     scheduler.add_job(
-        job_youtube_bot,
+        job_affiliate_service_nudge,
         "cron",
-        hour=12,
-        minute=0,
-        id="youtube_bot",
-        name="YouTube Bot",
+        hour=11,
+        minute=15,
+        id="affiliate_service_nudge",
+        name="Affiliate Service abandoned-cart nudge",
         max_instances=1,
         misfire_grace_time=1800,
     )
+
+    # KILL LIST 2026-04-27 — YouTube bot scheduler entry removed.
 
     # Daily at 3:00 PM ET: email sequence queue only
     scheduler.add_job(
@@ -450,18 +444,7 @@ if __name__ == "__main__":
         misfire_grace_time=3600,
     )
 
-    # Weekly Sunday at 6:00 AM ET: competitor research
-    scheduler.add_job(
-        job_competitor_bot,
-        "cron",
-        day_of_week="sun",
-        hour=6,
-        minute=0,
-        id="competitor_bot",
-        name="Competitor Bot",
-        max_instances=1,
-        misfire_grace_time=3600,
-    )
+    # KILL LIST 2026-04-27 — competitor_bot scheduler entry removed.
 
     # Weekly Sunday at 6:30 AM ET: offer optimizer
     scheduler.add_job(
@@ -476,18 +459,7 @@ if __name__ == "__main__":
         misfire_grace_time=3600,
     )
 
-    # Weekly Sunday at 7:00 AM ET: reputation bot
-    scheduler.add_job(
-        job_reputation_bot,
-        "cron",
-        day_of_week="sun",
-        hour=7,
-        minute=0,
-        id="reputation_bot",
-        name="Reputation Bot",
-        max_instances=1,
-        misfire_grace_time=3600,
-    )
+    # KILL LIST 2026-04-27 — reputation_bot scheduler entry removed.
 
     # Every 2 hours: affiliate Gmail monitor (checks for approval emails)
     scheduler.add_job(
@@ -500,17 +472,7 @@ if __name__ == "__main__":
         misfire_grace_time=600,
     )
 
-    # Daily 12:00 PM ET: YouTube Short #1 (algorithm-optimal noon slot)
-    scheduler.add_job(
-        job_youtube_shorts,
-        "cron",
-        hour=12,
-        minute=0,
-        id="youtube_shorts_noon",
-        name="YouTube Shorts Noon",
-        max_instances=1,
-        misfire_grace_time=1800,
-    )
+    # KILL LIST 2026-04-27 — youtube_shorts scheduler entry removed.
 
     # Every hour 8AM-10PM ET: Fiverr Message Check (fast response = higher ranking)
     scheduler.add_job(
@@ -587,42 +549,7 @@ if __name__ == "__main__":
         misfire_grace_time=3600,
     )
 
-    # Every hour 8AM-11PM ET: LinkedIn Message Monitor
-    scheduler.add_job(
-        job_linkedin_monitor,
-        "cron",
-        hour="8-23",
-        minute=30,
-        id="linkedin_monitor_hourly",
-        name="LinkedIn Monitor (Hourly)",
-        max_instances=1,
-        misfire_grace_time=1800,
-    )
-
-    # Sunday 10:00 AM ET: Weekly Long-Form Video (4-min Education category)
-    scheduler.add_job(
-        job_youtube_long,
-        "cron",
-        day_of_week="sun",
-        hour=10,
-        minute=0,
-        id="youtube_long_weekly",
-        name="YouTube Long-Form (Weekly)",
-        max_instances=1,
-        misfire_grace_time=3600,
-    )
-
-    # Daily 7:00 PM ET: YouTube Short #2 (algorithm-optimal evening slot)
-    scheduler.add_job(
-        job_youtube_shorts,
-        "cron",
-        hour=19,
-        minute=0,
-        id="youtube_shorts_evening",
-        name="YouTube Shorts Evening",
-        max_instances=1,
-        misfire_grace_time=1800,
-    )
+    # KILL LIST 2026-04-27 — linkedin_monitor + youtube_long + youtube_shorts (evening) removed.
 
     # Twice daily 7:05 AM + 7:05 PM ET: Self-check audit (Kenny's 5-day autonomous mission)
     scheduler.add_job(
