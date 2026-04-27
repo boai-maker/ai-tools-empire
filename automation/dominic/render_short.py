@@ -271,20 +271,49 @@ def _build_shot_clip(
 
     sz = SAFE_ZONES.get(platform, SAFE_ZONES["tiktok"])
     font_pt = max(MIN_FONT_PT, int(shot.get("font_pt", 96)))
-    cap_path = tempfile.NamedTemporaryFile(suffix=".png", delete=False).name
-    _caption_image(
-        text      = shot.get("caption", ""),
-        width     = WIDTH,
-        font_pt   = font_pt,
-        section   = section,
-        safe_top  = sz["top"],
-        safe_bottom = sz["bottom"],
-        position  = shot.get("caption_position", "center"),
-    ).save(cap_path)
 
-    bg   = ImageClip(bg_path).with_duration(duration)
-    cap  = ImageClip(cap_path).with_duration(duration)
-    return CompositeVideoClip([bg, cap], size=(WIDTH, HEIGHT)).with_duration(duration)
+    # Kinetic captions: split shot text into 1–2 word chunks across its
+    # duration instead of one static caption (audit 2026-04-27 — single
+    # static block is the #1 amateur tell vs pro short-form). Each chunk
+    # flashes for ~0.8s. Falls back to single static if the helper fails
+    # (e.g. moviepy unavailable in some venv).
+    bg = ImageClip(bg_path).with_duration(duration)
+    layers: List = [bg]
+    caption_text = (shot.get("caption", "") or "").strip()
+    used_kinetic = False
+    if caption_text:
+        try:
+            from bots.shared.captions import text_to_captions, render_caption_overlay
+            chunks = text_to_captions(caption_text, duration, words_per_chunk=2)
+            kinetic_clips = render_caption_overlay(
+                chunks, video_size=(WIDTH, HEIGHT),
+                font_size=font_pt,
+                text_color=(255, 255, 255),
+                stroke_color=(0, 0, 0),
+                stroke_width=8,
+                y_pos=int(HEIGHT * 0.62),  # mid-low, above bottom safe-zone
+            )
+            if kinetic_clips:
+                layers.extend(kinetic_clips)
+                used_kinetic = True
+        except Exception as e:
+            log.debug(f"kinetic captions failed for shot, fallback to static: {e}")
+
+    if not used_kinetic and caption_text:
+        # Static-PNG fallback (legacy path)
+        cap_path = tempfile.NamedTemporaryFile(suffix=".png", delete=False).name
+        _caption_image(
+            text      = caption_text,
+            width     = WIDTH,
+            font_pt   = font_pt,
+            section   = section,
+            safe_top  = sz["top"],
+            safe_bottom = sz["bottom"],
+            position  = shot.get("caption_position", "center"),
+        ).save(cap_path)
+        layers.append(ImageClip(cap_path).with_duration(duration))
+
+    return CompositeVideoClip(layers, size=(WIDTH, HEIGHT)).with_duration(duration)
 
 
 def _narrate_sections(script_sections: Dict, work_dir: str) -> Tuple[str, float]:
