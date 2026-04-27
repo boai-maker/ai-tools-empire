@@ -1,0 +1,38 @@
+{
+  "_comment": "Personal info that gets auto-filled into every affiliate signup. Edit values once, autopilot reuses for all 14 programs.",
+
+  "first_name": "Kenneth",
+  "last_name": "Bonnet",
+  "full_name": "Kenneth Bonnet",
+  "email": "bosaibot@gmail.com",
+  "phone": "",
+  "company": "AI Tools Empire",
+  "company_url": "https://aitoolsempire.co",
+  "site_url": "https://aitoolsempire.co",
+  "blog_url": "https://aitoolsempire.co/articles",
+  "twitter_url": "https://x.com/AiTools_Empire",
+  "linkedin_url": "",
+  "youtube_url": "https://www.youtube.com/channel/UClgQP3jVdCFPHkN-JIOFINA",
+  "instagram_url": "",
+
+  "country": "United States",
+  "state": "Georgia",
+  "city": "Atlanta",
+  "address_line_1": "",
+  "postal_code": "",
+
+  "audience_size": "200-500 monthly visitors (3 weeks live)",
+  "monthly_visitors": "300",
+  "audience_description": "AI Tools Empire (aitoolsempire.co) — daily reviews + comparisons of AI tools for solopreneurs, content creators, freelancers. 96 published articles, growing weekly. Email list + Twitter audience. Honest reviews-first style.",
+  "promotional_methods": "Long-form blog reviews, comparison articles, social posts on X/Twitter, email newsletter, YouTube reviews",
+  "audience_categories": "AI tools, content creation, side hustle, small business, freelance, productivity",
+  "why_promote": "I review AI tools for a living. When a tool genuinely solves a real problem at a fair price, I write an honest review. Affiliate relationships let me link readers to tools I'd recommend regardless.",
+
+  "tax_form_status": "W9 not yet submitted — fill manually when prompted",
+  "payment_method": "PayPal",
+  "paypal_email": "kenneth.bonnet20@gmail.com",
+  "tax_id_format": "US SSN",
+
+  "bio_short": "I run AI Tools Empire (aitoolsempire.co), a daily AI-tool review site. 96 published articles. Email list growing.",
+  "bio_long": "Kenneth Bonnet — solopreneur running AI Tools Empire, a review site for AI tools used by content creators and small business owners. Site launched March 2026, 96 articles published, weekly cadence. Daily Twitter content via @AiTools_Empire. Active in indie hacker and side-hustle communities."
+}
