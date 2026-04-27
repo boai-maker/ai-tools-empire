@@ -263,10 +263,125 @@ def run_pending_audits(limit: int = 10) -> dict:
     return summary
 
 
+def nudge_awaiting_payment(min_hours: float = 12, max_days: float = 7,
+                            max_per_run: int = 5) -> dict:
+    """Abandoned-cart nudge for Stack Audit checkouts.
+
+    Targets two states:
+      - status='awaiting_payment' — they got the payment link but never paid
+      - status='pending'          — older legacy rows from before Gumroad wiring
+    Sends ONE reminder per row (idempotent via the `nudged_at` column we
+    add lazily) so we don't spam if the daily job runs twice.
+
+    From audit 2026-04-27: id=4 (5.8 days, pending) + id=7 (~26h,
+    awaiting_payment) had been sitting with zero follow-up. That's $198 of
+    realized revenue rotting in SQLite. Fix.
+    """
+    conn = get_conn()
+    conn.row_factory = sqlite3.Row
+    _ensure_columns(conn)
+
+    # Add `nudged_at` column lazily — don't fail if it already exists.
+    cur = conn.execute("PRAGMA table_info(stack_audits);")
+    cols = {r[1] for r in cur.fetchall()}
+    if "nudged_at" not in cols:
+        try:
+            conn.execute("ALTER TABLE stack_audits ADD COLUMN nudged_at TEXT")
+            conn.commit()
+        except sqlite3.OperationalError:
+            pass
+
+    payment_url = (os.environ.get("STACK_AUDIT_PAYMENT_URL")
+                   or "https://bosaibot.gumroad.com/l/euvbhm")
+
+    # Find candidates: not yet paid, > min_hours since submission,
+    # < max_days old (don't chase stuff from a month ago), not nudged yet.
+    rows = conn.execute(
+        """
+        SELECT id, email, submitted_at, status FROM stack_audits
+        WHERE status IN ('awaiting_payment','pending')
+          AND (nudged_at IS NULL OR nudged_at = '')
+          AND julianday('now') - julianday(submitted_at) BETWEEN ? AND ?
+        ORDER BY submitted_at ASC
+        LIMIT ?
+        """,
+        (min_hours / 24.0, max_days, max_per_run),
+    ).fetchall()
+
+    sent = 0
+    skipped = 0
+    for r in rows:
+        try:
+            html = _render_nudge_html(r["email"], payment_url, r["submitted_at"])
+            send_email(
+                to=r["email"],
+                subject="Your AI Stack Audit is ready (just need payment)",
+                body_html=html,
+            )
+            conn.execute(
+                "UPDATE stack_audits SET nudged_at=? WHERE id=?",
+                (datetime.now(timezone.utc).isoformat(), r["id"]),
+            )
+            conn.commit()
+            log_bot_event(BOT_NAME, "nudge_sent", f"id={r['id']} to {r['email']} ({r['status']})")
+            sent += 1
+        except Exception as e:
+            logger.exception(f"nudge failed id={r['id']}: {e}")
+            skipped += 1
+
+    conn.close()
+    summary = {"sent": sent, "skipped": skipped, "candidates": len(rows)}
+    if sent > 0:
+        notify(
+            f"📧 Stack Audit nudge: sent {sent} reminder(s) for abandoned checkouts.",
+            level="info", use_telegram=True,
+        )
+    if rows:
+        log_bot_event(BOT_NAME, "nudge_run", json.dumps(summary))
+    return summary
+
+
+def _render_nudge_html(email: str, payment_url: str, submitted_at: str) -> str:
+    """Friendly, short. One CTA. Doesn't leak that this is automated chase —
+    framed as a check-in that the audit is reserved and ready to run."""
+    return f"""
+<!DOCTYPE html>
+<html>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #1a2438; line-height: 1.5;">
+  <p>Hi —</p>
+  <p>Quick check-in. You started a <strong>$99 AI Stack Audit</strong> on
+  AI Tools Empire and we have your stack saved on our end, ready to run.</p>
+  <p>It looks like the checkout didn't go through. If you still want it,
+  here's the same link to complete it:</p>
+  <p style="text-align: center; margin: 28px 0;">
+    <a href="{payment_url}" style="display: inline-block; background: #10b981; color: #fff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 700; font-size: 16px;">Complete checkout — $99</a>
+  </p>
+  <p style="font-size: 14px; color: #4a5874;">As a reminder, you'll get a
+  full written audit of your AI stack within 24 hours: tools you're paying
+  for that you should drop, free alternatives we'd swap in, and three
+  workflows we'd add to claw back ~5 hours/week.</p>
+  <p style="font-size: 13px; color: #6c84ad; margin-top: 28px;">
+    If you're no longer interested, just ignore this — we won't bug you again.
+    Reply with any questions.
+  </p>
+  <p style="font-size: 13px; color: #6c84ad;">— Kenneth, AI Tools Empire</p>
+</body>
+</html>
+""".strip()
+
+
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s | %(levelname)-7s | %(name)s | %(message)s",
         datefmt="%H:%M:%S",
     )
-    print(json.dumps(run_pending_audits(), indent=2))
+    import argparse
+    p = argparse.ArgumentParser()
+    p.add_argument("--nudge", action="store_true",
+                   help="Run abandoned-cart nudges instead of audit delivery.")
+    args = p.parse_args()
+    if args.nudge:
+        print(json.dumps(nudge_awaiting_payment(), indent=2))
+    else:
+        print(json.dumps(run_pending_audits(), indent=2))

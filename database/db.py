@@ -300,9 +300,25 @@ def get_due_sequence_emails():
     return [dict(r) for r in rows]
 
 def mark_sequence_sent(queue_id: int):
+    """Mark a sequence_queue row as sent AND increment the matching
+    subscriber's emails_received counter. Until 2026-04-27 only the
+    queue side was being updated, so the dashboard always showed 0
+    emails_received per subscriber even when drip emails had fired
+    (audit identified 8 subs / 9 emails actually sent / 0 counted)."""
     conn = get_conn()
-    conn.execute("""
-        UPDATE sequence_queue SET sent=1, sent_at=CURRENT_TIMESTAMP WHERE id=?
-    """, (queue_id,))
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute(
+            "UPDATE sequence_queue SET sent=1, sent_at=CURRENT_TIMESTAMP WHERE id=?",
+            (queue_id,),
+        )
+        # Bump the subscriber counter in the same transaction.
+        conn.execute(
+            """
+            UPDATE subscribers SET emails_received = COALESCE(emails_received, 0) + 1
+            WHERE email = (SELECT email FROM sequence_queue WHERE id = ?)
+            """,
+            (queue_id,),
+        )
+        conn.commit()
+    finally:
+        conn.close()

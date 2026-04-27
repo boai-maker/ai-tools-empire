@@ -106,6 +106,15 @@ def job_stack_audit_engine():
     from bots.stack_audit_engine import run_pending_audits
     _safe_run(run_pending_audits, "stack_audit_engine")
 
+
+def job_stack_audit_nudge():
+    """Daily abandoned-cart reminder for unpaid Stack Audit checkouts.
+    Targets rows in `awaiting_payment` or legacy `pending` status that are
+    > 12h and < 7d old, sends ONE reminder, marks `nudged_at`. Audit
+    2026-04-27 found id=4 (5.8d old) + id=7 (~26h old) sitting unsent."""
+    from bots.stack_audit_engine import nudge_awaiting_payment
+    _safe_run(nudge_awaiting_payment, "stack_audit_nudge")
+
 def job_youtube_bot():
     _safe_run(run_youtube_bot, "youtube_bot")
 
@@ -389,6 +398,19 @@ if __name__ == "__main__":
         name="Stack Audit Engine ($99 product fulfilment)",
         max_instances=1,
         misfire_grace_time=600,
+    )
+
+    # Daily at 11:00 AM ET: nudge anyone whose Stack Audit checkout went
+    # cold (status=awaiting_payment > 12h, < 7d old). One reminder per row.
+    scheduler.add_job(
+        job_stack_audit_nudge,
+        "cron",
+        hour=11,
+        minute=0,
+        id="stack_audit_nudge",
+        name="Stack Audit abandoned-cart nudge",
+        max_instances=1,
+        misfire_grace_time=1800,
     )
 
     # Daily at 12:00 PM ET: YouTube bot

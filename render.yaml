@@ -87,6 +87,8 @@ services:
         value: https://bosaibot.gumroad.com/l/euvbhm
       - key: PIPELINE_HUNTER_PAYMENT_URL
         value: https://bosaibot.gumroad.com/l/bfapw
+      - key: AFFILIATE_SERVICE_PAYMENT_URL
+        sync: false
       - key: FLIKI_AFFILIATE_ID
         value: kenneth-bonnet
       - key: RYTR_AFFILIATE_ID

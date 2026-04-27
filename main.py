@@ -529,6 +529,219 @@ async def admin_run_pending_audits(request: Request):
     return JSONResponse({"ok": True, **run_pending_audits(limit=10)})
 
 
+# ─────────── $29 AI TOOL APPLICATION SERVICE ──────────────────────
+#
+# Productizes Kenneth's affiliate_autopilot pain. Customer pays $29, we apply
+# them to ~30 vetted AI affiliate programs on their behalf using the Playwright
+# co-pilot already at bots/affiliate_autopilot.py.
+#
+# Lifecycle: form submit → 'awaiting_payment' → Gumroad webhook flips to 'paid'
+# → Kenneth manually batches the applications (or future bot mode does).
+
+
+class AffiliateServiceRequest(BaseModel):
+    email:               str
+    name:                str = ""
+    site_url:            str
+    niche:               str = ""
+    audience_size:       str = ""        # free text, e.g. "5K newsletter, 12K twitter"
+    monthly_visitors:    str = ""
+    promotional_methods: str = ""
+    current_affiliates:  str = ""
+    notes:               str = ""
+    surface:             str = "affiliate_service_page"
+
+
+@app.get("/affiliate-service", response_class=HTMLResponse)
+async def affiliate_service_page(request: Request):
+    """Landing page + signup form for the $29 affiliate-application service."""
+    payment_url = os.getenv("AFFILIATE_SERVICE_PAYMENT_URL", "")
+    ctx = {
+        "request": request,
+        "payment_url": payment_url,
+        "price": 29,
+    }
+    return templates.TemplateResponse("affiliate-service.html", ctx)
+
+
+@app.post("/affiliate-service/submit")
+async def affiliate_service_submit(request: Request, body: AffiliateServiceRequest):
+    """Receive an order. Saves to DB, alerts Telegram, returns the Gumroad
+    payment URL. Webhook flips status to 'paid' on Gumroad sale."""
+    if _rate_limited(ip_hash(request), "affiliate_service", 5, 60):
+        return JSONResponse({"success": False, "message": "Too many requests."}, status_code=429)
+
+    email = body.email.lower().strip()
+    if not email or "@" not in email or "." not in email.split("@")[-1]:
+        return JSONResponse({"success": False, "message": "Invalid email"})
+    if not body.site_url or "." not in body.site_url:
+        return JSONResponse({"success": False, "message": "Site URL required"})
+
+    try:
+        import sqlite3, json as _json
+        conn = sqlite3.connect("data.db")
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS affiliate_service_orders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                name TEXT,
+                site_url TEXT NOT NULL,
+                niche TEXT,
+                audience_size TEXT,
+                monthly_visitors TEXT,
+                promotional_methods TEXT,
+                current_affiliates TEXT,
+                notes TEXT,
+                surface TEXT,
+                ip_hash TEXT,
+                status TEXT DEFAULT 'awaiting_payment',
+                submitted_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                paid_at TEXT,
+                gumroad_sale_id TEXT,
+                applications_started_at TEXT,
+                applications_finished_at TEXT,
+                applications_log TEXT,
+                report_sent_at TEXT,
+                nudged_at TEXT
+            )
+        """)
+        cur = conn.execute(
+            """INSERT INTO affiliate_service_orders
+               (email, name, site_url, niche, audience_size, monthly_visitors,
+                promotional_methods, current_affiliates, notes, surface, ip_hash, status)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'awaiting_payment')""",
+            (email, body.name.strip(), body.site_url.strip(), body.niche.strip(),
+             body.audience_size.strip(), body.monthly_visitors.strip(),
+             body.promotional_methods.strip(), body.current_affiliates.strip(),
+             body.notes.strip(), body.surface, ip_hash(request)),
+        )
+        order_id = cur.lastrowid
+        conn.execute(
+            "INSERT OR IGNORE INTO subscribers (email, name, source) VALUES (?, ?, ?)",
+            (email, body.name.strip(), "affiliate_service"),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        return JSONResponse({"success": False, "message": "Could not save order."}, status_code=500)
+
+    # Beehiiv push (single source of truth for newsletter list)
+    try:
+        from integrations.beehiiv import subscribe as bh_subscribe
+        bh_subscribe(
+            email,
+            utm_source="affiliate_service",
+            utm_medium="paid_product",
+            referring_site="aitoolsempire.co",
+            send_welcome_email=True,
+            reactivate_existing=True,
+            custom_fields={"affiliate_service_site": body.site_url[:200]},
+        )
+    except Exception:
+        pass
+
+    # Telegram heads-up so Kenneth knows a paying customer is incoming
+    try:
+        import requests as _rq
+        tok  = os.getenv("DOMINIC_TELEGRAM_TOKEN", "")
+        chat = os.getenv("DOMINIC_TELEGRAM_CHAT_ID", "")
+        if tok and chat:
+            msg = (f"💼 New $29 Affiliate Service order from {email}\n"
+                   f"Site: {body.site_url}\n"
+                   f"Niche: {body.niche or '—'}\n"
+                   f"Audience: {body.audience_size or '—'}\n"
+                   f"Status: awaiting_payment (id={order_id})")
+            _rq.post(
+                f"https://api.telegram.org/bot{tok}/sendMessage",
+                json={"chat_id": chat, "text": msg},
+                timeout=4,
+            )
+    except Exception:
+        pass
+
+    payment_url = os.getenv("AFFILIATE_SERVICE_PAYMENT_URL", "")
+    return JSONResponse({
+        "success": True,
+        "order_id": order_id,
+        "payment_url": payment_url,
+        "price": 29,
+        "message": "Order saved. Complete payment and we start applying within 48 hours.",
+    })
+
+
+@app.post("/affiliate-service/gumroad-webhook")
+async def affiliate_service_gumroad_webhook(request: Request):
+    """Flip the most recent awaiting_payment order for this email to 'paid'."""
+    try:
+        form = await request.form()
+        data = dict(form)
+        email = (data.get("email") or "").lower().strip()
+        sale_id = data.get("sale_id") or ""
+        expected_secret = os.getenv("GUMROAD_WEBHOOK_SECRET", "")
+        got_secret = request.headers.get("X-Gumroad-Signature") or data.get("url_params[secret]") or data.get("secret") or ""
+        if expected_secret and got_secret != expected_secret:
+            return JSONResponse({"ok": False, "error": "signature mismatch"}, status_code=401)
+        if not email:
+            return JSONResponse({"ok": False, "error": "missing email"}, status_code=400)
+
+        import sqlite3
+        conn = sqlite3.connect("data.db")
+        cur = conn.execute(
+            """UPDATE affiliate_service_orders
+               SET status='paid', paid_at=CURRENT_TIMESTAMP, gumroad_sale_id=?
+               WHERE email = ? AND status = 'awaiting_payment'""",
+            (sale_id, email),
+        )
+        marked = cur.rowcount
+        conn.commit()
+        conn.close()
+
+        # Tell Kenneth so he can start applying or the bot mode (Phase 2) can fire
+        try:
+            import requests as _rq
+            tok  = os.getenv("DOMINIC_TELEGRAM_TOKEN", "")
+            chat = os.getenv("DOMINIC_TELEGRAM_CHAT_ID", "")
+            if tok and chat and marked:
+                _rq.post(
+                    f"https://api.telegram.org/bot{tok}/sendMessage",
+                    json={"chat_id": chat,
+                          "text": f"💰 PAID $29 Affiliate Service: {email}. Start applying. Sale {sale_id}."},
+                    timeout=4,
+                )
+        except Exception:
+            pass
+
+        return JSONResponse({"ok": True, "marked_paid": marked})
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)[:200]}, status_code=500)
+
+
+@app.get("/admin/affiliate-service")
+async def admin_list_affiliate_service(request: Request):
+    """Admin view of all $29 service orders."""
+    pwd = request.query_params.get("pwd", "")
+    if pwd != os.getenv("ADMIN_PASSWORD", ""):
+        return JSONResponse({"ok": False, "error": "bad pwd"}, status_code=403)
+    import sqlite3
+    conn = sqlite3.connect("data.db")
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            """SELECT id, email, name, site_url, niche, status,
+                      submitted_at, paid_at, applications_finished_at, report_sent_at
+               FROM affiliate_service_orders
+               ORDER BY id DESC LIMIT 100"""
+        ).fetchall()
+        return JSONResponse({"ok": True, "orders": [dict(r) for r in rows]})
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)[:200]}, status_code=500)
+    finally:
+        conn.close()
+
+
+# ─────────── ADMIN: Stack Audit list ──────────────────────────────
+
+
 @app.get("/admin/stack-audits")
 async def admin_list_audits(request: Request):
     """Admin view: all stack audit submissions."""
@@ -837,19 +1050,38 @@ async def affiliate_redirect(tool_key: str, request: Request):
     }
     if tool_key not in aff_url_map:
         raise HTTPException(status_code=404, detail=f"Unknown tool: {tool_key}")
-    # Use affiliate URL if ID is set, else reroute to waitlist page (captures
-    # email + recommends a monetized alternative) instead of leaking the click
-    # to the merchant with no attribution.
+
+    # WHITELIST of programs we are CONFIRMED-active in. Audit 2026-04-27 found
+    # ~85% of 444 lifetime clicks went to programs with no real ID — the
+    # merchant strips empty/bogus refs and we never get attribution. From now
+    # on: anything not in this set → waitlist (captures email + offers active
+    # alternative). Add a key here ONLY after the program has paid out at
+    # least once or sent an explicit "you're approved" email.
+    ACTIVE_AFFILIATES = {"rytr", "fliki", "pictory", "elevenlabs", "fireflies", "murf"}
+
     aff_id = os.getenv(f"{tool_key.upper()}_AFFILIATE_ID", "")
     try:
         source = request.headers.get("referer", "direct")
         log_click(tool_key, source, ip_hash(request))
     except Exception:
         pass
+
+    if tool_key not in ACTIVE_AFFILIATES:
+        # Inactive program — capture lead instead of leaking the click.
+        return RedirectResponse(url=f"/waitlist/{tool_key}", status_code=302)
+
+    # Active program — go to merchant. Append UTM so attribution survives
+    # even when the affiliate cookie/referer is stripped.
+    def _with_utm(url: str) -> str:
+        sep = "&" if "?" in url else "?"
+        return f"{url}{sep}utm_source=ate&utm_medium={tool_key}&utm_campaign=affiliate"
+
     if aff_id and aff_id.startswith("http"):
-        return RedirectResponse(url=aff_id, status_code=302)
+        return RedirectResponse(url=_with_utm(aff_id), status_code=302)
     if aff_id and not aff_id.startswith("YOUR"):
-        return RedirectResponse(url=aff_url_map[tool_key], status_code=302)
+        return RedirectResponse(url=_with_utm(aff_url_map[tool_key]), status_code=302)
+    # Whitelisted but no ID configured — still go to waitlist rather than
+    # leaking. (Shouldn't happen if .env is right.)
     return RedirectResponse(url=f"/waitlist/{tool_key}", status_code=302)
 
 
