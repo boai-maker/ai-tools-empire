@@ -105,6 +105,44 @@ def _gradient_background_fast(
     return Image.fromarray(arr, mode="RGB")
 
 
+def _unsplash_background(query: str, w: int = WIDTH, h: int = HEIGHT) -> Optional[str]:
+    """Real photo fallback. Per CLAUDE.md §8b we want REAL imagery rather than
+    synthetic gradients. Tries multiple no-auth sources in order:
+
+      1. LoremFlickr — keyword-matched photo from Flickr Creative Commons
+      2. Picsum Photos — random photo (no keyword match, but still real photo)
+
+    Returns a downloaded JPG path on success, None on failure. Cached by
+    (query, w, h) hash so repeat shots don't re-download.
+    """
+    import hashlib
+    import requests as _rq
+    from urllib.parse import quote
+    cache_dir = "/Users/kennethbonnet/ai-tools-empire/bots/state/image_cache"
+    os.makedirs(cache_dir, exist_ok=True)
+    key = hashlib.sha256(f"photo::{query}::{w}::{h}".encode()).hexdigest()[:16]
+    cached = os.path.join(cache_dir, f"photo_{key}.jpg")
+    if os.path.exists(cached) and os.path.getsize(cached) > 1024:
+        return cached
+
+    # LoremFlickr keyword-matched photo (Flickr CC). Use comma for multiple tags.
+    candidates = [
+        f"https://loremflickr.com/{w}/{h}/{quote(query.replace(' ', ','))}",
+        # Last-resort: random Picsum photo (still real photography, satisfies §8b)
+        f"https://picsum.photos/seed/{quote(query)[:30]}/{w}/{h}",
+    ]
+    for url in candidates:
+        try:
+            r = _rq.get(url, timeout=12, allow_redirects=True)
+            if r.ok and len(r.content) > 1024:
+                with open(cached, "wb") as f:
+                    f.write(r.content)
+                return cached
+        except Exception as e:
+            log.debug(f"photo fetch failed for {url}: {e}")
+    return None
+
+
 def _caption_image(
     text: str, width: int, font_pt: int,
     section: str,
@@ -181,39 +219,52 @@ def _caption_image(
 def _build_shot_clip(
     shot: Dict, platform: str,
     *,
-    use_ai_images: bool = False,
+    use_ai_images: bool = True,    # default flipped 2026-04-27 per CLAUDE.md §8b
     character_anchor: str = "",
     base_seed: Optional[int] = None,
 ) -> VideoClip:
     """
-    Compose one shot: (AI image OR gradient) + caption, for shot duration.
+    Compose one shot: (AI image OR Unsplash fallback OR gradient) + caption.
 
-    When use_ai_images=True, tries to generate an image via Pollinations using
-    the shot's b_roll tag as the prompt. Falls back to gradient if gen fails.
+    Background fallback chain (per CLAUDE.md §8b — never solid-color):
+      1. Pollinations AI image keyed off shot.b_roll
+      2. Unsplash source.unsplash.com (no auth) keyed off the same tag
+      3. Gradient (last resort — flagged in log)
     """
     duration = max(0.5, float(shot.get("end_s", 2)) - float(shot.get("start_s", 0)))
     section  = shot.get("section", "payoff")
     top_rgb, bot_rgb = SECTION_COLORS.get(section, SECTION_COLORS["payoff"])
 
     bg_path: Optional[str] = None
-    if use_ai_images:
-        # Turn b_roll tag into a real image prompt — tags like "cat_sleeping" → "cat sleeping"
-        b_roll_tag = shot.get("b_roll", "") or ""
-        base_prompt = b_roll_tag.replace("_", " ").replace("-", " ").strip()
-        if base_prompt:
-            caption_hint = shot.get("caption", "")
-            full = f"{character_anchor}, {base_prompt}" if character_anchor else base_prompt
-            if caption_hint:
-                full = f"{full} — vibe: {caption_hint[:60]}"
-            gen_path = generate_image(
-                full,
-                seed=base_seed,
-                width=WIDTH, height=HEIGHT,
-            )
-            if gen_path and os.path.exists(gen_path):
-                bg_path = gen_path
+    b_roll_tag = shot.get("b_roll", "") or ""
+    base_prompt = b_roll_tag.replace("_", " ").replace("-", " ").strip()
+
+    # 1) Pollinations AI image (fast, no auth, stylised)
+    if use_ai_images and base_prompt:
+        caption_hint = shot.get("caption", "")
+        full = f"{character_anchor}, {base_prompt}" if character_anchor else base_prompt
+        if caption_hint:
+            full = f"{full} — vibe: {caption_hint[:60]}"
+        gen_path = generate_image(
+            full,
+            seed=base_seed,
+            width=WIDTH, height=HEIGHT,
+        )
+        if gen_path and os.path.exists(gen_path):
+            bg_path = gen_path
+
+    # 2) Unsplash source endpoint (no auth) — gives REAL photos when AI fails.
+    #    Per CLAUDE.md §8b, real photography beats synthetic when stylised AI
+    #    isn't critical. Keyed off the same b_roll tag.
+    if not bg_path and base_prompt:
+        bg_path = _unsplash_background(base_prompt)
 
     if not bg_path:
+        # Last resort — gradient. Logged so we know §8b was almost violated.
+        try:
+            log.warning(f"§8b fallback: no AI/Unsplash image for tag={b_roll_tag!r} — using gradient")
+        except Exception:
+            pass
         bg_img = _gradient_background_fast(WIDTH, HEIGHT, top_rgb, bot_rgb)
         bg_path = tempfile.NamedTemporaryFile(suffix=".png", delete=False).name
         bg_img.save(bg_path)
@@ -288,17 +339,20 @@ def render_from_pipeline(
     pipeline_result: Dict,
     output_path: str,
     *,
-    use_ai_images: bool = False,
+    use_ai_images: bool = True,    # default flipped 2026-04-27 per CLAUDE.md §8b
     character_anchor: str = "",
 ) -> Optional[str]:
     """
     Render a 9:16 Short from a pipeline result. Returns the output MP4 path
     on success, None on failure. Safe zones, cadence, captions all enforced.
 
-    When use_ai_images=True, backgrounds are generated via Pollinations.ai
-    using each shot's b_roll tag. `character_anchor` is prepended to every
-    image prompt to keep the subject visually consistent (useful for
-    faceless-story Shorts with a recurring character).
+    Background fallback chain (per CLAUDE.md §8b — never solid-color):
+      1. Pollinations AI image (if use_ai_images=True, default)
+      2. Unsplash source.unsplash.com (no auth)
+      3. Gradient (last resort, logs §8b warning)
+
+    `character_anchor` is prepended to every Pollinations prompt for
+    visual consistency across the whole video.
     """
     script  = pipeline_result.get("script")  or {}
     visual  = pipeline_result.get("visual")  or {}

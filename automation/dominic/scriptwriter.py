@@ -84,6 +84,56 @@ def _post_validate(result: Dict) -> Dict:
     return result
 
 
+# ─── Hook scoring (ported from bots/video_engine.py 2026-04-27) ──────
+#
+# Audit found scriptwriter generated 5 hook variants but trusted the LLM
+# to self-pick `chosen_hook_index`. Models pick lazily — often the first
+# variant or one with a question mark. This deterministic post-LLM rerank
+# applies the same rubric MrBeast/TikTok hook-research repos converge on:
+# specific detail + tight word count + first-person proof + tool name.
+
+def _score_hook(text: str) -> float:
+    """0.0–1.0 score. Higher = better hook for short-form."""
+    if not text:
+        return 0.0
+    s = 0.0
+    wc = _word_count(text)
+    if wc <= 8:                              s += 0.25  # speakable in <3s
+    elif wc <= 11:                           s += 0.10
+    if any(c.isdigit() for c in text):       s += 0.20  # specific number
+    if re.search(r"\b(I|me|my)\b", text):    s += 0.10  # first-person proof
+    pattern_words = ("actually", "stop", "wrong", "catch", "one", "secret",
+                     "nobody", "everyone", "before")
+    if any(w in text.lower() for w in pattern_words): s += 0.10
+    if not _contains_banned(text):           s += 0.20  # no banned phrases
+    if "?" not in text[:20]:                 s += 0.05  # avoid lazy questions
+    tool_names = ("claude", "chatgpt", "gpt", "cursor", "midjourney",
+                  "elevenlabs", "pictory", "fliki", "rytr", "gemini", "fireflies")
+    if any(t in text.lower() for t in tool_names): s += 0.10
+    return round(s, 3)
+
+
+def _rerank_hooks(parsed: Dict) -> Dict:
+    """Override the LLM's chosen_hook_index with the highest-scored variant."""
+    variants = parsed.get("hook_variants") or []
+    if len(variants) < 2:
+        return parsed
+    scores = [_score_hook((v or {}).get("text", "")) for v in variants]
+    best_idx = max(range(len(scores)), key=lambda i: scores[i])
+    parsed["hook_scores"] = scores
+    if parsed.get("chosen_hook_index") != best_idx:
+        parsed["chosen_hook_reasoning"] = (
+            f"Reranked: variant #{best_idx} scored {scores[best_idx]:.2f} "
+            f"(was variant #{parsed.get('chosen_hook_index', 0)} at "
+            f"{scores[parsed.get('chosen_hook_index', 0)]:.2f})"
+        )
+        parsed["chosen_hook_index"] = best_idx
+        # Update script_sections.hook to match the new winner
+        if isinstance(parsed.get("script_sections"), dict):
+            parsed["script_sections"]["hook"] = variants[best_idx].get("text", "")
+    return parsed
+
+
 def write(
     topic: str,
     persona: str = "A",
@@ -122,6 +172,7 @@ def write(
             "error":                "parse_failed",
         }
 
+    parsed = _rerank_hooks(parsed)
     result = _post_validate(parsed)
 
     if result.get("banned_hits"):
