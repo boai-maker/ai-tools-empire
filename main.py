@@ -486,12 +486,10 @@ async def stack_audit_submit(request: Request, body: StackAuditRequest):
 
 # product slug → (handler-name, marker function path)
 GUMROAD_PRODUCT_HANDLERS = {
-    "euvbhm": "stack_audit",          # $99 Stack Audit
-    "jpsrxd": "affiliate_service",    # $29 AI Affiliate Application Service
-    "bfapw":  "pipeline_hunter",      # $47 Pipeline Hunter (no auto-fulfilment yet)
-    # $19 Stack Audit Template Pack — slug TBD when Kenneth creates the
-    # Gumroad product. Until then, dispatcher Telegrams "unknown slug" and
-    # we manually add the slug → "stack_audit_templates" entry here.
+    "euvbhm": "stack_audit",            # $99 Stack Audit
+    "jpsrxd": "affiliate_service",      # $29 AI Affiliate Application Service
+    "bfapw":  "pipeline_hunter",        # $47 Pipeline Hunter (no auto-fulfilment yet)
+    "qszeoy": "stack_audit_templates",  # $19 Stack Audit Template Pack
 }
 
 
