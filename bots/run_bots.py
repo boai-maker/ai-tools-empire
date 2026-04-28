@@ -44,6 +44,8 @@ from bots.tracerfy_lead_bot import run as run_tracerfy_leads
 from bots.surplus_funds.runner import run_surplus_funds
 from bots.self_check import run as run_self_check
 from bots.gmail_telegram_forwarder import run as run_gmail_forwarder
+from bots.ih_dm_monitor import run as run_ih_dm_monitor
+from bots.ih_dm_drafter import run as run_ih_dm_drafter
 
 # Configure logging
 logging.basicConfig(
@@ -163,6 +165,12 @@ def job_tracerfy_leads():
 
 def job_surplus_funds():
     _safe_run(run_surplus_funds, "surplus_funds")
+
+def job_ih_dm_monitor():
+    _safe_run(run_ih_dm_monitor, "ih_dm_monitor")
+
+def job_ih_dm_drafter():
+    _safe_run(run_ih_dm_drafter, "ih_dm_drafter")
 
 
 def on_job_error(event):
@@ -562,6 +570,28 @@ if __name__ == "__main__":
         name="Self-Check (twice daily audit)",
         max_instances=1,
         misfire_grace_time=1800,
+    )
+
+    # Every 5 min: IH DM monitor — scan inbox for new IH DM notifications
+    scheduler.add_job(
+        job_ih_dm_monitor,
+        "cron",
+        minute="*/5",
+        id="ih_dm_monitor",
+        name="Indie Hackers DM Monitor",
+        max_instances=1,
+        misfire_grace_time=300,
+    )
+
+    # Every 5 min, +1 min offset: IH DM drafter — draft replies for pending rows
+    scheduler.add_job(
+        job_ih_dm_drafter,
+        "cron",
+        minute="1-59/5",
+        id="ih_dm_drafter",
+        name="Indie Hackers DM Drafter",
+        max_instances=1,
+        misfire_grace_time=300,
     )
 
     # Every 10 min: Gmail → Telegram forwarder (Kenny can't access bosaibot@gmail.com)

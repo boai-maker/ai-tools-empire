@@ -637,6 +637,127 @@ async def admin_run_pending_audits(request: Request):
     return JSONResponse({"ok": True, **run_pending_audits(limit=10)})
 
 
+# ─────────── INDIE HACKERS DM AUTORESPONDER ───────────────────────
+#
+# Admin surface for the IH DM pipeline (bots/ih_dm_monitor + drafter + sender).
+# All endpoints gated by ADMIN_PASSWORD via ?pwd=...
+def _ih_check_pwd(request: Request) -> bool:
+    pwd = request.query_params.get("pwd", "")
+    return pwd == os.getenv("ADMIN_PASSWORD", "") and bool(pwd)
+
+
+@app.get("/api/ih-dm/list")
+async def ih_dm_list(request: Request):
+    from fastapi.responses import JSONResponse
+    if not _ih_check_pwd(request):
+        return JSONResponse({"ok": False, "error": "bad pwd"}, status_code=403)
+    from database.db import get_conn
+    conn = get_conn()
+    rows = conn.execute(
+        "SELECT id, sender, message_text, thread_url, status, draft_reply, draft_confidence, "
+        "received_at, approved_at, sent_at, send_method "
+        "FROM ih_dms WHERE status IN ('pending','drafted','approved') "
+        "ORDER BY id DESC LIMIT 100"
+    ).fetchall()
+    conn.close()
+    return JSONResponse({"ok": True, "dms": [dict(r) for r in rows]})
+
+
+@app.get("/api/ih-dm/approve/{dm_id}")
+async def ih_dm_approve(dm_id: int, request: Request):
+    from fastapi.responses import JSONResponse
+    if not _ih_check_pwd(request):
+        return JSONResponse({"ok": False, "error": "bad pwd"}, status_code=403)
+    from database.db import get_conn
+    conn = get_conn()
+    conn.execute(
+        "UPDATE ih_dms SET status='approved', approved_at=CURRENT_TIMESTAMP WHERE id=?",
+        (dm_id,),
+    )
+    conn.commit()
+    conn.close()
+    # Trigger send immediately
+    try:
+        from bots.ih_dm_sender import send_one
+        result = send_one(dm_id, auto=False)
+    except Exception as e:
+        result = {"sent": False, "error": str(e)[:200]}
+    return JSONResponse({"ok": True, "dm_id": dm_id, "send_result": result})
+
+
+@app.post("/api/ih-dm/edit/{dm_id}")
+async def ih_dm_edit(dm_id: int, request: Request):
+    from fastapi.responses import JSONResponse
+    if not _ih_check_pwd(request):
+        return JSONResponse({"ok": False, "error": "bad pwd"}, status_code=403)
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    new_reply = (body.get("reply") or "").strip()
+    if not new_reply:
+        return JSONResponse({"ok": False, "error": "missing reply"}, status_code=400)
+    from database.db import get_conn
+    conn = get_conn()
+    conn.execute(
+        "UPDATE ih_dms SET draft_reply=?, status='approved', approved_at=CURRENT_TIMESTAMP WHERE id=?",
+        (new_reply, dm_id),
+    )
+    conn.commit()
+    conn.close()
+    try:
+        from bots.ih_dm_sender import send_one
+        result = send_one(dm_id, auto=False)
+    except Exception as e:
+        result = {"sent": False, "error": str(e)[:200]}
+    return JSONResponse({"ok": True, "dm_id": dm_id, "send_result": result})
+
+
+@app.post("/api/ih-dm/ignore/{dm_id}")
+async def ih_dm_ignore(dm_id: int, request: Request):
+    from fastapi.responses import JSONResponse
+    if not _ih_check_pwd(request):
+        return JSONResponse({"ok": False, "error": "bad pwd"}, status_code=403)
+    from database.db import get_conn
+    conn = get_conn()
+    conn.execute("UPDATE ih_dms SET status='ignored' WHERE id=?", (dm_id,))
+    conn.commit()
+    conn.close()
+    return JSONResponse({"ok": True, "dm_id": dm_id})
+
+
+@app.get("/api/ih-dm/stats")
+async def ih_dm_stats(request: Request):
+    from fastapi.responses import JSONResponse
+    if not _ih_check_pwd(request):
+        return JSONResponse({"ok": False, "error": "bad pwd"}, status_code=403)
+    from database.db import get_conn
+    conn = get_conn()
+    counts = {r[0]: r[1] for r in conn.execute(
+        "SELECT status, COUNT(*) FROM ih_dms GROUP BY status"
+    ).fetchall()}
+    last_24h = conn.execute(
+        "SELECT COUNT(*) FROM ih_dms WHERE received_at >= datetime('now','-1 day')"
+    ).fetchone()[0]
+    sent_24h = conn.execute(
+        "SELECT COUNT(*) FROM ih_dms WHERE sent_at >= datetime('now','-1 day')"
+    ).fetchone()[0]
+    auto_sent_24h = conn.execute(
+        "SELECT COUNT(*) FROM ih_dms WHERE sent_at >= datetime('now','-1 day') AND send_method LIKE 'auto%'"
+    ).fetchone()[0]
+    conn.close()
+    return JSONResponse({
+        "ok": True,
+        "counts": counts,
+        "received_last_24h": last_24h,
+        "sent_last_24h": sent_24h,
+        "auto_sent_last_24h": auto_sent_24h,
+        "auto_send_threshold": float(os.getenv("IH_DM_AUTO_SEND_THRESHOLD", "0.85")),
+        "auto_send_hourly_cap": int(os.getenv("IH_DM_AUTO_SEND_HOURLY_CAP", "5")),
+        "auto_send_daily_cap": int(os.getenv("IH_DM_AUTO_SEND_DAILY_CAP", "20")),
+    })
+
+
 # ─────────── $29 AI TOOL APPLICATION SERVICE ──────────────────────
 #
 # Productizes Kenneth's affiliate_autopilot pain. Customer pays $29, we apply
