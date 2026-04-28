@@ -395,29 +395,27 @@ if __name__ == "__main__":
         misfire_grace_time=600,
     )
 
-    # Daily at 11:00 AM ET: nudge anyone whose Stack Audit checkout went
-    # cold (status=awaiting_payment > 12h, < 7d old). One reminder per row.
+    # 4x/day during waking hours: 9am, 1pm, 5pm, 9pm ET. Each cron run
+    # emails any awaiting-payment row that is >3h and <7d old AND has no
+    # nudged_at timestamp yet. nudged_at gate means each row gets at most
+    # ONE reminder, so adding more daily slots only helps newer abandoned
+    # carts (no spam risk for older rows).
     scheduler.add_job(
-        job_stack_audit_nudge,
-        "cron",
-        hour=11,
-        minute=0,
+        job_stack_audit_nudge, "cron",
+        hour="9,13,17,21", minute=0,
         id="stack_audit_nudge",
-        name="Stack Audit abandoned-cart nudge",
-        max_instances=1,
-        misfire_grace_time=1800,
+        name="Stack Audit abandoned-cart nudge (4x/day)",
+        max_instances=1, misfire_grace_time=1800,
     )
 
-    # Daily at 11:15 AM ET: same pattern for $29 Affiliate Service orders.
+    # Same pattern for $29 Affiliate Service, offset by 5 min so they
+    # don't slam the same SMTP relay simultaneously.
     scheduler.add_job(
-        job_affiliate_service_nudge,
-        "cron",
-        hour=11,
-        minute=15,
+        job_affiliate_service_nudge, "cron",
+        hour="9,13,17,21", minute=5,
         id="affiliate_service_nudge",
-        name="Affiliate Service abandoned-cart nudge",
-        max_instances=1,
-        misfire_grace_time=1800,
+        name="Affiliate Service abandoned-cart nudge (4x/day)",
+        max_instances=1, misfire_grace_time=1800,
     )
 
     # KILL LIST 2026-04-27 — YouTube bot scheduler entry removed.

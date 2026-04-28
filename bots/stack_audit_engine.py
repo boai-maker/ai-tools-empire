@@ -263,49 +263,63 @@ def run_pending_audits(limit: int = 10) -> dict:
     return summary
 
 
-def nudge_awaiting_payment(min_hours: float = 12, max_days: float = 7,
-                            max_per_run: int = 5) -> dict:
+def nudge_awaiting_payment(min_hours: float = 3, max_days: float = 7,
+                            max_per_run: int = 5,
+                            max_nudges_per_row: int = 3,
+                            min_hours_between_nudges: float = 12) -> dict:
     """Abandoned-cart nudge for Stack Audit checkouts.
 
-    Targets two states:
-      - status='awaiting_payment' — they got the payment link but never paid
-      - status='pending'          — older legacy rows from before Gumroad wiring
-    Sends ONE reminder per row (idempotent via the `nudged_at` column we
-    add lazily) so we don't spam if the daily job runs twice.
+    Sends UP TO 3 reminders per row, spaced 12+ hours apart. Once a
+    customer either pays (status flips to 'paid') OR hits the 3-nudge cap
+    OR the row is older than max_days, no more reminders fire.
+
+    Schema: `nudged_at` (timestamp of last nudge) + `nudge_count` (int).
+    Both lazily ALTERed in if missing. Eligibility:
+      - status in (awaiting_payment, pending)
+      - >= min_hours since submission
+      - <= max_days old
+      - nudge_count < max_nudges_per_row
+      - last nudge was either never OR >= min_hours_between_nudges ago
 
     From audit 2026-04-27: id=4 (5.8 days, pending) + id=7 (~26h,
-    awaiting_payment) had been sitting with zero follow-up. That's $198 of
-    realized revenue rotting in SQLite. Fix.
+    awaiting_payment) had been sitting with zero follow-up.
     """
     conn = get_conn()
     conn.row_factory = sqlite3.Row
     _ensure_columns(conn)
 
-    # Add `nudged_at` column lazily — don't fail if it already exists.
+    # Add nudge tracking columns lazily — don't fail if they already exist.
     cur = conn.execute("PRAGMA table_info(stack_audits);")
     cols = {r[1] for r in cur.fetchall()}
-    if "nudged_at" not in cols:
-        try:
-            conn.execute("ALTER TABLE stack_audits ADD COLUMN nudged_at TEXT")
-            conn.commit()
-        except sqlite3.OperationalError:
-            pass
+    for col_name, col_type in [("nudged_at", "TEXT"), ("nudge_count", "INTEGER DEFAULT 0")]:
+        if col_name not in cols:
+            try:
+                conn.execute(f"ALTER TABLE stack_audits ADD COLUMN {col_name} {col_type}")
+                conn.commit()
+            except sqlite3.OperationalError:
+                pass
 
     payment_url = (os.environ.get("STACK_AUDIT_PAYMENT_URL")
                    or "https://bosaibot.gumroad.com/l/euvbhm")
 
-    # Find candidates: not yet paid, > min_hours since submission,
-    # < max_days old (don't chase stuff from a month ago), not nudged yet.
+    cooldown_days = min_hours_between_nudges / 24.0
+
+    # Eligibility: time-since-submit window + nudge cap + cooldown since last nudge.
     rows = conn.execute(
         """
-        SELECT id, email, submitted_at, status FROM stack_audits
+        SELECT id, email, submitted_at, status,
+               COALESCE(nudge_count, 0) AS n_count,
+               nudged_at
+        FROM stack_audits
         WHERE status IN ('awaiting_payment','pending')
-          AND (nudged_at IS NULL OR nudged_at = '')
           AND julianday('now') - julianday(submitted_at) BETWEEN ? AND ?
+          AND COALESCE(nudge_count, 0) < ?
+          AND (nudged_at IS NULL OR nudged_at = ''
+               OR julianday('now') - julianday(nudged_at) >= ?)
         ORDER BY submitted_at ASC
         LIMIT ?
         """,
-        (min_hours / 24.0, max_days, max_per_run),
+        (min_hours / 24.0, max_days, max_nudges_per_row, cooldown_days, max_per_run),
     ).fetchall()
 
     sent = 0
@@ -319,11 +333,13 @@ def nudge_awaiting_payment(min_hours: float = 12, max_days: float = 7,
                 body_html=html,
             )
             conn.execute(
-                "UPDATE stack_audits SET nudged_at=? WHERE id=?",
+                "UPDATE stack_audits SET nudged_at=?, "
+                "nudge_count=COALESCE(nudge_count,0)+1 WHERE id=?",
                 (datetime.now(timezone.utc).isoformat(), r["id"]),
             )
             conn.commit()
-            log_bot_event(BOT_NAME, "nudge_sent", f"id={r['id']} to {r['email']} ({r['status']})")
+            log_bot_event(BOT_NAME, "nudge_sent",
+                          f"id={r['id']} to {r['email']} ({r['status']}) #{r['n_count']+1}")
             sent += 1
         except Exception as e:
             logger.exception(f"nudge failed id={r['id']}: {e}")

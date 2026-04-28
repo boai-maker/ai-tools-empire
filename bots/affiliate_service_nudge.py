@@ -45,34 +45,47 @@ def _render_nudge_html(email: str, payment_url: str, site_url: str) -> str:
 </body></html>""".strip()
 
 
-def nudge_awaiting_payment(min_hours: float = 12, max_days: float = 7,
-                            max_per_run: int = 5) -> dict:
+def nudge_awaiting_payment(min_hours: float = 3, max_days: float = 7,
+                            max_per_run: int = 5,
+                            max_nudges_per_row: int = 3,
+                            min_hours_between_nudges: float = 12) -> dict:
+    """Up to 3 reminders per row, 12+ hours apart. Sister of
+    bots/stack_audit_engine.py:nudge_awaiting_payment."""
     conn = get_conn()
     conn.row_factory = sqlite3.Row
 
-    # Add `nudged_at` column lazily if missing
+    # Add nudge tracking columns lazily.
     cols = {r[1] for r in conn.execute("PRAGMA table_info(affiliate_service_orders);").fetchall()}
-    if "nudged_at" not in cols:
-        try:
-            conn.execute("ALTER TABLE affiliate_service_orders ADD COLUMN nudged_at TEXT")
-            conn.commit()
-        except sqlite3.OperationalError:
-            pass
+    for col_name, col_type in [("nudged_at", "TEXT"), ("nudge_count", "INTEGER DEFAULT 0")]:
+        if col_name not in cols:
+            try:
+                conn.execute(
+                    f"ALTER TABLE affiliate_service_orders ADD COLUMN {col_name} {col_type}"
+                )
+                conn.commit()
+            except sqlite3.OperationalError:
+                pass
 
     payment_url = os.environ.get(
         "AFFILIATE_SERVICE_PAYMENT_URL", "https://bosaibot.gumroad.com/l/jpsrxd"
     )
 
+    cooldown_days = min_hours_between_nudges / 24.0
+
     rows = conn.execute(
         """
-        SELECT id, email, site_url, submitted_at FROM affiliate_service_orders
+        SELECT id, email, site_url, submitted_at,
+               COALESCE(nudge_count, 0) AS n_count
+        FROM affiliate_service_orders
         WHERE status = 'awaiting_payment'
-          AND (nudged_at IS NULL OR nudged_at = '')
           AND julianday('now') - julianday(submitted_at) BETWEEN ? AND ?
+          AND COALESCE(nudge_count, 0) < ?
+          AND (nudged_at IS NULL OR nudged_at = ''
+               OR julianday('now') - julianday(nudged_at) >= ?)
         ORDER BY submitted_at ASC
         LIMIT ?
         """,
-        (min_hours / 24.0, max_days, max_per_run),
+        (min_hours / 24.0, max_days, max_nudges_per_row, cooldown_days, max_per_run),
     ).fetchall()
 
     sent = 0
@@ -85,11 +98,13 @@ def nudge_awaiting_payment(min_hours: float = 12, max_days: float = 7,
                 body_html=html,
             )
             conn.execute(
-                "UPDATE affiliate_service_orders SET nudged_at=? WHERE id=?",
+                "UPDATE affiliate_service_orders SET nudged_at=?, "
+                "nudge_count=COALESCE(nudge_count,0)+1 WHERE id=?",
                 (datetime.now(timezone.utc).isoformat(), r["id"]),
             )
             conn.commit()
-            log_bot_event(BOT_NAME, "nudge_sent", f"id={r['id']} to {r['email']}")
+            log_bot_event(BOT_NAME, "nudge_sent",
+                          f"id={r['id']} to {r['email']} #{r['n_count']+1}")
             sent += 1
         except Exception as e:
             logger.exception(f"affiliate_service nudge failed id={r['id']}: {e}")
