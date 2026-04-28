@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline Hunter — $47 | The AI cold-email agent in one Python file</title>
+<meta name="description" content="The same code AI SDR SaaS platforms charge $500-2K/month for, in a single 340-line Python file. Claude + SMTP + SQLite. MIT licensed. $47 one-time.">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       background: #f7f9fc; color: #1a2438; line-height: 1.6; }
+.container { max-width: 720px; margin: 0 auto; padding: 48px 24px; }
+.hero h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 800; line-height: 1.15;
+           margin-bottom: 16px; letter-spacing: -0.02em; }
+.hero .price { display: inline-block; background: #4a9eff; color: white;
+               padding: 6px 14px; border-radius: 999px; font-weight: 700;
+               font-size: 13px; letter-spacing: 0.08em; margin-bottom: 16px; }
+.hero p.lead { font-size: 18px; color: #4a5874; margin-bottom: 24px; }
+.points, .compare-vs {
+    background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 24px 28px; margin: 32px 0;
+}
+.points h2, .compare-vs h2 { font-size: 13px; letter-spacing: 0.15em; color: #6c84ad;
+             text-transform: uppercase; margin-bottom: 14px; }
+.points ul { list-style: none; }
+.points li { padding: 6px 0; font-size: 15px; }
+.points li::before { content: '→'; color: #4a9eff; font-weight: 700; margin-right: 10px; }
+
+.compare-vs table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.compare-vs th, .compare-vs td { text-align: left; padding: 8px 0; }
+.compare-vs th { color: #6c84ad; font-weight: 600; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; }
+.compare-vs td { border-top: 1px solid #f0f4fa; }
+.compare-vs .pro { color: #10b981; font-weight: 700; }
+.compare-vs .con { color: #6c84ad; }
+
+.code {
+    background: #0c1220; color: #b0bdd1; padding: 16px 20px; border-radius: 8px;
+    font-family: 'SF Mono', monospace; font-size: 13px; white-space: pre-wrap;
+    margin: 16px 0; overflow-x: auto;
+}
+.code .accent { color: #4a9eff; }
+.code .gold { color: #c9a227; }
+
+a.cta { display: block; width: 100%; text-align: center;
+        background: #4a9eff; color: white; text-decoration: none;
+        padding: 16px 24px; border-radius: 8px; font-weight: 800;
+        font-size: 17px; margin: 24px 0; transition: background 0.2s;
+        letter-spacing: 0.02em; }
+a.cta:hover { background: #2a6cb8; }
+a.cta.disabled { background: #cbd5e0; cursor: not-allowed; pointer-events: none; }
+
+.faq { margin-top: 40px; }
+.faq h2 { font-size: 22px; margin-bottom: 16px; }
+.faq-item { background: white; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 16px 20px; margin-bottom: 8px; }
+.faq-item h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #1a2438; }
+.faq-item p { font-size: 14px; color: #4a5874; }
+
+footer { font-size: 13px; color: #6c84ad; margin-top: 48px; text-align: center; }
+footer a { color: #4a9eff; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="hero">
+        <span class="price">${{ price }} ONE-TIME · MIT LICENSED · INSTANT DOWNLOAD</span>
+        <h1>The AI cold-email agent. In one Python file.</h1>
+        <p class="lead">Every "AI SDR" platform charges $500–2,000/month for what's really three things:
+        a Claude API call, an SMTP send, and a SQLite log. Pipeline Hunter is that code, in a single
+        340-line Python file. Drop in your CSV, ship a real send within 10 minutes.</p>
+    </div>
+
+    <div class="points">
+        <h2>What you get</h2>
+        <ul>
+            <li>One readable Python file (`pipeline_hunter.py`) — heavily commented, no framework drag</li>
+            <li>3 tuned prompt templates: B2B SaaS · Agency · Consulting</li>
+            <li>SQLite logs every send + reply + bounce — your data, your machine</li>
+            <li>Cron-driven follow-up loop for non-replies (Day 3, Day 7, Day 14)</li>
+            <li>Hookable: `pre_send_check` for suppression lists, `post_send_hook` for CRM sync</li>
+            <li>QUICKSTART.md + PROMPT_GUIDE.md — ship a real send in 10 min, not 10 hours</li>
+            <li>Per-email cost: ~$0.01 in Claude tokens (vs $0.50–2.00 effective on SaaS at scale)</li>
+        </ul>
+    </div>
+
+    <div class="compare-vs">
+        <h2>Pipeline Hunter vs hosted AI SDR</h2>
+        <table>
+            <thead><tr><th></th><th>Pipeline Hunter</th><th>Hosted SDR SaaS</th></tr></thead>
+            <tbody>
+                <tr><td>Cost / mo</td><td class="pro">$0 (run on your machine)</td><td class="con">$500–2,000</td></tr>
+                <tr><td>Per-email cost</td><td class="pro">~$0.01 Claude tokens</td><td class="con">$0.50–2.00 effective</td></tr>
+                <tr><td>Code visibility</td><td class="pro">340 lines, you own it</td><td class="con">Black box</td></tr>
+                <tr><td>Deliverability</td><td class="pro">Your domain, your reputation</td><td class="con">Shared IPs (often)</td></tr>
+                <tr><td>License</td><td class="pro">MIT — resell it</td><td class="con">Closed source</td></tr>
+                <tr><td>Lead enrichment</td><td class="con">BYO CSV (Apollo, Clay, Hunter exports)</td><td class="pro">Sometimes bundled</td></tr>
+                <tr><td>Time to first send</td><td class="pro">10 minutes</td><td class="con">2–5 days onboarding</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="code">
+<span class="accent"># What 10 minutes with Pipeline Hunter looks like:</span>
+$ pip install <span class="gold">anthropic requests</span>
+$ python pipeline_hunter.py --leads my_apollo_export.csv --template saas
+<span class="accent"># Drafted 47 emails. Review at /tmp/pipeline_drafts/. Approve to send.</span>
+$ python pipeline_hunter.py --send-approved
+<span class="accent"># 47 emails sent. Logged to pipeline.db. Follow-ups in 3 days.</span>
+    </div>
+
+    {% if payment_url %}
+    <a href="{{ payment_url }}" target="_blank" rel="noopener" class="cta">Buy Pipeline Hunter — $47 →</a>
+    {% else %}
+    <a href="https://bosaibot.gumroad.com/l/bfapw" target="_blank" rel="noopener" class="cta">Buy Pipeline Hunter — $47 →</a>
+    {% endif %}
+    <p style="text-align:center;font-size:13px;color:#6c84ad;">$47 today · going to $97 after 50 sales</p>
+
+    <div class="faq">
+        <h2>Honest answers</h2>
+        <div class="faq-item">
+            <h3>Why is this $47 if it's just a Python file?</h3>
+            <p>Because the prompts are the product. Three months of A/B testing on real pipelines
+            distilled into 3 templates that don't read like AI slop. The code is the wrapper; the
+            tuned prompts + the QUICKSTART are the actual value.</p>
+        </div>
+        <div class="faq-item">
+            <h3>Why MIT? Won't people just resell it?</h3>
+            <p>That's the point. Bundle it inside your agency, white-label it for clients,
+            ship it as part of your own product. MIT means zero attribution friction. Bigger
+            distribution beats license restrictions every time.</p>
+        </div>
+        <div class="faq-item">
+            <h3>What about deliverability / spam?</h3>
+            <p>Your domain, your warmup, your reputation. The code does what cold-email
+            best practice requires (real-name from-address, plain-text option, unsubscribe
+            link, randomized send delays). It does NOT do "AI warmup theater" — that's
+            mostly snake oil anyway.</p>
+        </div>
+        <div class="faq-item">
+            <h3>What if I need reply detection?</h3>
+            <p>~20 lines of IMAP. There's a `replies.example.py` in the pack that you can
+            drop in. Left out of the main file because most users want to handle replies
+            in their existing inbox/CRM, not in another tool.</p>
+        </div>
+        <div class="faq-item">
+            <h3>What's NOT in the box?</h3>
+            <p>No lead enrichment (BYO CSV from Apollo / Clay / Hunter / your own scrape).
+            No reply auto-classification. No GDPR consent flow (depends on your jurisdiction).
+            No "AI warmup". This is deliberately a focused tool, not a SaaS replacement.</p>
+        </div>
+    </div>
+
+    <footer>
+        Run by Kenneth at <a href="/">AI Tools Empire</a> · Refunds within 24 hours, no questions ·
+        <a href="mailto:kenneth@aitoolsempire.co">Email me</a>
+    </footer>
+</div>
+</body>
+</html>

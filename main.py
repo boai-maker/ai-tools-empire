@@ -840,6 +840,20 @@ async def stack_audit_templates_page(request: Request):
     })
 
 
+@app.get("/pipeline-hunter", response_class=HTMLResponse)
+async def pipeline_hunter_page(request: Request):
+    """$47 Pipeline Hunter landing — was a 404 before today's audit. Was the
+    biggest revenue leak: traffic from Indie Hackers / Show HN / Product Hunt
+    posts hit a dead end."""
+    payment_url = os.getenv("PIPELINE_HUNTER_PAYMENT_URL",
+                            "https://bosaibot.gumroad.com/l/bfapw")
+    return templates.TemplateResponse("pipeline-hunter.html", {
+        "request": request,
+        "payment_url": payment_url,
+        "price": 47,
+    })
+
+
 # ─────────── ADMIN: cleanup test rows ──────────────────────────────
 
 
