@@ -349,10 +349,13 @@ if __name__ == "__main__":
     scheduler.add_job(
         job_revenue_monitor,
         "cron",
-        hour="8,18",
+        # Was hour="8,18" (2x/day) — bumped 2026-04-27 to hourly so the
+        # /api/snapshot dashboard + Telegram daily report aren't 5+ hours
+        # stale. Audit found revenue_monitor.json hadn't refreshed since
+        # 18:00 by 23:00.
         minute=0,
         id="revenue_monitor",
-        name="Revenue Monitor (aggregated)",
+        name="Revenue Monitor (aggregated, hourly)",
         max_instances=1,
         misfire_grace_time=1800,
     )

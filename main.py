@@ -857,6 +857,31 @@ async def pipeline_hunter_page(request: Request):
 # ─────────── ADMIN: cleanup test rows ──────────────────────────────
 
 
+@app.post("/admin/stack-audits/delete")
+async def admin_delete_stack_audits(request: Request):
+    """Delete stack_audits rows by email pattern. Cleanup for test rows
+    accumulated during deploy probes."""
+    pwd = request.query_params.get("pwd", "")
+    if pwd != os.getenv("ADMIN_PASSWORD", ""):
+        return JSONResponse({"ok": False, "error": "bad pwd"}, status_code=403)
+    body = await request.json()
+    pattern = (body.get("email_like") or "").strip()
+    if not pattern or "%" not in pattern:
+        return JSONResponse(
+            {"ok": False, "error": "email_like required and must contain % wildcard"},
+            status_code=400,
+        )
+    import sqlite3
+    conn = sqlite3.connect("data.db")
+    try:
+        cur = conn.execute("DELETE FROM stack_audits WHERE email LIKE ?", (pattern,))
+        n = cur.rowcount
+        conn.commit()
+        return JSONResponse({"ok": True, "pattern": pattern, "stack_audits_deleted": n})
+    finally:
+        conn.close()
+
+
 @app.post("/admin/affiliate-service/delete")
 async def admin_delete_affiliate_service_orders(request: Request):
     """Delete affiliate_service_orders rows by email pattern. Kenneth-only.
