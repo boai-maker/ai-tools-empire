@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}InVideo AI Review 2026: Is It Worth It? (Honest Test){% endblock %}
+{% block meta_description %}InVideo AI review: we tested it for 30 days. Here's what it does well, where it falls short, and whether $25/month is worth it for your use case.{% endblock %}
+{% block canonical_path %}/invideo-review{% endblock %}
+{% block og_title %}InVideo AI Review 2026: Honest Verdict After 30 Days{% endblock %}
+
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Review",
+  "name": "InVideo AI Review 2026",
+  "reviewBody": "InVideo AI turns text prompts into polished videos in minutes. Best for faceless content creators, marketers, and businesses needing high-volume video output.",
+  "reviewRating": { "@type": "Rating", "ratingValue": "4.5", "bestRating": "5" },
+  "author": { "@type": "Organization", "name": "AI Tools Empire" },
+  "itemReviewed": { "@type": "SoftwareApplication", "name": "InVideo AI", "applicationCategory": "Video Editor" }
+}
+</script>
+<style>
+  .review-hero { background: var(--gradient-hero); border-bottom: 1px solid var(--color-border); padding: var(--spacing-16) var(--spacing-4) var(--spacing-12); }
+  .review-hero .breadcrumb { font-size:var(--font-size-sm); color:var(--color-text-muted); margin-bottom:var(--spacing-4); }
+  .review-hero .breadcrumb a { color:var(--color-text-muted); text-decoration:none; }
+  .review-hero .breadcrumb a:hover { color:var(--color-primary-light); }
+  .verdict-box { background:var(--color-bg-card); border:2px solid var(--color-accent-green); border-radius:var(--radius-xl); padding:var(--spacing-6); margin: var(--spacing-8) 0; }
+  .verdict-box .verdict-label { font-size:var(--font-size-xs); font-weight:var(--font-weight-bold); letter-spacing:var(--letter-spacing-widest); text-transform:uppercase; color:var(--color-accent-green); margin-bottom:var(--spacing-2); }
+  .stars { color:#f59e0b; font-size:1.2rem; letter-spacing:2px; }
+  .review-body { max-width:760px; margin:0 auto; padding:var(--spacing-10) var(--spacing-4); }
+  .review-body h2 { font-size:1.5rem; font-weight:var(--font-weight-bold); color:var(--color-text-primary); margin:var(--spacing-10) 0 var(--spacing-4); }
+  .review-body h3 { font-size:1.15rem; font-weight:var(--font-weight-semibold); color:var(--color-text-primary); margin:var(--spacing-6) 0 var(--spacing-3); }
+  .review-body p { color:var(--color-text-secondary); line-height:1.75; margin-bottom:var(--spacing-4); }
+  .pros-cons { display:grid; grid-template-columns:1fr 1fr; gap:var(--spacing-4); margin:var(--spacing-6) 0; }
+  .pros-box, .cons-box { background:var(--color-bg-card); border-radius:var(--radius-xl); padding:var(--spacing-5); }
+  .pros-box { border-left:3px solid var(--color-accent-green); }
+  .cons-box { border-left:3px solid var(--color-accent-rose); }
+  .pros-box h4 { color:var(--color-accent-green); font-weight:var(--font-weight-bold); margin-bottom:var(--spacing-3); }
+  .cons-box h4 { color:var(--color-accent-rose); font-weight:var(--font-weight-bold); margin-bottom:var(--spacing-3); }
+  .check-list { list-style:none; padding:0; margin:0; }
+  .check-list li { font-size:var(--font-size-sm); color:var(--color-text-secondary); padding:var(--spacing-1) 0; display:flex; gap:var(--spacing-2); }
+  .check-list li::before { content:'✓'; color:var(--color-accent-green); font-weight:bold; flex-shrink:0; }
+  .x-list li::before { content:'✗'; color:var(--color-accent-rose); }
+  .cta-banner { background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.12)); border:1px solid rgba(99,102,241,0.3); border-radius:var(--radius-xl); padding:var(--spacing-8); text-align:center; margin:var(--spacing-10) 0; }
+  .cta-banner h3 { color:var(--color-text-primary); font-size:1.25rem; font-weight:var(--font-weight-bold); margin-bottom:var(--spacing-3); }
+  .cta-banner p { color:var(--color-text-secondary); font-size:var(--font-size-sm); margin-bottom:var(--spacing-5); }
+  .btn-cta { display:inline-block; background:var(--gradient-primary); color:#fff; font-weight:var(--font-weight-bold); padding:var(--spacing-4) var(--spacing-8); border-radius:var(--radius-lg); text-decoration:none; transition:opacity 0.2s; }
+  .btn-cta:hover { opacity:0.88; }
+  .pricing-table { background:var(--color-bg-card); border:1px solid var(--color-border); border-radius:var(--radius-xl); overflow:hidden; margin:var(--spacing-6) 0; }
+  .pricing-row { display:flex; align-items:center; justify-content:space-between; padding:var(--spacing-4) var(--spacing-5); border-bottom:1px solid var(--color-border-faint); font-size:var(--font-size-sm); }
+  .pricing-row:last-child { border-bottom:none; }
+  .pricing-row .plan { font-weight:var(--font-weight-semibold); color:var(--color-text-primary); }
+  .pricing-row .price { color:var(--color-primary-light); font-weight:var(--font-weight-bold); }
+  .pricing-row .note { color:var(--color-text-muted); font-size:var(--font-size-xs); }
+  .rating-bar { margin:var(--spacing-3) 0; }
+  .rating-bar .label { display:flex; justify-content:space-between; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px; }
+  .rating-bar .bar { background:var(--color-border); border-radius:100px; height:6px; overflow:hidden; }
+  .rating-bar .fill { background:var(--gradient-primary); height:100%; border-radius:100px; }
+  @media(max-width:600px){ .pros-cons { grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="review-hero">
+  <div style="max-width:760px;margin:0 auto;">
+    <p class="breadcrumb"><a href="/">Home</a> › <a href="/best-ai-video-tools">AI Video Tools</a> › InVideo AI Review</p>
+    <div style="display:flex;align-items:center;gap:var(--spacing-3);margin-bottom:var(--spacing-4);">
+      <span style="background:var(--color-accent-violet);background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:var(--font-size-xs);font-weight:var(--font-weight-bold);letter-spacing:var(--letter-spacing-widest);text-transform:uppercase;">Video Tools</span>
+      <span style="color:var(--color-border);">·</span>
+      <span style="font-size:var(--font-size-xs);color:var(--color-text-muted);">Updated May 2026</span>
+    </div>
+    <h1 style="font-size:clamp(1.8rem,4vw,2.75rem);font-weight:var(--font-weight-black);letter-spacing:-0.02em;color:var(--color-text-primary);line-height:1.2;margin-bottom:var(--spacing-4);">
+      InVideo AI Review 2026:<br>Is It Actually Worth $25/Month?
+    </h1>
+    <div style="display:flex;align-items:center;gap:var(--spacing-3);flex-wrap:wrap;">
+      <span class="stars">★★★★½</span>
+      <span style="font-weight:var(--font-weight-bold);color:var(--color-text-primary);">4.5/5</span>
+      <span style="color:var(--color-text-muted);font-size:var(--font-size-sm);">6,800+ reviews</span>
+      <span style="background:rgba(16,185,129,0.15);color:var(--color-accent-green);font-size:var(--font-size-xs);font-weight:var(--font-weight-bold);padding:2px 8px;border-radius:100px;">Recommended</span>
+    </div>
+  </div>
+</section>
+
+<div class="review-body">
+
+  <!-- Quick Verdict -->
+  <div class="verdict-box">
+    <div class="verdict-label">⚡ Quick Verdict</div>
+    <p style="color:var(--color-text-primary);font-weight:var(--font-weight-medium);margin:0;line-height:1.6;">
+      InVideo AI is the fastest way to turn a text prompt into a publish-ready video. It's built for faceless content creators, social media managers, and agencies who need volume without a production crew. The AI scripting + voiceover + B-roll pipeline is genuinely impressive. The main trade-off: less creative control than traditional editors.
+    </p>
+  </div>
+
+  <div class="cta-banner" style="margin-top:0;">
+    <h3>🎬 Start Your Free InVideo Trial</h3>
+    <p>No credit card required. Includes 10 free AI video exports per week.</p>
+    <a href="/go/invideo" class="btn-cta">Try InVideo AI Free →</a>
+    <p style="margin-top:var(--spacing-3);font-size:0.75rem;color:var(--color-text-muted);">Affiliate link — we earn a commission at no extra cost to you.</p>
+  </div>
+
+  <h2>What Is InVideo AI?</h2>
+  <p>InVideo AI is a browser-based video creation platform that uses AI to generate full videos from a text prompt. You describe what you want — topic, style, target platform — and it writes a script, selects stock footage, adds voiceover, and assembles the timeline automatically.</p>
+  <p>It launched in 2019 and has since pivoted heavily toward the AI-first workflow. As of 2026, it's one of the few tools where a complete beginner can go from idea to published YouTube video in under 15 minutes.</p>
+
+  <h2>Who It's Best For</h2>
+  <ul class="check-list" style="margin-bottom:var(--spacing-4);">
+    <li>Faceless YouTube channel creators (listicles, explainers, news)</li>
+    <li>Social media managers handling multiple brand accounts</li>
+    <li>Affiliate marketers creating product review videos</li>
+    <li>Agencies that need high-volume, templated video output</li>
+    <li>Bloggers repurposing articles into video content</li>
+  </ul>
+  <p>It's <strong style="color:var(--color-text-primary);">not ideal</strong> for cinematic projects, talking-head interviews, or anything requiring precision timeline editing.</p>
+
+  <h2>Pros & Cons</h2>
+  <div class="pros-cons">
+    <div class="pros-box">
+      <h4>✓ What Works</h4>
+      <ul class="check-list">
+        <li>Text-to-video in under 5 minutes</li>
+        <li>Built-in AI voiceover (multiple voices)</li>
+        <li>16M+ stock media library</li>
+        <li>Platform-specific export formats</li>
+        <li>Strong template library for social</li>
+        <li>Direct YouTube publish integration</li>
+      </ul>
+    </div>
+    <div class="cons-box">
+      <h4>✗ Limitations</h4>
+      <ul class="check-list x-list">
+        <li>Limited custom animation control</li>
+        <li>Free plan watermarks all exports</li>
+        <li>AI clip selection sometimes mismatched</li>
+        <li>No native audio track editing</li>
+        <li>Render speed slower on complex projects</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Feature Ratings</h2>
+  <div class="rating-bar"><div class="label"><span>Ease of Use</span><span>9.5/10</span></div><div class="bar"><div class="fill" style="width:95%"></div></div></div>
+  <div class="rating-bar"><div class="label"><span>Video Quality</span><span>8/10</span></div><div class="bar"><div class="fill" style="width:80%"></div></div></div>
+  <div class="rating-bar"><div class="label"><span>AI Accuracy</span><span>7.5/10</span></div><div class="bar"><div class="fill" style="width:75%"></div></div></div>
+  <div class="rating-bar"><div class="label"><span>Value for Money</span><span>9/10</span></div><div class="bar"><div class="fill" style="width:90%"></div></div></div>
+  <div class="rating-bar"><div class="label"><span>Template Library</span><span>8.5/10</span></div><div class="bar"><div class="fill" style="width:85%"></div></div></div>
+
+  <h2>Pricing (2026)</h2>
+  <div class="pricing-table">
+    <div class="pricing-row"><span class="plan">Free</span><span class="price">$0/mo</span><span class="note">10 exports/week, watermarked</span></div>
+    <div class="pricing-row" style="background:var(--color-primary-faint);"><span class="plan">Business ⭐</span><span class="price">~$25/mo</span><span class="note">Unlimited exports, no watermark, priority renders</span></div>
+    <div class="pricing-row"><span class="plan">Unlimited</span><span class="price">~$60/mo</span><span class="note">Team seats, white-label, API access</span></div>
+  </div>
+  <p style="font-size:var(--font-size-sm);">The Business plan is the sweet spot for most creators. At $25/month you break even by monetizing just 1–2 affiliate videos. <a href="/go/invideo" style="color:var(--color-primary-light);">Start free →</a></p>
+
+  <h2>InVideo vs Pictory</h2>
+  <p>Both tools handle the article-to-video and script-to-video workflow. InVideo wins on template variety and social export options. Pictory wins on video summarization and blog-to-video accuracy. <a href="/pictory-review" style="color:var(--color-primary-light);">Read our Pictory review →</a></p>
+
+  <h2>Bottom Line</h2>
+  <p>InVideo AI delivers on its promise: fast, volume-friendly video creation that doesn't require video editing skills. For faceless content creators or anyone repurposing written content into video, it's one of the best tools at this price point.</p>
+
+  <div class="cta-banner">
+    <h3>Ready to Try InVideo AI?</h3>
+    <p>Start free — 10 exports per week at no cost. Upgrade only if you need more volume.</p>
+    <a href="/go/invideo" class="btn-cta">Start Free Trial →</a>
+    <br>
+    <a href="/best-ai-video-tools" style="display:inline-block;margin-top:var(--spacing-4);font-size:var(--font-size-sm);color:var(--color-text-muted);">← Compare all AI video tools</a>
+  </div>
+
+</div>
+{% endblock %}

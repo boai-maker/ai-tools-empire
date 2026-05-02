@@ -1577,6 +1577,34 @@ async function handleSubscribeBestOf(e) {{
     return templates.TemplateResponse("simple_page.html", ctx)
 
 
+@app.get("/ugc-portfolio", response_class=HTMLResponse)
+async def ugc_portfolio(request: Request):
+    """UGC Creator Portfolio — public-facing page for brand partnerships."""
+    ctx = base_ctx(request)
+    return templates.TemplateResponse("ugc-portfolio.html", ctx)
+
+
+@app.get("/invideo-review", response_class=HTMLResponse)
+async def invideo_review(request: Request):
+    """InVideo AI conversion-focused review page."""
+    ctx = base_ctx(request)
+    return templates.TemplateResponse("review-invideo.html", ctx)
+
+
+@app.get("/pictory-review", response_class=HTMLResponse)
+async def pictory_review(request: Request):
+    """Pictory AI conversion-focused review page."""
+    ctx = base_ctx(request)
+    return templates.TemplateResponse("review-pictory.html", ctx)
+
+
+@app.get("/elevenlabs-review", response_class=HTMLResponse)
+async def elevenlabs_review(request: Request):
+    """ElevenLabs conversion-focused review page."""
+    ctx = base_ctx(request)
+    return templates.TemplateResponse("review-elevenlabs.html", ctx)
+
+
 @app.get("/best-ai-writing-tools", response_class=HTMLResponse)
 async def best_writing_tools(request: Request):
     return _best_of_page(request, "writing",

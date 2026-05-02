@@ -1,0 +1,678 @@
+{% extends "base.html" %}
+
+{% block title %}UGC Creator Portfolio — Kenneth Bonnet{% endblock %}
+{% block meta_description %}Voiceover-style UGC creator specializing in AI tools, SaaS, and tech. High-volume, fast turnaround, TikTok-first format. Portfolio & samples inside.{% endblock %}
+{% block canonical_path %}/ugc-portfolio{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Portfolio Page Styles ── */
+  .portfolio-hero {
+    background: var(--gradient-hero);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-20) var(--spacing-4) var(--spacing-16);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .portfolio-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .portfolio-hero .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    background: var(--color-primary-faint);
+    border: 1px solid rgba(99,102,241,0.35);
+    border-radius: 100px;
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary-light);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+    margin-bottom: var(--spacing-6);
+  }
+  .portfolio-hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: var(--font-weight-black);
+    letter-spacing: var(--letter-spacing-hero);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-tight);
+    margin-bottom: var(--spacing-5);
+  }
+  .portfolio-hero h1 span {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .portfolio-hero .subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    max-width: 620px;
+    margin: 0 auto var(--spacing-8);
+    line-height: var(--line-height-relaxed);
+  }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-8);
+    flex-wrap: wrap;
+    margin-top: var(--spacing-10);
+  }
+  .hero-stat {
+    text-align: center;
+  }
+  .hero-stat .value {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-black);
+    color: var(--color-primary-light);
+    display: block;
+    line-height: 1;
+  }
+  .hero-stat .label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+  }
+
+  /* ── Section Layout ── */
+  .portfolio-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: var(--spacing-16) var(--spacing-4);
+  }
+  .section-label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-widest);
+    text-transform: uppercase;
+    color: var(--color-primary-light);
+    margin-bottom: var(--spacing-3);
+  }
+  .section-title {
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: var(--font-weight-extrabold);
+    letter-spacing: var(--letter-spacing-heading);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-4);
+  }
+  .section-desc {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+    max-width: 640px;
+    margin-bottom: var(--spacing-10);
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--color-border-faint);
+    margin: 0;
+  }
+
+  /* ── Video Grid ── */
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-6);
+    margin-top: var(--spacing-8);
+  }
+  .video-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .video-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(99,102,241,0.15);
+  }
+  .video-wrap {
+    position: relative;
+    width: 100%;
+    background: #0a0f1e;
+    aspect-ratio: 9/16;
+    max-height: 480px;
+    overflow: hidden;
+  }
+  .video-wrap video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .video-badge {
+    position: absolute;
+    top: var(--spacing-3);
+    left: var(--spacing-3);
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    padding: 2px var(--spacing-3);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+  }
+  .video-info {
+    padding: var(--spacing-5);
+  }
+  .video-info h3 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-2);
+  }
+  .video-info p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+  .video-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-3);
+  }
+  .vtag {
+    background: var(--color-primary-faint);
+    color: var(--color-primary-light);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    padding: 2px var(--spacing-2);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(99,102,241,0.2);
+  }
+
+  /* ── Capabilities Grid ── */
+  .cap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--spacing-5);
+    margin-top: var(--spacing-8);
+  }
+  .cap-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-6);
+    transition: border-color 0.2s;
+  }
+  .cap-card:hover {
+    border-color: var(--color-primary);
+  }
+  .cap-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: var(--spacing-4);
+  }
+  .cap-icon.violet { background: rgba(139,92,246,0.15); }
+  .cap-icon.green { background: rgba(16,185,129,0.15); }
+  .cap-icon.amber { background: rgba(245,158,11,0.15); }
+  .cap-icon.teal { background: rgba(20,184,166,0.15); }
+  .cap-icon.rose { background: rgba(244,63,94,0.15); }
+  .cap-icon.indigo { background: rgba(99,102,241,0.15); }
+  .cap-card h3 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-2);
+  }
+  .cap-card p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  /* ── Niches ── */
+  .niche-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-3);
+    margin-top: var(--spacing-6);
+  }
+  .niche-pill {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 100px;
+    padding: var(--spacing-2) var(--spacing-5);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+  }
+  .niche-pill:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary-light);
+    background: var(--color-primary-faint);
+  }
+
+  /* ── Testimonial / Trust bar ── */
+  .trust-bar {
+    background: var(--color-bg-card);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-8) var(--spacing-4);
+    text-align: center;
+  }
+  .trust-bar p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-5);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wider);
+    font-weight: var(--font-weight-semibold);
+  }
+  .trust-logos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-8);
+    flex-wrap: wrap;
+  }
+  .trust-logo {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-disabled);
+    letter-spacing: -0.01em;
+    opacity: 0.7;
+  }
+
+  /* ── CTA Section ── */
+  .cta-section {
+    background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.08) 100%);
+    border-top: 1px solid rgba(99,102,241,0.2);
+    border-bottom: 1px solid rgba(99,102,241,0.2);
+    text-align: center;
+    padding: var(--spacing-20) var(--spacing-4);
+  }
+  .cta-section h2 {
+    font-size: clamp(1.8rem, 4vw, 2.75rem);
+    font-weight: var(--font-weight-black);
+    letter-spacing: var(--letter-spacing-heading);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-4);
+  }
+  .cta-section p {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    max-width: 560px;
+    margin: 0 auto var(--spacing-8);
+    line-height: var(--line-height-relaxed);
+  }
+  .cta-buttons {
+    display: flex;
+    gap: var(--spacing-4);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-primary-lg {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    background: var(--gradient-primary);
+    color: #fff;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-base);
+    padding: var(--spacing-4) var(--spacing-8);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-primary-lg:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  .btn-outline-lg {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    background: transparent;
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    padding: var(--spacing-4) var(--spacing-8);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    border: 1px solid var(--color-border);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn-outline-lg:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-faint);
+    color: var(--color-primary-light);
+  }
+
+  /* ── Process Steps ── */
+  .process-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--spacing-5);
+    margin-top: var(--spacing-8);
+    counter-reset: steps;
+  }
+  .process-step {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-6);
+    position: relative;
+    counter-increment: steps;
+  }
+  .process-step::before {
+    content: counter(steps, decimal-leading-zero);
+    display: block;
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-black);
+    color: var(--color-primary-faint);
+    line-height: 1;
+    margin-bottom: var(--spacing-3);
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0.6;
+  }
+  .process-step h3 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-2);
+  }
+  .process-step p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .hero-stats { gap: var(--spacing-6); }
+    .video-wrap { aspect-ratio: 9/16; max-height: 420px; }
+    .cta-buttons { flex-direction: column; align-items: center; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ── -->
+<section class="portfolio-hero">
+  <div class="badge">
+    <span>🎬</span>
+    UGC Creator Portfolio
+  </div>
+  <h1>
+    Content That <span>Converts</span>.<br>
+    Not Just Gets Views.
+  </h1>
+  <p class="subtitle">
+    Voiceover-first UGC for AI tools, SaaS &amp; tech brands. Fast turnaround,
+    platform-native format, built for scroll-stopping retention.
+  </p>
+  <div style="display:flex; gap:var(--spacing-4); justify-content:center; flex-wrap:wrap;">
+    <a href="#samples" class="btn-primary-lg">▶ Watch Samples</a>
+    <a href="#contact" class="btn-outline-lg">📩 Work With Me</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="value">5–10</span>
+      <span class="label">hrs/week available</span>
+    </div>
+    <div class="hero-stat">
+      <span class="value">48hr</span>
+      <span class="label">avg turnaround</span>
+    </div>
+    <div class="hero-stat">
+      <span class="value">TikTok</span>
+      <span class="label">primary format</span>
+    </div>
+    <div class="hero-stat">
+      <span class="value">AI/SaaS</span>
+      <span class="label">primary niche</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── Trust Bar ── -->
+<div class="trust-bar">
+  <p>Content created about tools from</p>
+  <div class="trust-logos">
+    <span class="trust-logo">InVideo</span>
+    <span class="trust-logo">ElevenLabs</span>
+    <span class="trust-logo">Pictory</span>
+    <span class="trust-logo">Writesonic</span>
+    <span class="trust-logo">Murf AI</span>
+    <span class="trust-logo">Fliki</span>
+  </div>
+</div>
+
+<!-- ── Video Samples ── -->
+<section class="portfolio-section" id="samples">
+  <div class="section-label">Portfolio</div>
+  <h2 class="section-title">Sample Videos</h2>
+  <p class="section-desc">
+    All content below is voiceover-style — no on-camera face required.
+    Each piece is formatted for vertical mobile-first platforms with hooks
+    designed to retain through the first 3 seconds.
+  </p>
+
+  <div class="video-grid">
+
+    <!-- Sample 1 — AI Comparison -->
+    <div class="video-card">
+      <div class="video-wrap">
+        <span class="video-badge">AI Tools</span>
+        <video controls preload="none" poster="">
+          <source src="/static/samples/dominic-remotion-aivsai-6-I9wm3z8ME.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="video-info">
+        <h3>AI vs AI — Head-to-Head Comparison</h3>
+        <p>Fast-cut voiceover comparison format. Strong hook, clear winner reveal, CTA at end. Ideal for tool discovery content.</p>
+        <div class="video-tags">
+          <span class="vtag">Comparison</span>
+          <span class="vtag">Voiceover</span>
+          <span class="vtag">AI Tools</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sample 2 — Editor walkthrough -->
+    <div class="video-card">
+      <div class="video-wrap">
+        <span class="video-badge">Tutorial</span>
+        <video controls preload="none" poster="">
+          <source src="/static/samples/dominic-v2-editor-T3ESoe6bEwE.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="video-info">
+        <h3>Product Walkthrough — Editor Style</h3>
+        <p>Screen-capture + voiceover tutorial. Demonstrates product features while building desire. Great for SaaS onboarding campaigns.</p>
+        <div class="video-tags">
+          <span class="vtag">Tutorial</span>
+          <span class="vtag">Screen-capture</span>
+          <span class="vtag">SaaS</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sample 3 — Voice comparison -->
+    <div class="video-card">
+      <div class="video-wrap">
+        <span class="video-badge">Voice AI</span>
+        <video controls preload="none" poster="">
+          <source src="/static/samples/dominic-v2-elevenmurf-T3ESoe6bEwE.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="video-info">
+        <h3>Voice Tool Comparison — ElevenLabs vs Murf</h3>
+        <p>Side-by-side audio quality showcase. Demonstrates niche authority in AI voice space. Converts well for voice tool affiliates.</p>
+        <div class="video-tags">
+          <span class="vtag">Voice AI</span>
+          <span class="vtag">Comparison</span>
+          <span class="vtag">Audio</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sample 4 — Entertainment hook -->
+    <div class="video-card">
+      <div class="video-wrap">
+        <span class="video-badge">Hook Format</span>
+        <video controls preload="none" poster="">
+          <source src="/static/samples/dominic-v4-cat-vBos2ITXXoY.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="video-info">
+        <h3>Engagement Hook — Pattern Interrupt</h3>
+        <p>Scroll-stopping cold open + seamless brand tie-in. Pattern interrupt style optimized for organic reach and saves.</p>
+        <div class="video-tags">
+          <span class="vtag">Hook</span>
+          <span class="vtag">Organic</span>
+          <span class="vtag">Engagement</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── Capabilities ── -->
+<section class="portfolio-section">
+  <div class="section-label">What I Deliver</div>
+  <h2 class="section-title">Creator Capabilities</h2>
+  <p class="section-desc">
+    Specialized in content formats that work for AI, SaaS, and tech brands —
+    built for platforms where voiceover and motion graphics outperform talking-head.
+  </p>
+
+  <div class="cap-grid">
+    <div class="cap-card">
+      <div class="cap-icon violet">🎙️</div>
+      <h3>Voiceover-First Content</h3>
+      <p>No on-camera face required. Professional AI-assisted voiceover matched to your brand tone — warm, authoritative, or energetic.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-icon green">⚡</div>
+      <h3>Fast Turnaround</h3>
+      <p>48-hour standard delivery on most formats. Rush 24hr available. Consistent output at volume without quality drop-off.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-icon amber">📱</div>
+      <h3>TikTok-First Format</h3>
+      <p>Vertical 9:16, hook within 1.5 seconds, optimized for completion rate. Adapts to Reels and Shorts with one click.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-icon teal">🔬</div>
+      <h3>Deep AI/SaaS Knowledge</h3>
+      <p>Running an AI tools review site with 30k+ monthly readers. I actually use and understand the products — content sounds authentic because it is.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-icon rose">📊</div>
+      <h3>Comparison & Review Content</h3>
+      <p>Head-to-head comparisons, feature walkthroughs, "Is it worth it?" formats. High-intent content that converts buyers.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-icon indigo">🔁</div>
+      <h3>Revision-Friendly Workflow</h3>
+      <p>Clear brief intake, one round of revisions included, structured delivery via Google Drive. No back-and-forth friction.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── Niches ── -->
+<section class="portfolio-section">
+  <div class="section-label">Niches</div>
+  <h2 class="section-title">Content I Cover</h2>
+  <p class="section-desc">
+    Deep expertise in AI and tech. Can adapt to adjacent niches with a product brief.
+  </p>
+  <div class="niche-pills">
+    <span class="niche-pill">🤖 AI Writing Tools</span>
+    <span class="niche-pill">🎬 AI Video Generators</span>
+    <span class="niche-pill">🎙️ AI Voice & TTS</span>
+    <span class="niche-pill">📈 SEO Software</span>
+    <span class="niche-pill">💼 SaaS Productivity</span>
+    <span class="niche-pill">🧠 AI Chatbots</span>
+    <span class="niche-pill">🖼️ AI Image Tools</span>
+    <span class="niche-pill">📧 Email Marketing</span>
+    <span class="niche-pill">💻 No-Code Builders</span>
+    <span class="niche-pill">🔒 Cybersecurity Tools</span>
+    <span class="niche-pill">📊 Data Analytics</span>
+    <span class="niche-pill">🏠 PropTech</span>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── Process ── -->
+<section class="portfolio-section">
+  <div class="section-label">How It Works</div>
+  <h2 class="section-title">Simple 4-Step Process</h2>
+  <p class="section-desc">No bloated onboarding. From brief to delivered asset in under 48 hours.</p>
+
+  <div class="process-steps">
+    <div class="process-step">
+      <h3>Send Your Brief</h3>
+      <p>Product name, key talking points, tone guide, platform target, and any reference videos you like.</p>
+    </div>
+    <div class="process-step">
+      <h3>Script & Hook Draft</h3>
+      <p>I write the script and hook within 24 hours. You approve or request one round of edits before production.</p>
+    </div>
+    <div class="process-step">
+      <h3>Production</h3>
+      <p>Voiceover, motion graphics, captions, and platform formatting — all handled. No coordination needed on your end.</p>
+    </div>
+    <div class="process-step">
+      <h3>Delivery & Revisions</h3>
+      <p>Files delivered via Google Drive. One revision round included. Ready to post within your 48hr window.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section" id="contact">
+  <div class="section-label" style="margin-bottom:var(--spacing-4);">Ready to Work Together?</div>
+  <h2>Let's Build Content That Earns</h2>
+  <p>
+    Send me your product brief and I'll have a script concept back to you within 24 hours.
+    No fluff, no bloated retainers — just content that performs.
+  </p>
+  <div class="cta-buttons">
+    <a href="mailto:bosaibot@gmail.com?subject=UGC%20Creator%20Inquiry&body=Hi%20Kenneth%2C%0A%0AProduct%20%2F%20Brand%3A%20%0ATarget%20Platform%3A%20%0ATone%3A%20%0AKey%20Talking%20Points%3A%20%0A%0ALooking%20forward%20to%20working%20with%20you!" class="btn-primary-lg">
+      📩 Email Me a Brief
+    </a>
+    <a href="https://app.sideshift.ai/stuMessages" class="btn-outline-lg" target="_blank" rel="noopener">
+      💬 Message on SideShift
+    </a>
+  </div>
+  <p style="margin-top:var(--spacing-6); font-size:var(--font-size-sm); color:var(--color-text-muted);">
+    Typical response time: under 4 hours during business hours (ET)
+  </p>
+</section>
+
+{% endblock %}

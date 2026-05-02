@@ -219,11 +219,21 @@
       });
     }
 
-    // Scroll 65% trigger
+    // Scroll 50% trigger (lowered from 65%)
     window.addEventListener('scroll', function () {
       var scrolled = window.scrollY / Math.max(1, document.body.scrollHeight - window.innerHeight);
-      if (scrolled > 0.65) showPopup();
+      if (scrolled > 0.50) showPopup();
     }, { passive: true });
+
+    // Time-based trigger: show after 40 seconds (catches skimmers who don't scroll)
+    setTimeout(function () { showPopup(); }, 40000);
+
+    // Mobile: show on visibility change (user switches tabs / hits back)
+    if (window.innerWidth <= 768) {
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) showPopup();
+      });
+    }
 
     // Close on backdrop click
     popup.addEventListener('click', function (e) {
