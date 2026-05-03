@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UGC Creator Kit — Kenneth Bonnet</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #f8fafc; min-height: 100vh; padding: 40px 20px; }
+  .card { max-width: 640px; margin: 0 auto; background: #1e293b; border: 1px solid #334155; border-radius: 20px; overflow: hidden; }
+  .header { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #312e81 100%); padding: 36px 36px 28px; border-bottom: 1px solid #334155; }
+  .tag { display: inline-block; background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4); color: #a5b4fc; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 12px; border-radius: 100px; margin-bottom: 16px; }
+  .header h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 6px; }
+  .header h1 span { background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .header p { color: #94a3b8; font-size: 14px; line-height: 1.6; }
+  .body { padding: 28px 36px; }
+  .stats { display: flex; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat .val { font-size: 22px; font-weight: 900; color: #a5b4fc; display: block; }
+  .stat .lbl { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #6366f1; margin-bottom: 12px; }
+  .caps { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
+  .cap { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #cbd5e1; display: flex; align-items: flex-start; gap: 8px; line-height: 1.4; }
+  .cap .icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .samples { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .sample { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; transition: border-color 0.2s; }
+  .sample:hover { border-color: #6366f1; }
+  .sample .left { display: flex; align-items: center; gap: 10px; }
+  .sample .thumb { width: 36px; height: 36px; background: rgba(99,102,241,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .sample .info h4 { font-size: 13px; font-weight: 600; color: #f1f5f9; margin-bottom: 2px; }
+  .sample .info p { font-size: 11px; color: #64748b; }
+  .sample .arrow { color: #6366f1; font-size: 16px; }
+  .cta { background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); border: 1px solid rgba(99,102,241,0.3); border-radius: 14px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .cta .left h3 { font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+  .cta .left p { font-size: 12px; color: #94a3b8; }
+  .cta-btn { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-weight: 700; font-size: 13px; padding: 10px 20px; border-radius: 8px; text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+  .divider { border: none; border-top: 1px solid #1e293b; margin: 22px 0; }
+  .footer { background: #0f172a; border-top: 1px solid #334155; padding: 16px 36px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .footer p { font-size: 12px; color: #475569; }
+  .footer a { color: #6366f1; text-decoration: none; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <div class="tag">🎬 UGC Creator</div>
+    <h1>Kenneth Bonnet<br><span>Voiceover Content for AI & Tech Brands</span></h1>
+    <p style="margin-top:10px;">Faceless, voiceover-first UGC — fast turnaround, TikTok-native format, AI/SaaS niche. No on-camera required.</p>
+  </div>
+
+  <div class="body">
+
+    <div class="stats">
+      <div class="stat"><span class="val">48hr</span><span class="lbl">Turnaround</span></div>
+      <div class="stat"><span class="val">TikTok</span><span class="lbl">Primary Format</span></div>
+      <div class="stat"><span class="val">5–10</span><span class="lbl">Hrs/Week</span></div>
+      <div class="stat"><span class="val">AI/SaaS</span><span class="lbl">Niche</span></div>
+    </div>
+
+    <div class="section-title">Capabilities</div>
+    <div class="caps">
+      <div class="cap"><span class="icon">🎙️</span>Voiceover-first (no on-camera face)</div>
+      <div class="cap"><span class="icon">📱</span>TikTok, Reels, Shorts ready</div>
+      <div class="cap"><span class="icon">⚡</span>Fast hook &amp; scroll-stop edits</div>
+      <div class="cap"><span class="icon">🔬</span>Deep AI/tech product knowledge</div>
+      <div class="cap"><span class="icon">🔁</span>High-volume, consistent output</div>
+      <div class="cap"><span class="icon">✅</span>Script + production + delivery</div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section-title" style="margin-bottom:14px;">Sample Videos (click to watch)</div>
+    <div class="samples">
+      <a class="sample" href="https://aitoolsempire.co/static/samples/dominic-remotion-aivsai-6-I9wm3z8ME.mp4" target="_blank">
+        <div class="left">
+          <div class="thumb">⚔️</div>
+          <div class="info"><h4>AI vs AI — Head-to-Head Comparison</h4><p>Hook format · Voiceover · Fast cut</p></div>
+        </div>
+        <span class="arrow">▶</span>
+      </a>
+      <a class="sample" href="https://aitoolsempire.co/static/samples/dominic-v2-editor-T3ESoe6bEwE.mp4" target="_blank">
+        <div class="left">
+          <div class="thumb">📹</div>
+          <div class="info"><h4>Product Walkthrough — Editor Style</h4><p>Screen-capture + voiceover · SaaS demo</p></div>
+        </div>
+        <span class="arrow">▶</span>
+      </a>
+      <a class="sample" href="https://aitoolsempire.co/static/samples/dominic-v2-elevenmurf-T3ESoe6bEwE.mp4" target="_blank">
+        <div class="left">
+          <div class="thumb">🎙️</div>
+          <div class="info"><h4>Voice Tool Comparison — ElevenLabs vs Murf</h4><p>Side-by-side · Audio showcase</p></div>
+        </div>
+        <span class="arrow">▶</span>
+      </a>
+      <a class="sample" href="https://aitoolsempire.co/static/samples/dominic-v4-cat-vBos2ITXXoY.mp4" target="_blank">
+        <div class="left">
+          <div class="thumb">🪝</div>
+          <div class="info"><h4>Pattern Interrupt Hook Format</h4><p>Scroll-stopper · Organic reach optimized</p></div>
+        </div>
+        <span class="arrow">▶</span>
+      </a>
+    </div>
+
+    <div class="cta">
+      <div class="left">
+        <h3>📋 Full Portfolio</h3>
+        <p>aitoolsempire.co/ugc-portfolio</p>
+      </div>
+      <a class="cta-btn" href="https://aitoolsempire.co/ugc-portfolio" target="_blank">View Portfolio →</a>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <p>📧 bosaibot@gmail.com</p>
+    <a href="https://aitoolsempire.co/ugc-portfolio">aitoolsempire.co/ugc-portfolio</a>
+  </div>
+</div>
+
+</body>
+</html>
