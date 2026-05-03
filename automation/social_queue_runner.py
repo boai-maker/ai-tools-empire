@@ -1,20 +1,26 @@
 """
-Social Queue Runner — Posts from social_queue table to Twitter.
-Reads platform='twitter', posted=0 rows and sends them via Tweepy.
-Rate-limit safe: posts up to MAX_POSTS_PER_RUN per execution.
-Skips Reddit (no credentials) — marks Reddit posts posted=2 (skipped).
+Social Queue Runner — Posts from social_queue table to Twitter, Instagram, TikTok.
+
+Platforms:
+  twitter  → Tweepy v2 direct API
+  instagram → Make.com webhook → Buffer → Instagram
+  tiktok   → Make.com webhook → Buffer → TikTok
+  reddit   → Skipped (no credentials), marked posted=2
 
 Usage:
   python3 -m automation.social_queue_runner          # run once
-  python3 -m automation.social_queue_runner --dry    # dry run, no actual posting
+  python3 -m automation.social_queue_runner --dry    # dry run, no posting
 """
 
 import sys
 import os
 import sqlite3
 import time
+import json
 import logging
 import argparse
+import urllib.request
+import urllib.parse
 from datetime import datetime
 
 # Path setup
@@ -29,10 +35,11 @@ logging.basicConfig(
 )
 log = logging.getLogger("social_queue_runner")
 
-# Twitter free tier: ~17 tweets per 24h, 1 per 15min is safe
-MAX_POSTS_PER_RUN = 5
-SLEEP_BETWEEN_POSTS = 3  # seconds between API calls within one run
+MAX_POSTS_PER_RUN   = 5   # per platform per run
+SLEEP_BETWEEN_POSTS = 3   # seconds between API calls
 
+
+# ── helpers ──────────────────────────────────────────────────────────────────
 
 def get_conn():
     conn = sqlite3.connect(os.path.join(_ROOT, "data.db"))
@@ -40,41 +47,15 @@ def get_conn():
     return conn
 
 
-def get_twitter_client():
-    """Return authenticated Tweepy v2 client or None."""
-    try:
-        import tweepy
-        api_key    = getattr(config, "TWITTER_API_KEY", "") or os.getenv("TWITTER_API_KEY", "")
-        api_secret = getattr(config, "TWITTER_API_SECRET", "") or os.getenv("TWITTER_API_SECRET", "")
-        access_tok = getattr(config, "TWITTER_ACCESS_TOKEN", "") or os.getenv("TWITTER_ACCESS_TOKEN", "")
-        access_sec = getattr(config, "TWITTER_ACCESS_SECRET", "") or os.getenv("TWITTER_ACCESS_SECRET", "")
-
-        if not all([api_key, api_secret, access_tok, access_sec]):
-            log.error("Twitter credentials incomplete — check config")
-            return None
-
-        client = tweepy.Client(
-            consumer_key=api_key,
-            consumer_secret=api_secret,
-            access_token=access_tok,
-            access_token_secret=access_sec,
-        )
-        return client
-    except ImportError:
-        log.error("tweepy not installed: pip install tweepy")
-        return None
-    except Exception as e:
-        log.error(f"Twitter client init failed: {e}")
-        return None
+def _cfg(key: str) -> str:
+    return getattr(config, key, "") or os.getenv(key, "")
 
 
 def send_telegram(msg: str):
-    """Send a Telegram notification using the Rider bot."""
     try:
-        import urllib.request, urllib.parse
-        token = "8744852303:AAFC5tipgyFunXt2BWjQLQ1VaSt24foZhEI"
+        token   = "8744852303:AAFC5tipgyFunXt2BWjQLQ1VaSt24foZhEI"
         chat_id = "6194068092"
-        data = urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode()
+        data    = urllib.parse.urlencode({"chat_id": chat_id, "text": msg}).encode()
         urllib.request.urlopen(
             f"https://api.telegram.org/bot{token}/sendMessage",
             data=data, timeout=10
@@ -83,8 +64,142 @@ def send_telegram(msg: str):
         log.warning(f"Telegram notification failed: {e}")
 
 
-def skip_reddit_posts(conn: sqlite3.Connection) -> int:
-    """Mark Reddit posts as skipped (posted=2) — no credentials available."""
+# ── Twitter ───────────────────────────────────────────────────────────────────
+
+def get_twitter_client():
+    try:
+        import tweepy
+        keys = [_cfg(k) for k in (
+            "TWITTER_API_KEY", "TWITTER_API_SECRET",
+            "TWITTER_ACCESS_TOKEN", "TWITTER_ACCESS_SECRET"
+        )]
+        if not all(keys):
+            log.error("Twitter credentials incomplete — check config")
+            return None
+        return tweepy.Client(
+            consumer_key=keys[0], consumer_secret=keys[1],
+            access_token=keys[2], access_token_secret=keys[3],
+        )
+    except ImportError:
+        log.error("tweepy not installed: pip install tweepy")
+        return None
+    except Exception as e:
+        log.error(f"Twitter client init failed: {e}")
+        return None
+
+
+def post_twitter(rows, dry_run: bool, conn) -> dict:
+    results = {"posted": 0, "failed": 0}
+    if not rows:
+        return results
+
+    log.info(f"Twitter: {len(rows)} posts to send")
+    if dry_run:
+        for r in rows:
+            log.info(f"[DRY RUN] Twitter ID={r['id']}: {r['content'][:80]}...")
+        results["posted"] = len(rows)
+        return results
+
+    client = get_twitter_client()
+    if not client:
+        results["failed"] = len(rows)
+        return results
+
+    c = conn.cursor()
+    for row in rows:
+        content = row["content"].strip()
+        if len(content) > 280:
+            content = content[:277] + "..."
+        try:
+            resp     = client.create_tweet(text=content)
+            tweet_id = str(resp.data["id"])
+            c.execute(
+                "UPDATE social_queue SET posted=1, posted_at=? WHERE id=?",
+                (datetime.utcnow().isoformat(), row["id"])
+            )
+            conn.commit()
+            results["posted"] += 1
+            log.info(f"✅ Twitter ID={row['id']} → https://x.com/i/web/status/{tweet_id}")
+            time.sleep(SLEEP_BETWEEN_POSTS)
+        except Exception as e:
+            err = str(e)
+            results["failed"] += 1
+            log.error(f"❌ Twitter ID={row['id']} failed: {err}")
+            if "429" in err or "rate limit" in err.lower():
+                log.warning("Rate limit hit — stopping Twitter run")
+                break
+    return results
+
+
+# ── Make.com → Buffer → Instagram / TikTok ───────────────────────────────────
+
+def post_via_make(rows, platform: str, dry_run: bool, conn) -> dict:
+    """Push posts to Make.com webhook, which routes to Buffer → IG or TikTok."""
+    results = {"posted": 0, "failed": 0}
+    if not rows:
+        return results
+
+    webhook_url = _cfg("MAKE_BUFFER_WEBHOOK")
+    if not webhook_url or "PASTE_YOUR" in webhook_url:
+        log.warning(f"{platform}: MAKE_BUFFER_WEBHOOK not set — skipping")
+        results["failed"] = len(rows)
+        return results
+
+    log.info(f"{platform}: {len(rows)} posts to send via Make webhook")
+    if dry_run:
+        for r in rows:
+            log.info(f"[DRY RUN] {platform} ID={r['id']}: {r['content'][:80]}...")
+        results["posted"] = len(rows)
+        return results
+
+    c = conn.cursor()
+    for row in rows:
+        content = row["content"].strip()
+        # Instagram/TikTok: 2200 char limit, but keep it punchy for reach
+        if len(content) > 2200:
+            content = content[:2197] + "..."
+
+        payload = json.dumps({
+            "platform": platform,
+            "text":     content,
+            "source":   "aitoolsempire",
+            "queued_at": datetime.utcnow().isoformat(),
+        }).encode("utf-8")
+
+        try:
+            req = urllib.request.Request(
+                webhook_url,
+                data=payload,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            resp = urllib.request.urlopen(req, timeout=15)
+            status = resp.getcode()
+
+            if status in (200, 201, 202, 204):
+                c.execute(
+                    "UPDATE social_queue SET posted=1, posted_at=? WHERE id=?",
+                    (datetime.utcnow().isoformat(), row["id"])
+                )
+                conn.commit()
+                results["posted"] += 1
+                log.info(f"✅ {platform} ID={row['id']} → Make webhook OK (HTTP {status})")
+            else:
+                results["failed"] += 1
+                log.error(f"❌ {platform} ID={row['id']} → webhook returned HTTP {status}")
+
+            time.sleep(SLEEP_BETWEEN_POSTS)
+
+        except Exception as e:
+            results["failed"] += 1
+            log.error(f"❌ {platform} ID={row['id']} failed: {e}")
+
+    return results
+
+
+# ── Reddit ────────────────────────────────────────────────────────────────────
+
+def skip_reddit(conn) -> int:
     c = conn.cursor()
     c.execute(
         "UPDATE social_queue SET posted=2, posted_at=? WHERE platform='reddit' AND posted=0",
@@ -93,118 +208,87 @@ def skip_reddit_posts(conn: sqlite3.Connection) -> int:
     count = c.rowcount
     conn.commit()
     if count > 0:
-        log.info(f"Marked {count} Reddit posts as skipped (no credentials)")
+        log.info(f"Marked {count} Reddit posts as skipped")
     return count
 
 
-def run(dry_run: bool = False) -> dict:
-    """
-    Main runner. Returns stats dict.
-    """
-    log.info(f"=== Social Queue Runner {'(DRY RUN) ' if dry_run else ''}===")
-    results = {"posted": 0, "failed": 0, "skipped": 0, "dry_run": dry_run}
+# ── Main ──────────────────────────────────────────────────────────────────────
 
-    conn = get_conn()
-
-    # Skip Reddit
-    results["skipped"] = skip_reddit_posts(conn)
-
-    # Get pending Twitter posts
+def _fetch_pending(conn, platform: str, limit: int):
     c = conn.cursor()
     c.execute(
         """SELECT id, content, scheduled_for
            FROM social_queue
-           WHERE platform='twitter' AND posted=0
+           WHERE platform=? AND posted=0
            ORDER BY scheduled_for ASC
            LIMIT ?""",
-        (MAX_POSTS_PER_RUN,)
+        (platform, limit)
     )
-    rows = c.fetchall()
-
-    if not rows:
-        log.info("No pending Twitter posts in queue")
-        conn.close()
-        return results
-
-    log.info(f"Found {len(rows)} Twitter posts to send")
-
-    if dry_run:
-        for row in rows:
-            log.info(f"[DRY RUN] Would post ID={row['id']}: {row['content'][:100]}...")
-            results["posted"] += 1
-        conn.close()
-        return results
-
-    # Get Twitter client
-    client = get_twitter_client()
-    if not client:
-        log.error("Twitter client unavailable — aborting")
-        conn.close()
-        return results
-
-    for row in rows:
-        post_id = row["id"]
-        content = row["content"].strip()
-
-        # Enforce Twitter character limit
-        if len(content) > 280:
-            content = content[:277] + "..."
-
-        try:
-            response = client.create_tweet(text=content)
-            tweet_id = str(response.data["id"])
-            tweet_url = f"https://x.com/i/web/status/{tweet_id}"
-
-            # Mark as posted
-            c.execute(
-                "UPDATE social_queue SET posted=1, posted_at=? WHERE id=?",
-                (datetime.utcnow().isoformat(), post_id)
-            )
-            conn.commit()
-
-            results["posted"] += 1
-            log.info(f"✅ Posted ID={post_id} → {tweet_url}")
-
-            time.sleep(SLEEP_BETWEEN_POSTS)
-
-        except Exception as e:
-            err = str(e)
-            results["failed"] += 1
-            log.error(f"❌ Failed ID={post_id}: {err}")
-
-            # If rate limited, stop this run
-            if "429" in err or "Too Many Requests" in err or "rate limit" in err.lower():
-                log.warning("Rate limit hit — stopping this run")
-                break
-
-    conn.close()
-
-    # Telegram summary
-    if results["posted"] > 0 or results["failed"] > 0:
-        remaining_q = _get_remaining_count()
-        msg = (
-            f"📣 Social Queue Runner\n"
-            f"✅ Posted: {results['posted']}\n"
-            f"❌ Failed: {results['failed']}\n"
-            f"⏭️ Reddit skipped: {results['skipped']}\n"
-            f"📥 Remaining in queue: {remaining_q}"
-        )
-        send_telegram(msg)
-
-    log.info(f"Run complete: {results}")
-    return results
+    return c.fetchall()
 
 
-def _get_remaining_count() -> int:
+def _remaining(platform: str = None) -> int:
     try:
         conn = get_conn()
-        c = conn.cursor()
-        c.execute("SELECT COUNT(*) FROM social_queue WHERE platform='twitter' AND posted=0")
+        c    = conn.cursor()
+        if platform:
+            c.execute(
+                "SELECT COUNT(*) FROM social_queue WHERE platform=? AND posted=0",
+                (platform,)
+            )
+        else:
+            c.execute("SELECT COUNT(*) FROM social_queue WHERE posted=0")
         n = c.fetchone()[0]
         conn.close()
         return n
     except Exception:
         return -1
+
+
+def run(dry_run: bool = False) -> dict:
+    log.info(f"=== Social Queue Runner {'(DRY RUN) ' if dry_run else ''}===")
+    totals = {"twitter": {}, "instagram": {}, "tiktok": {}, "reddit_skipped": 0}
+
+    conn = get_conn()
+
+    # Reddit — skip always
+    totals["reddit_skipped"] = skip_reddit(conn)
+
+    # Twitter
+    tw_rows = _fetch_pending(conn, "twitter", MAX_POSTS_PER_RUN)
+    totals["twitter"] = post_twitter(tw_rows, dry_run, conn)
+
+    # Instagram
+    ig_rows = _fetch_pending(conn, "instagram", MAX_POSTS_PER_RUN)
+    totals["instagram"] = post_via_make(ig_rows, "instagram", dry_run, conn)
+
+    # TikTok
+    tt_rows = _fetch_pending(conn, "tiktok", MAX_POSTS_PER_RUN)
+    totals["tiktok"] = post_via_make(tt_rows, "tiktok", dry_run, conn)
+
+    conn.close()
+
+    # Telegram summary
+    tw = totals["twitter"]
+    ig = totals["instagram"]
+    tt = totals["tiktok"]
+    total_posted = tw.get("posted", 0) + ig.get("posted", 0) + tt.get("posted", 0)
+    total_failed = tw.get("failed", 0) + ig.get("failed", 0) + tt.get("failed", 0)
+
+    if total_posted > 0 or total_failed > 0:
+        remaining = _remaining()
+        msg = (
+            f"📣 Social Queue Runner {'[DRY RUN]' if dry_run else ''}\n"
+            f"🐦 Twitter:   ✅{tw.get('posted',0)} ❌{tw.get('failed',0)}\n"
+            f"📸 Instagram: ✅{ig.get('posted',0)} ❌{ig.get('failed',0)}\n"
+            f"🎵 TikTok:    ✅{tt.get('posted',0)} ❌{tt.get('failed',0)}\n"
+            f"⏭️  Reddit skipped: {totals['reddit_skipped']}\n"
+            f"📥 Remaining: {remaining}"
+        )
+        send_telegram(msg)
+
+    log.info(f"Run complete: {totals}")
+    return totals
 
 
 if __name__ == "__main__":
